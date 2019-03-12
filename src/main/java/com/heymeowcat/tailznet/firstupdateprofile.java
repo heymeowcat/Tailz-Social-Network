@@ -62,7 +62,7 @@ public class firstupdateprofile extends HttpServlet {
                             fin = fileItem.getString();
                         } else if (fileItem.getFieldName().equals("ln")) {
                             ln = fileItem.getString();
-                        }else if(fp.equals(null)){
+                        }else if(fileItem.equals(null)){
                             fp = "img/Profile_avatar_placeholder_large.png";
                         }
                     }
@@ -70,7 +70,7 @@ public class firstupdateprofile extends HttpServlet {
                 DB.iud("UPDATE `users` SET `firstname` = '" + fin + "', `lastname` = '" + ln + "' WHERE `users`.`idusers` = '" + uid + "';");
                 DB.iud("INSERT INTO `user_profile_pic` (`image`, `users_idusers`) VALUES ('" + fp + "', '" + uid + "');");
                 DB.iud("INSERT INTO `app_theme` (`themename`, `users_idusers`) VALUES ('purplelight', '" + uid + "');");
-                DB.iud("INSERT INTO ``app_layout`` (`users_idusers`, `layout`) VALUES (''" + uid + "'', 1);");
+                DB.iud("INSERT INTO `app_layout` (`users_idusers`, `layout`) VALUES ('" + uid + "', 1);");
                 DB.iud("INSERT INTO `uap` (`Preference`, `users_idusers`) VALUES ('1', '" + uid + "');");
                 response.sendRedirect("login-register.jsp");
             } catch (Exception e) {
