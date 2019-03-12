@@ -23,27 +23,25 @@ import javax.mail.internet.MimeMultipart;
  */
 public class SendingEmail {
 
-    private String useremail;
-    private String userhash;
-    private String msg;
+    String useremail;
+    String userhash;
 
-    public SendingEmail(String useremail, String userhash) {
+    public void sendMail(String useremail, String userhash) {
         this.useremail = useremail;
         this.userhash = userhash;
-    }
-
-    public void sendMail() {
         final String email = "tailz.network@gmail.com";
         final String password = "vidura2531";
         Properties props = new Properties();
-        props.put("mail.smtp.host", "smtp.gmail.com"); //SMTP Host
-        props.put("mail.smtp.port", "587"); //TLS Port
-        props.put("mail.smtp.auth", "true"); //enable authentication
-        props.put("mail.smtp.starttls.enable", "true"); //enable STARTTLS
+        props.put("mail.smtp.host", "smtp.gmail.com");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.port", "587");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.ssl.trust", "*");
 
         //create Authenticator object to pass in Session.getInstance argument
         Authenticator auth = new Authenticator() {
             //override the getPasswordAuthentication method
+            @Override
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(email, password);
             }
@@ -577,7 +575,6 @@ public class SendingEmail {
                     + "</html>";
 
             htmlPart.setContent(html, "text/html");
-
             mp.addBodyPart(htmlPart);
             message.setContent(mp);
             Transport.send(message);

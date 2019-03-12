@@ -61,6 +61,8 @@ public class update extends HttpServlet {
                             fin = fileItem.getString();
                         } else if (fileItem.getFieldName().equals("ln")) {
                             ln = fileItem.getString();
+                        }else if(fileItem.equals(null)){
+                            fp = "img/Profile_avatar_placeholder_large.png";
                         }
                     }
                 }

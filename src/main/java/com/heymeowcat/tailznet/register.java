@@ -32,8 +32,9 @@ public class register extends HttpServlet {
             String myhash = DigestUtils.md5Hex("" + random);
             java.sql.ResultSet regrs = DB.search("Select email from `users` where email= '" + newemail + "' ");
             if (!regrs.next()) {
-                SendingEmail se = new SendingEmail(newemail, myhash);
-                se.sendMail();
+                SendingEmail se = new SendingEmail();
+                se.sendMail(newemail, myhash);
+                DB.iud("INSERT INTO `users` (`email`, `status`, `hash`, `user_type_iduser_type`) VALUES ('"+newemail+"', '0', '"+myhash+"', '2');");
                 response.sendRedirect("verify.jsp");
             } else {
                 response.sendRedirect("login-register.jsp");

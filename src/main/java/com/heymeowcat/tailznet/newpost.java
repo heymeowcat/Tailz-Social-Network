@@ -59,6 +59,7 @@ public class newpost extends HttpServlet {
                 response.sendRedirect("index.jsp");
             } catch (Exception e) {
                 e.printStackTrace();
+                
             }
         }
     }
