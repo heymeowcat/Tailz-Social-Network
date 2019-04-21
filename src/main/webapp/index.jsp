@@ -31,6 +31,7 @@
                 String Ccolor = "";
                 String Dcolor = "";
                 String Ecolor = "";
+                String Fcolor = "";
                 String Lcolor = "";
                 java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + uid + "' ");
                 if (themers.next()) {
@@ -40,6 +41,7 @@
                         Ccolor = "#1c1c1c";
                         Dcolor = "white-text";
                         Ecolor = "grey darken-4";
+                        Fcolor = "white";
                         Lcolor = "#e91e63";
                     } else if (themers.getString(1).equals("pinklight")) {
                         Acolor = "white";
@@ -47,6 +49,7 @@
                         Ccolor = "#f7f4f4";
                         Dcolor = "black-text";
                         Ecolor = "red lighten-5";
+                        Fcolor = "black";
                         Lcolor = "#f8bbd0";
                     } else if (themers.getString(1).equals("bluelight")) {
                         Acolor = "white";
@@ -54,6 +57,7 @@
                         Ccolor = "#f7f4f4";
                         Dcolor = "black-text";
                         Ecolor = "light-blue lighten-5";
+                        Fcolor = "black";
                         Lcolor = "#4fc3f7";
                     } else if (themers.getString(1).equals("bluedark")) {
                         Acolor = "black";
@@ -61,6 +65,7 @@
                         Ccolor = "#1c1c1c";
                         Dcolor = "white-text";
                         Ecolor = "grey darken-4";
+                        Fcolor = "white";
                         Lcolor = "#2196f3";
                     } else if (themers.getString(1).equals("yellowlight")) {
                         Acolor = "white";
@@ -68,6 +73,7 @@
                         Ccolor = "#f7f4f4";
                         Dcolor = "black-text";
                         Ecolor = "yellow lighten-4";
+                        Fcolor = "black";
                         Lcolor = "#fff176";
                     } else if (themers.getString(1).equals("yellowdark")) {
                         Acolor = "black";
@@ -75,6 +81,7 @@
                         Ccolor = "#1c1c1c";
                         Dcolor = "white-text";
                         Ecolor = "grey darken-4";
+                        Fcolor = "white";
                         Lcolor = "#f57f17";
                     } else if (themers.getString(1).equals("greenlight")) {
                         Acolor = "white";
@@ -82,6 +89,7 @@
                         Ccolor = "#f7f4f4";
                         Dcolor = "black-text";
                         Ecolor = "light-green lighten-4";
+                        Fcolor = "black";
                         Lcolor = "#aed581";
                     } else if (themers.getString(1).equals("greendark")) {
                         Acolor = "black";
@@ -89,6 +97,7 @@
                         Ccolor = "#1c1c1c";
                         Dcolor = "white-text";
                         Ecolor = "grey darken-4";
+                        Fcolor = "white";
                         Lcolor = "#4caf50";
                     } else if (themers.getString(1).equals("purplelight")) {
                         Acolor = "white";
@@ -96,6 +105,7 @@
                         Ccolor = "#f7f4f4";
                         Dcolor = "black-text";
                         Ecolor = "purple lighten-5";
+                        Fcolor = "black";
                         Lcolor = "#ce93d8";
                     } else if (themers.getString(1).equals("purpledark")) {
                         Acolor = "black";
@@ -103,6 +113,7 @@
                         Ccolor = "#1c1c1c";
                         Dcolor = "white-text";
                         Ecolor = "grey darken-4";
+                        Fcolor = "white";
                         Lcolor = "#9c27b0";
                     }
                 }
@@ -126,7 +137,7 @@
                 top: 0;
                 right: 100%;
                 width: 100%;
-                height: 2px;
+                height: 4px;
             }
             .noselect {
                 -webkit-touch-callout: none;

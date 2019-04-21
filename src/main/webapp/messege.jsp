@@ -16,7 +16,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
         <title>Tailz</title>
         <link href="img/logo.png" rel="icon">
-                <script src="js/pace.js"></script>
+        <script src="js/pace.js"></script>
         <link href="css/animate.css" type="text/css" rel="stylesheet">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <link href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
@@ -31,6 +31,7 @@
                 String Dcolor = "";
                 String Ecolor = "";
                 String Fcolor = "";
+                String Lcolor = "";
                 java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + uid + "' ");
                 if (themers.next()) {
                     if (themers.getString(1).equals("pinkdark")) {
@@ -39,74 +40,104 @@
                         Ccolor = "#1c1c1c";
                         Dcolor = "white-text";
                         Ecolor = "grey darken-4";
-                        Fcolor = "#e91e63";
+                        Fcolor = "white";
+                        Lcolor = "#e91e63";
                     } else if (themers.getString(1).equals("pinklight")) {
                         Acolor = "white";
                         Bcolor = "pink lighten-4";
                         Ccolor = "#f7f4f4";
                         Dcolor = "black-text";
                         Ecolor = "red lighten-5";
-                        Fcolor = "#f8bbd0";
+                        Fcolor = "black";
+                        Lcolor = "#f8bbd0";
                     } else if (themers.getString(1).equals("bluelight")) {
                         Acolor = "white";
                         Bcolor = "light-blue lighten-2";
                         Ccolor = "#f7f4f4";
                         Dcolor = "black-text";
                         Ecolor = "light-blue lighten-5";
-                        Fcolor = "#4fc3f7";
+                        Fcolor = "black";
+                        Lcolor = "#4fc3f7";
                     } else if (themers.getString(1).equals("bluedark")) {
                         Acolor = "black";
                         Bcolor = "blue";
                         Ccolor = "#1c1c1c";
                         Dcolor = "white-text";
                         Ecolor = "grey darken-4";
-                        Fcolor = "#2196F3";
+                        Fcolor = "white";
+                        Lcolor = "#2196f3";
                     } else if (themers.getString(1).equals("yellowlight")) {
                         Acolor = "white";
                         Bcolor = "yellow lighten-2";
                         Ccolor = "#f7f4f4";
                         Dcolor = "black-text";
                         Ecolor = "yellow lighten-4";
-                        Fcolor = "#fff176";
+                        Fcolor = "black";
+                        Lcolor = "#fff176";
                     } else if (themers.getString(1).equals("yellowdark")) {
                         Acolor = "black";
                         Bcolor = "yellow darken-4";
                         Ccolor = "#1c1c1c";
                         Dcolor = "white-text";
                         Ecolor = "grey darken-4";
-                        Fcolor = "#f57f17";
+                        Fcolor = "white";
+                        Lcolor = "#f57f17";
                     } else if (themers.getString(1).equals("greenlight")) {
                         Acolor = "white";
                         Bcolor = "light-green lighten-2";
                         Ccolor = "#f7f4f4";
                         Dcolor = "black-text";
                         Ecolor = "light-green lighten-4";
-                        Fcolor = "#aed581";
+                        Fcolor = "black";
+                        Lcolor = "#aed581";
                     } else if (themers.getString(1).equals("greendark")) {
                         Acolor = "black";
                         Bcolor = "green";
                         Ccolor = "#1c1c1c";
                         Dcolor = "white-text";
                         Ecolor = "grey darken-4";
-                        Fcolor = "#4CAF50";
+                        Fcolor = "white";
+                        Lcolor = "#4caf50";
                     } else if (themers.getString(1).equals("purplelight")) {
                         Acolor = "white";
                         Bcolor = "purple lighten-3";
                         Ccolor = "#f7f4f4";
                         Dcolor = "black-text";
                         Ecolor = "purple lighten-5";
-                        Fcolor = "#ce93d8";
+                        Fcolor = "black";
+                        Lcolor = "#ce93d8";
                     } else if (themers.getString(1).equals("purpledark")) {
                         Acolor = "black";
                         Bcolor = "purple";
                         Ccolor = "#1c1c1c";
                         Dcolor = "white-text";
                         Ecolor = "grey darken-4";
-                        Fcolor = "#9c27b0";
+                        Fcolor = "white";
+                        Lcolor = "#9c27b0";
                     }
                 }
         %> 
         <style>
+            .pace {
+                -webkit-pointer-events: none;
+                pointer-events: none;
+
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                user-select: none;
+            }
+            .pace-inactive {
+                display: none;
+            }
+            .pace .pace-progress {
+                background: <%=Lcolor%>;
+                position: fixed;
+                z-index: 2000;
+                top: 0;
+                right: 100%;
+                width: 100%;
+                height: 4px;
+            }
             ::-webkit-scrollbar {
                 width: 0px;
                 background: transparent;
@@ -223,14 +254,7 @@
                 </div>
             </nav>
         </header>
-        <div id="loading" >
-            <div style="width: 100%; background-color: transparent; text-align: center;  " class="valign-wrapper">
-                <div class="progress <%= Acolor%>" style="margin: 0px">
-                    <div class="indeterminate <%= Bcolor%>" ></div>
-                </div>
 
-            </div>
-        </div>
         <main class="StickyContent">
             <div class="container animated fadeIn">             
                 <div  id="frontmsgui" class="row">
@@ -305,8 +329,6 @@
                                     var timer;
                                     function hideloader(x) {
                                         userid = x;
-                                        document.getElementById('loading').style.display = "none";
-                                    
                                     }
                                     $(document).ready(function () {
                                         $("body").on("contextmenu", function (e) {
@@ -324,7 +346,7 @@
                                         var xhttp = new XMLHttpRequest();
                                         xhttp.open("GET", "messenginguser?x=" + x, true);
                                         xhttp.send();
-                                        window.location="chathead.jsp";
+                                        window.location = "chathead.jsp";
                                     }
 
                                     function numberrefresh() {

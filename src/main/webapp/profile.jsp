@@ -47,6 +47,7 @@
                 String Dcolor = "";
                 String Ecolor = "";
                 String Fcolor = "";
+                String Lcolor = "";
                 java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + uid + "' ");
                 if (themers.next()) {
                     if (themers.getString(1).equals("pinkdark")) {
@@ -56,6 +57,7 @@
                         Dcolor = "white-text";
                         Ecolor = "grey darken-4";
                         Fcolor = "white";
+                        Lcolor = "#e91e63";
                     } else if (themers.getString(1).equals("pinklight")) {
                         Acolor = "white";
                         Bcolor = "pink lighten-4";
@@ -63,6 +65,7 @@
                         Dcolor = "black-text";
                         Ecolor = "red lighten-5";
                         Fcolor = "black";
+                        Lcolor = "#f8bbd0";
                     } else if (themers.getString(1).equals("bluelight")) {
                         Acolor = "white";
                         Bcolor = "light-blue lighten-2";
@@ -70,6 +73,7 @@
                         Dcolor = "black-text";
                         Ecolor = "light-blue lighten-5";
                         Fcolor = "black";
+                        Lcolor = "#4fc3f7";
                     } else if (themers.getString(1).equals("bluedark")) {
                         Acolor = "black";
                         Bcolor = "blue";
@@ -77,6 +81,7 @@
                         Dcolor = "white-text";
                         Ecolor = "grey darken-4";
                         Fcolor = "white";
+                        Lcolor = "#2196f3";
                     } else if (themers.getString(1).equals("yellowlight")) {
                         Acolor = "white";
                         Bcolor = "yellow lighten-2";
@@ -84,6 +89,7 @@
                         Dcolor = "black-text";
                         Ecolor = "yellow lighten-4";
                         Fcolor = "black";
+                        Lcolor = "#fff176";
                     } else if (themers.getString(1).equals("yellowdark")) {
                         Acolor = "black";
                         Bcolor = "yellow darken-4";
@@ -91,6 +97,7 @@
                         Dcolor = "white-text";
                         Ecolor = "grey darken-4";
                         Fcolor = "white";
+                        Lcolor = "#f57f17";
                     } else if (themers.getString(1).equals("greenlight")) {
                         Acolor = "white";
                         Bcolor = "light-green lighten-2";
@@ -98,6 +105,7 @@
                         Dcolor = "black-text";
                         Ecolor = "light-green lighten-4";
                         Fcolor = "black";
+                        Lcolor = "#aed581";
                     } else if (themers.getString(1).equals("greendark")) {
                         Acolor = "black";
                         Bcolor = "green";
@@ -105,6 +113,7 @@
                         Dcolor = "white-text";
                         Ecolor = "grey darken-4";
                         Fcolor = "white";
+                        Lcolor = "#4caf50";
                     } else if (themers.getString(1).equals("purplelight")) {
                         Acolor = "white";
                         Bcolor = "purple lighten-3";
@@ -112,6 +121,7 @@
                         Dcolor = "black-text";
                         Ecolor = "purple lighten-5";
                         Fcolor = "black";
+                        Lcolor = "#ce93d8";
                     } else if (themers.getString(1).equals("purpledark")) {
                         Acolor = "black";
                         Bcolor = "purple";
@@ -119,10 +129,31 @@
                         Dcolor = "white-text";
                         Ecolor = "grey darken-4";
                         Fcolor = "white";
+                        Lcolor = "#9c27b0";
                     }
                 }
         %>
         <style>
+            .pace {
+                -webkit-pointer-events: none;
+                pointer-events: none;
+
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                user-select: none;
+            }
+            .pace-inactive {
+                display: none;
+            }
+            .pace .pace-progress {
+                background: <%=Lcolor%>;
+                position: fixed;
+                z-index: 2000;
+                top: 0;
+                right: 100%;
+                width: 100%;
+                height: 4px;
+            }
             .noselect {
                 -webkit-touch-callout: none; 
                 -webkit-user-select: none; 
