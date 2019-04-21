@@ -12,6 +12,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 /**
  *
  * @author heymeowcat
@@ -32,7 +33,7 @@ public class liveadsrefresh extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-             int uid = Integer.parseInt(request.getSession().getAttribute("user").toString());
+            int uid = Integer.parseInt(request.getSession().getAttribute("user").toString());
             String Acolor = "";
             String Bcolor = "";
             String Ccolor = "";
@@ -104,7 +105,7 @@ public class liveadsrefresh extends HttpServlet {
             }
             java.sql.ResultSet ss = DB.search("Select Adid from ads where status='4' and users_idusers='" + uid + "' order by (SELECT `adstartedtime` FROM adtiming WHERE Ads_Adid = ads.Adid) DESC  ");
             while (ss.next()) {
-                java.sql.ResultSet adstolivers = DB.search("Select Adid,Text,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid='" + ss.getString(1) + "' and status='4'");
+                java.sql.ResultSet adstolivers = DB.search("Select Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid='" + ss.getString(1) + "' and status='4'");
                 while (adstolivers.next()) {
 
                     out.write("\n");
@@ -120,10 +121,10 @@ public class liveadsrefresh extends HttpServlet {
                     out.write("\">\n");
                     out.write("                                            <div class=\"card-image resizeimg\" style=\"overflow: hidden\">\n");
                     out.write("                                            <a href=\"");
-                    out.print(adstolivers.getString(4));
+                    out.print(adstolivers.getString(3));
                     out.write("\">\n");
                     out.write("                                                <img src=\"");
-                    out.print(adstolivers.getString(3));
+                    out.print(adstolivers.getString(2));
                     out.write("\" >\n");
                     out.write("                                            </a>\n");
                     out.write("                                            </div>\n");
@@ -136,7 +137,7 @@ public class liveadsrefresh extends HttpServlet {
                     out.write(" btn-floating center\">\n");
                     out.write("                                                <span><i class=\"material-icons ");
                     out.print(Dcolor);
-                    out.write("\">pause</i></span>\n");
+                    out.write("\">live_tv</i></span>\n");
                     out.write("                                            </div>\n");
                     out.write("                                            ");
 
@@ -169,7 +170,7 @@ public class liveadsrefresh extends HttpServlet {
             }
             java.sql.ResultSet rs = DB.search("Select * from ads where status='4' and users_idusers=" + uid + "");
             if (!rs.isBeforeFirst()) {
-                out.write("<div class='center'><img src ='img/nolive.png' class='animated pulse responsiveimg '></div>");
+                out.write("<div class='center'><img src ='img/livead.png'  class='animated pulse responsiveimg '></div>");
             }
             out.write("\n");
             out.write("                            </div>\n");

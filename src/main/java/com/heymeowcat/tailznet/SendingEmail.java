@@ -55,7 +55,7 @@ public class SendingEmail {
 
             message.setSubject("Taiz | Email Verification Link");
             message.setText("Verification Link  ");
-            message.setText("https://tailznet.herokuapp.com/ActivateAccount?key1=" + useremail + "&key2=" + userhash);
+            message.setText("https://tzn.herokuapp.com/ActivateAccount?key1=" + useremail + "&key2=" + userhash);
             Multipart mp = new MimeMultipart();
             MimeBodyPart htmlPart = new MimeBodyPart();
             String html = "<!DOCTYPE html>\n"
@@ -349,11 +349,11 @@ public class SendingEmail {
                     + "              style=\"width: 800px;border-collapse: collapse;mso-table-lspace: 0;mso-table-rspace: 0;\" bgcolor=\"#000000\">\n"
                     + "              <tbody>\n"
                     + "                <tr>\n"
-                    + "                  <td class=\"em_bg\" align=\"center\" valign=\"top\" background=\"https://i.imgur.com/oK5iMjY.jpg\" height=\"585\"\n"
+                    + "                  <td class=\"em_bg\" align=\"center\" valign=\"top\" background=\"https://i.imgur.com/5D4q8xM.jpg\" height=\"585\"\n"
                     + "                    style=\"background-repeat: no-repeat;background-position: center top;background-size: 100%;border-collapse: collapse;mso-line-height-rule: exactly;\">\n"
                     + "                    <!--[if gte mso 9]>\n"
                     + "                <v:rect xmlns:v=\"urn:schemas-microsoft-com:vml\" fill=\"true\" stroke=\"false\" style=\"width:800px;height:585px;\">\n"
-                    + "                  <v:fill type=\"tile\" src=\"https://i.imgur.com/oK5iMjY.jpg\" color=\"#000000\" />\n"
+                    + "                  <v:fill type=\"tile\" src=\"https://i.imgur.com/5D4q8xM.jpg\" color=\"#000000\" />\n"
                     + "                  <v:textbox inset=\"0,0,0,0\">\n"
                     + "                    <![endif]-->\n"
                     + "\n"
@@ -423,7 +423,7 @@ public class SendingEmail {
                     + "                                          </td>\n"
                     + "                                          <td width=\"160\" bgcolor=\"#dcad55\" align=\"center\" valign=\"middle\"\n"
                     + "                                            style=\"font-family: 'GT Walsheim', Poppins, Helvetica, Arial, sans-serif;font-size: 13px;height: 40px;color: #ffffff;font-weight: bold;border-collapse: collapse;mso-line-height-rule: exactly;\">\n"
-                    + "                                            <a href=" + "https://tailznet.herokuapp.com/ActivateAccount?key1=" + useremail + "&key2=" + userhash + "\n"
+                    + "                                            <a href=" + "https://tzn.herokuapp.com/ActivateAccount?key1=" + useremail + "&key2=" + userhash + "\n"
                     + "                                              target=\"_blank\"\n"
                     + "                                              style=\"line-height: 40px;color: #ffffff;text-decoration: none;display: block;border-collapse: collapse;mso-line-height-rule: exactly;\">CONFIRM\n"
                     + "                                              YOUR EMAIL</a>\n"

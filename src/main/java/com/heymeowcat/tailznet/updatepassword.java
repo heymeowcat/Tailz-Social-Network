@@ -39,7 +39,7 @@ public class updatepassword extends HttpServlet {
             String conps = request.getParameter("conpsw");
             if (newps.equals(conps)) {
                 String hashpass = DigestUtils.md5Hex(conps);
-                DB.iud("UPDATE `user_login` SET `password` = '"+hashpass+"' WHERE `user_login`.`iduser_login` ='"+uid+"' ;");
+                DB.iud("UPDATE `user_login` SET `password` = '"+hashpass+"' WHERE `user_login`.`users_idusers` ='"+uid+"' ;");
                 response.sendRedirect("profile.jsp");
             } else {
                 response.sendRedirect("profile.jsp?err=err");

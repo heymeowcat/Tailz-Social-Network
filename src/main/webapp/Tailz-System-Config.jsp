@@ -15,7 +15,7 @@
         <link href="img/logo.png" rel="icon">
         <link href="css/animate.css" type="text/css" rel="stylesheet">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <link href="css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+        <link href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
         <style>
             .noselect {
                 -webkit-touch-callout: none; /* iOS Safari */
@@ -65,9 +65,13 @@
 
         </style>
     </head>
+
+    <%
+        ServletContext context = getServletContext();
+        if (request.getParameter("pwd") != null) {
+            if (request.getParameter("pwd").equals(context.getInitParameter("adminpassword"))) {
+    %>
     <body  class="noselect">
-
-
         <header class="StickyHeader" style="position:relative;  z-index: 10;">
             <nav class="white   ">
                 <div class=" nav-wrapper LEFT container">
@@ -82,11 +86,16 @@
             <div class="animated zoomIn  container">
                 <div class="divider"></div>
                 <div class="section">
+                    <h5>Log</h5>
+                    <div class="row">
+
+                    </div>
+                </div>
+                <div class="divider"></div>
+                <div class="section">
                     <h5>Admin Accounts</h5>
                     <div class="row">
                         <% java.sql.ResultSet rsop = DB.search("Select idusers,firstname,lastname,email from `users` WHERE users.user_type_iduser_type ='1' "); %>
-                                                         
-
 
                         <table class="striped">
                             <tr>
@@ -94,38 +103,370 @@
                                 <th>Email</th>
                                 <th>Action</th>
                             </tr>
-                        <%while(rsop.next()){%>
-                        <tr><td><%=rsop.getString(2)+" "+rsop.getString(3)%></td><td><%=rsop.getString(4)%></td><td><button class="white btn black-text waves-effect">Remove</button></td></tr>
+                            <%while (rsop.next()) {%>
+                            <tr><td><%=rsop.getString(2) + " " + rsop.getString(3)%></td><td><%=rsop.getString(4)%></td><td><button class="white btn black-text waves-effect">Remove</button></td></tr>
                             <%
-                            }%>
-                        <tr>
-                            <td colspan="2"><input id="t1" type="search"  class="" placeholder="Type Email." ></td>
-                            <td><button  class="white btn  black-text waves-effect">+Admin</button></td>
-                        </tr>
+                                }%>
+                            <tr>
+                                <td colspan="2"><input id="at1" type="search"  class="" placeholder="Type Email." ></td>
+                                <td><button  class="white btn  black-text waves-effect">+Admin</button></td>
+                            </tr>
+                            <tr colspan="2">
+                                <td> 
+                                    <table id="table" class="white">
+                                    </table>
+                                </td>
+
+                            </tr>
                         </table>
+
                     </div>
                 </div>
                 <div class="divider"></div>
                 <div class="section">
                     <h5>Database</h5>
-                    <p>Stuff</p>
+                    <table>
+                        <tr>
+                            <td>Server</td>
+                            <td><%=context.getInitParameter("Server")%></td>
+                        </tr>
+                        <tr>
+                            <td>Port</td>
+                            <td><%=context.getInitParameter("Port")%></td>
+                        </tr>
+                        <tr>
+                            <td>Database</td>
+                            <td><%=context.getInitParameter("DB")%></td>
+                        </tr>
+                        <tr>
+                            <td>Username</td>
+                            <td><%=context.getInitParameter("Username")%></td>
+                        </tr>
+                        <tr>
+                            <td>Password</td>
+                            <td><%=context.getInitParameter("Password")%></td>
+                        </tr>
+                    </table>
                 </div>
                 <div class="divider"></div>
                 <div class="section">
-                    <h5>Section 3</h5>
-                    <p>Stuff</p>
+                    <h5>User Options Apply to All</h5>
+                    <div class="card-panel">
+                        <table>
+                            <tr>
+                                <td>
+                                    <b>Login/Register</b> 
+                                </td>
+                                <td class="right">  
+                                    <div class="switch">
+                                        <label>
+                                            Disable
+                                            <input type="checkbox">
+                                            <span class="lever"></span>
+                                            Enable
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Email Registration</td>
+                                <td class="right">  
+                                    <div class="switch">
+                                        <label>
+                                            Disable
+                                            <input type="checkbox">
+                                            <span class="lever"></span>
+                                            Enable
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Normal Login</td>
+                                <td class="right">  
+                                    <div class="switch">
+                                        <label>
+                                            Disable
+                                            <input type="checkbox">
+                                            <span class="lever"></span>
+                                            Enable
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Google Login</td>
+                                <td class="right">  
+                                    <div class="switch">
+                                        <label>
+                                            Disable
+                                            <input type="checkbox">
+                                            <span class="lever"></span>
+                                            Enable
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Facebook Login</td>
+                                <td class="right">  
+                                    <div class="switch">
+                                        <label>
+                                            Disable
+                                            <input type="checkbox">
+                                            <span class="lever"></span>
+                                            Enable
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Feed</b> 
+                                </td>
+                                <td class="right">  
+                                    <div class="switch">
+                                        <label>
+                                            Disable
+                                            <input type="checkbox">
+                                            <span class="lever"></span>
+                                            Enable
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Image Post
+                                </td>
+                                <td class="right">  
+                                    <div class="switch">
+                                        <label>
+                                            Disable
+                                            <input type="checkbox">
+                                            <span class="lever"></span>
+                                            Enable
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Youtube Post
+                                </td>
+                                <td class="right">  
+                                    <div class="switch">
+                                        <label>
+                                            Disable
+                                            <input type="checkbox">
+                                            <span class="lever"></span>
+                                            Enable
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Embed Post
+                                </td>
+                                <td class="right">  
+                                    <div class="switch">
+                                        <label>
+                                            Disable
+                                            <input type="checkbox">
+                                            <span class="lever"></span>
+                                            Enable
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Ad sections
+                                </td>
+                                <td class="right">  
+                                    <div class="switch">
+                                        <label>
+                                            Disable
+                                            <input type="checkbox">
+                                            <span class="lever"></span>
+                                            Enable
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Profile</b> 
+                                </td>
+                                <td class="right">  
+                                    <div class="switch">
+                                        <label>
+                                            Disable
+                                            <input type="checkbox">
+                                            <span class="lever"></span>
+                                            Enable
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                   Update Profile 
+                                </td>
+                                <td class="right">  
+                                    <div class="switch">
+                                        <label>
+                                            Disable
+                                            <input type="checkbox">
+                                            <span class="lever"></span>
+                                            Enable
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                   Profile Settings
+                                </td>
+                                <td class="right">  
+                                    <div class="switch">
+                                        <label>
+                                            Disable
+                                            <input type="checkbox">
+                                            <span class="lever"></span>
+                                            Enable
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Messages</b>
+                                </td>
+                                <td class="right">  
+                                    <div class="switch">
+                                        <label>
+                                            Disable
+                                            <input type="checkbox">
+                                            <span class="lever"></span>
+                                            Enable
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Group Messages
+                                </td>
+                                <td class="right">  
+                                    <div class="switch">
+                                        <label>
+                                            Disable
+                                            <input type="checkbox">
+                                            <span class="lever"></span>
+                                            Enable
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Notifications</b>
+                                </td>
+                                <td class="right">  
+                                    <div class="switch">
+                                        <label>
+                                            Disable
+                                            <input type="checkbox">
+                                            <span class="lever"></span>
+                                            Enable
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Search</b>  
+                                </td>
+                                <td class="right">  
+                                    <div class="switch">
+                                        <label>
+                                            Disable
+                                            <input type="checkbox">
+                                            <span class="lever"></span>
+                                            Enable
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Dashboard</b> 
+                                </td>
+                                <td class="right">  
+                                    <div class="switch">
+                                        <label>
+                                            Disable
+                                            <input type="checkbox">
+                                            <span class="lever"></span>
+                                            Enable
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="section">
+                    <h5>Individual User Options</h5>
+                    <input id="t1" type="search"  class="black-text " placeholder="Type anything..." >
+                    <table id="tb1" class="black-text">
+
+                    </table>
                 </div>
 
             </div>
         </main>
 
+        <script src="js/jquery-3.2.1.min.js"></script>
+        <script src="js/materialize.js"></script>
+        <script>
+            var input = document.getElementById("t1");
+            input.addEventListener("keyup", function (event) {
+                event.preventDefault();
+                if (event.keyCode === 13) {
+                    search();
+                    savesearchhistory();
+                }
+            });
+            function search() {
+                document.getElementById("tb1").innerHTML = "";
+                var x = document.getElementById("t1").value;
+                if (x == "") {
+                    document.getElementById("tb1").innerHTML = "";
+                }
+                var xhtp = new XMLHttpRequest();
+                xhtp.onreadystatechange = function () {
+                    if (xhtp.readyState == 4 && xhtp.status == 200) {
+                        document.getElementById("tb1").innerHTML += xhtp.responseText;
+                    }
+                }
+                xhtp.open("GET", "profilesearch?name=" + x + "&loggedid=" + 5, true);
+                xhtp.send();
+            }
 
+        </script>
     </body>
 
-    <script src="js/jquery-3.2.1.min.js"></script>
-    <script src="js/materialize.js"></script>
-    <script>
+
+    <%      } else {
+                out.write("<h2>Access Denied</h2>");
+            }
+        } else {
+            out.write("<h2>Access Denied</h2>");
+        }
+    %>
 
 
-    </script>
 </html>

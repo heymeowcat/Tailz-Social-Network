@@ -128,15 +128,15 @@ public class directmessages extends HttpServlet {
                     if (rs.getString(5).equals("" + muid)) {
                         out.write("<div class='message__list'>");
                         out.write("<div class='message__item message__item--bot'>");
-                        out.write("<span class='message message--bot' class='" + Dcolor + " tooltipped' data-position='right' data-tooltip='" + rs.getString(4) + "'>");
-                        if (rs.getString(2) != null) {
-                            out.write(rs.getString(2));
+                        out.write("<span class='message message--bot "+Dcolor+"'  data-balloon='"+rs.getString(4) +"' data-balloon-pos='right' >");
+                        if (rs.getString(2) != null ) {
+                            out.write(ENCDEC.decrypt(rs.getString(2), new KEY().secretKey));
                         }
                         if (rs.getString(3) != null) {
                             if(rs.getString(2) == null){
-                                out.write("<img class='responsive-img' src='" + rs.getString(3) + "' width='300px' style='border-radius: 15px'>");
+                                out.write("<img class='responsive-img' src='" + ENCDEC.decrypt(rs.getString(3), new KEY().secretKey) + "' width='300px' style='border-radius: 15px'>");
                             }else{
-                                out.write("<br><img class='responsive-img' src='" + rs.getString(3) + "' width='300px' style='border-radius: 15px'>");
+                                out.write("<br><img class='responsive-img' src='" + ENCDEC.decrypt(rs.getString(3), new KEY().secretKey) + "' width='300px' style='border-radius: 15px'>");
                             }
                         }   
                         out.write("</span>");
@@ -145,15 +145,15 @@ public class directmessages extends HttpServlet {
                     } else if (rs.getString(5).equals("" + uid)) {
                         out.write("<div class='message__list'>");
                         out.write("<div class='message__item message__item--user'>");
-                        out.write("<span class='message message--user' class='" + Dcolor + " tooltipped' data-position='right' data-tooltip='" + rs.getString(4) + "'>");
+                        out.write("<span class='message message--user "+Dcolor+"' data-balloon='"+rs.getString(4) +"' data-balloon-pos='left' >");
                         if (rs.getString(2) != null) {
-                            out.write(rs.getString(2));
+                         out.write(ENCDEC.decrypt(rs.getString(2), new KEY().secretKey));
                         }
                         if (rs.getString(3) != null) {
                             if(rs.getString(2) == null){
-                                out.write("<img class='responsive-img' src='" + rs.getString(3) + "' width='300px' style='border-radius: 15px'>");
+                                out.write("<img class='responsive-img' src='" + ENCDEC.decrypt(rs.getString(3), new KEY().secretKey) + "' width='300px' style='border-radius: 15px'>");
                             }else{
-                                out.write("<br><img class='responsive-img' src='" + rs.getString(3) + "' width='300px' style='border-radius: 15px'>");
+                                out.write("<br><img class='responsive-img' src='" +ENCDEC.decrypt(rs.getString(3), new KEY().secretKey) + "' width='300px' style='border-radius: 15px'>");
                             }
                         }
                         out.write("</span>");

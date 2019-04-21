@@ -4,6 +4,9 @@
     Author     : HEYMEOWCAT
 --%>
 
+<%@page import="com.heymeowcat.tailznet.KEY"%>
+<%@page import="org.apache.commons.codec.digest.DigestUtils"%>
+<%@page import="com.heymeowcat.tailznet.ENCDEC"%>
 <%@page import="com.heymeowcat.tailznet.DB"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
@@ -15,13 +18,10 @@
         <link href="img/logo.png" rel="icon">
         <link href="css/animate.css" type="text/css" rel="stylesheet">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <link href="css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css" integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz"
-              crossorigin="anonymous">
+        <link href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
         <%
-            System.gc();
             if (request.getSession().getAttribute("user") != null) {
-     int uid = Integer.parseInt(request.getSession().getAttribute("user").toString());
+                int uid = Integer.parseInt(request.getSession().getAttribute("user").toString());
                 String up = "";
                 String Acolor = "";
                 String Bcolor = "";
@@ -222,17 +222,15 @@
             ul.ks-cboxtags li input[type="checkbox"]:focus + label {
                 border: 2px solid #e9a1ff;
             }
+            iframe{
+                padding:0px;
+                width: 100%;
+                height: 181px;
+            }
         </style>
     </head>
     <body onload="hideloader(<%=uid%>);" class="noselect">
-        <div id="loading">
-            <div style="height: 100vh; width: 100%; background-color: <%= Ccolor%>; text-align: center;" class="valign-wrapper">
-                <div class="progress <%= Acolor%>">
-                    <div class="indeterminate <%= Bcolor%>" ></div>
-                </div>
 
-            </div>
-        </div>
         <header class="StickyHeader" style="position:relative;  z-index: 10;">
             <nav class="<%=Acolor%>">
                 <div class=" nav-wrapper center container">
@@ -241,20 +239,27 @@
                         <div class="col s2 waves-effect waves-light ">   <a href="profile.jsp"><i class=" material-icons  <%=Dcolor%>">account_circle</i></a></div>
                         <div class="col s2 waves-effect waves-light ">   <a href="messege.jsp"><i class=" material-icons <%=Dcolor%> ">message</i><div id="chatnumber" class="badge <%=Dcolor%>" style="position: absolute; top:0px"></div></a></div>
                         <div class="col s2 waves-effect waves-light">   <a href="notifications.jsp"><i class=" material-icons <%=Dcolor%>">notifications_none</i><div id="notificationnumber" class="badge <%=Dcolor%>" style="position: absolute; top:0px"></div></a></div>
-                        <div class="col s2 waves-effect waves-light <%=Bcolor%>  animated bounce">   <a href="search-trending.jsp"><i class=" material-icons <%=Dcolor%>">search</i></a></div>
+                        <div class="col s2 waves-effect waves-light <%=Bcolor%>  animated rubberBand">   <a href="search-trending.jsp"><i class=" material-icons <%=Dcolor%>">search</i></a></div>
                         <div class="col s2 waves-effect waves-light">   <a href="dashboard.jsp"><i class=" material-icons <%=Dcolor%>">dashboard</i></a></div>
                     </div>
                     <div class="row hide-on-med-and-up">
                         <div class="col s6">
-                            <a href="#!" class="brand-logo"><i class=" material-icons center <%=Dcolor%>">whatshot</i><B class="<%=Dcolor%>">tailz</B></a>
+                            <a class="brand-logo"><B class="<%=Dcolor%>">TAILZ</B></a>
                         </div>
                     </div>
                 </div>
             </nav>
         </header>
+        <div id="loading" >
+            <div style="width: 100%; background-color: transparent; text-align: center;  " class="valign-wrapper">
+                <div class="progress <%= Acolor%>" style="margin: 0px">
+                    <div class="indeterminate <%= Bcolor%>" ></div>
+                </div>
 
+            </div>
+        </div>
         <main class="StickyContent noselect">
-            <div class="container animated zoomIn">
+            <div class="container animated fadeIn">
                 <ul class="<%=Acolor%> collapsible expandable" style="border-color: <%=Ccolor%>">
                     <li class="active" >
                         <div class="<%=Acolor%> collapsible-header" style="border-color: <%=Ccolor%>"><b class="<%=Dcolor%>">Search</b></div>
@@ -276,20 +281,20 @@
                             <div class="row">
                                 <%
                                     try {
-                                        java.sql.ResultSet rs = DB.search("SELECT * from post");
+                                        java.sql.ResultSet rs = DB.search("SELECT * from post where Post_Privacy='1' AND  idpost = ANY(SELECT `post_idpost` FROM post_rank GROUP BY `post_idpost` ORDER BY COUNT(`likes`) DESC)");
                                         while (rs.next()) {
                                             if (rs.getString(7).equals("1")) {%>
                                 <div class="col s12 m6 l4 ">
                                     <div class=" <%=Acolor%> <%=Dcolor%> card small hoverable">
                                         <div class="card-image">
-                                            <img class="responsive-img" src="<%=rs.getString(3)%>">
+                                            <img class="responsive-img" src="<%=ENCDEC.decrypt(rs.getString(3), new KEY().secretKey)%>">
                                         </div>
                                         <div class="card-content">
-                                            <span class="card-title <%=Dcolor%>"><b class="truncate<%=Dcolor%>"><%=rs.getString(2)%></b><i class="material-icons right activator waves-effect  <%=Dcolor%>">more_vert</i></span>    
-                                            <p class="truncate"><%=rs.getString(4)%></p>
+                                            <span class="card-title <%=Dcolor%>"><b class="truncate<%=Dcolor%>"><%=ENCDEC.decrypt(rs.getString(2), new KEY().secretKey)%></b><i class="material-icons right activator waves-effect  <%=Dcolor%>">more_vert</i></span>    
+                                            <p class="truncate"><%=ENCDEC.decrypt(rs.getString(4), new KEY().secretKey)%></p>
                                         </div>
                                         <div class=" <%=Dcolor%> <%=Acolor%>  card-reveal">
-                                            <span class="card-title <%=Dcolor%> text-darken-4 truncate "><%=rs.getString(2)%><i class="material-icons right waves-effect">close</i></span>
+                                            <span class="card-title <%=Dcolor%> text-darken-4 truncate "><%=ENCDEC.decrypt(rs.getString(2), new KEY().secretKey)%><i class="material-icons right waves-effect">close</i></span>
                                             <div class="card-content ">
                                                 <a onclick="showprofile('<%=rs.getString(6)%>', '<%=uid%>');$('#peekprofile').modal('open');">
                                                     <div class="<%=Bcolor%>  <%=Dcolor%> chip waves-effect waves-light ">
@@ -365,18 +370,15 @@
                                 <div class="col s12 m6 l4 ">
                                     <div class=" <%=Acolor%> <%=Dcolor%> card small hoverable ">
                                         <div class="card-image">
-                                            <video class="responsive-video" controls>
-                                                <source src="<%=rs.getString(3)%>" type="video/mp4" >
-                                            </video>
-
+                                            <%=ENCDEC.decrypt(rs.getString(3), new KEY().secretKey)%>
                                         </div>
                                         <div class="card-content">
-                                            <span class="card-title <%=Dcolor%>"><b class="truncate <%=Dcolor%>"><%=rs.getString(2)%></b><i class="material-icons right activator waves-effect <%=Dcolor%>">more_vert</i></span>    
-                                            <p class="truncate"><%=rs.getString(4)%></p>
+                                            <span class="card-title <%=Dcolor%>"><b class="truncate <%=Dcolor%>"><%=ENCDEC.decrypt(rs.getString(2), new KEY().secretKey)%></b><i class="material-icons right activator waves-effect <%=Dcolor%>">more_vert</i></span>    
+                                            <p class="truncate"><%=ENCDEC.decrypt(rs.getString(4), new KEY().secretKey)%></p>
                                         </div>
                                         <div class="<%=Acolor%> <%=Dcolor%> card-reveal">
                                             <i class="material-icons right waves-effect card-title <%=Dcolor%>">close</i>
-                                            <span class="card-title <%=Dcolor%> text-darken-4 truncate"><%=rs.getString(2)%></span>
+                                            <span class="card-title <%=Dcolor%> text-darken-4 truncate"><%=ENCDEC.decrypt(rs.getString(2), new KEY().secretKey)%></span>
                                             <div class="card-content ">
                                                 <a onclick="showprofile('<%=rs.getString(6)%>', '<%=uid%>');$('#peekprofile').modal('open');">
                                                     <div class="<%=Bcolor%>  <%=Dcolor%> chip waves-effect waves-light ">
@@ -458,11 +460,11 @@
 
                                 %>
 
-                                <% java.sql.ResultSet noptrs = DB.search("SELECT * from post");
+                                <% java.sql.ResultSet noptrs = DB.search("SELECT * from post where Post_Privacy='1' AND  idpost = ANY(SELECT `post_idpost` FROM post_rank GROUP BY `post_idpost` ORDER BY COUNT(`likes`) DESC)");
                                     if (!noptrs.isBeforeFirst()) {
                                 %>
 
-                                <div class='center'><img src='img/idea.png' class='responsiveimg ' ></div>
+                                <div class='center'><img src='img/no-feeds.png' class='responsiveimg ' ></div>
                                     <%
                                         }
                                     %>
@@ -494,7 +496,7 @@
                                     if (!rsop.isBeforeFirst()) {
                                 %>
 
-                                <div class='center'><img src='img/business.png' class='responsiveimg' ></div>
+                                <div class='center'><img src='img/friendship.png' class='responsiveimg' ></div>
                                     <%
                                         }
                                     %>
@@ -503,6 +505,7 @@
                         </div>
                     </li>
                 </ul>
+       <div class="grey-text">Icons made by <a href="https://www.freepik.com/" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
 
             </div>
             <div id="peekprofile" class=" modal bottom-sheet card" style="max-height:100%;background-color: <%=Ccolor%>"">
@@ -515,6 +518,7 @@
 
                 </div>
             </div>
+                
         </main>
 
 
@@ -526,22 +530,16 @@
                         <div class="col s2 waves-effect waves-light">   <a href="profile.jsp"><i class=" material-icons <%=Dcolor%> ">account_circle</i></a></div>
                         <div class="col s2 waves-effect waves-light">   <a href="messege.jsp"><i class=" material-icons <%=Dcolor%> ">message</i><div id="chatnumber2" class="badge <%=Dcolor%>" style="position: absolute; top:0px"></div></a></div>
                         <div class="col s2 waves-effect waves-light">   <a href="notifications.jsp"><i class=" material-icons <%=Dcolor%>">notifications_none</i><div id="notificationnumber2" class="badge <%=Dcolor%>" style="position: absolute; top:0px"></div></a></div>
-                        <div class="col s2 waves-effect waves-light <%=Bcolor%> animated bounce">   <a href="search-trending.jsp"><i class=" material-icons <%=Dcolor%>">search</i></a></div>
+                        <div class="col s2 waves-effect waves-light <%=Bcolor%> animated rubberBand">   <a href="search-trending.jsp"><i class=" material-icons <%=Dcolor%>">search</i></a></div>
                         <div class="col s2 waves-effect waves-light">   <a href="dashboard.jsp"><i class=" material-icons <%=Dcolor%>">dashboard</i></a></div>
                     </div>
                 </div>
             </nav>
 
         </footer>
-    </body>
-    <%        } else {
-            response.sendRedirect("login-register.jsp");
-        }
-    %>
-    <!--  Scripts-->
-    <script src="js/jquery-3.2.1.min.js"></script>
-    <script src="js/materialize.js"></script>
-    <script>
+        <script src="js/jquery-3.2.1.min.js"></script>
+        <script src="js/materialize.js"></script>
+        <script>
                                                 var elem = document.querySelector('.collapsible.expandable');
                                                 var instance = M.Collapsible.init(elem, {
                                                     accordion: false
@@ -564,6 +562,9 @@
                                                     $('#peekprofile').modal();
                                                     $('#opncmnts').modal();
                                                     $('.materialboxed').materialbox();
+                                                    $("body").on("contextmenu", function (e) {
+                                                        return false;
+                                                    });
                                                 });
                                                 function search() {
                                                     document.getElementById("tb1").innerHTML = "";
@@ -591,16 +592,6 @@
                                                     };
                                                     xhttp.open("GET", "profilefullview?q=" + str + "&loggedusr=" + loggedurs, true);
                                                     xhttp.send();
-                                                }
-                                                function savesearchhistory() {
-                                                    var xhtp = new XMLHttpRequest();
-                                                    xhtp.onreadystatechange = function () {
-                                                        if (xhtp.readyState == 4 && xhtp.status == 200) {
-                                                            document.getElementById("tb1").innerHTML += xhtp.responseText;
-                                                        }
-                                                    }
-                                                    xhtp.open("GET", "searchhistory?tag=" + x + "&loggedid=" + userid, true);
-                                                    xhtp.send();
                                                 }
                                                 function like(x, uid) {
                                                     setTimeout(function () {
@@ -702,5 +693,27 @@
                                                         chatnumberrefresh();
                                                     }, 1000);
                                                 }
-    </script>
+        </script>
+        <%} else {
+                Cookie[] cookies = request.getCookies();
+                boolean b = false;
+                if (cookies != null) {
+                    for (int i = 0; i < cookies.length; i++) {
+                        Cookie c = cookies[i];
+                        if (c.getName().equals("MEOWID")) {
+                            HttpSession ses = request.getSession();
+                            String decryptedString = ENCDEC.decrypt(c.getValue(), new KEY().secretKey);
+                            ses.setAttribute("user", decryptedString);
+                            b = true;
+                            response.sendRedirect("index.jsp");
+                        }
+                    }
+                } 
+                if (!b) {
+                    response.sendRedirect("login-register.jsp");
+                }
+            }
+        %>
+    </body>
+
 </html>

@@ -5,20 +5,13 @@
  */
 package com.heymeowcat.tailznet;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileItemFactory;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-
 
 /**
  *
@@ -41,37 +34,16 @@ public class firstupdateprofile extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             try {
-                FileItemFactory fi = new DiskFileItemFactory();
-                ServletFileUpload upload = new ServletFileUpload(fi);
-                List<FileItem> li = upload.parseRequest(request);
                 String uid = request.getParameter("uid");
-                String fin = "";
-                String ln = "";
-                String fp = "";
-                for (FileItem fileItem : li) {
-                    if (!fileItem.isFormField()) {
-                        String fn = System.currentTimeMillis() + "_" + fileItem.getName();
-                        String path = request.getServletContext().getRealPath("/");
-                        path = path.replace("\\", "/");
-                        String folder = "img/";
-                        File f = new File(path + folder + fn);
-                        fileItem.write(f);
-                        fp = folder + fn;
-                    } else {
-                        if (fileItem.getFieldName().equals("fn")) {
-                            fin = fileItem.getString();
-                        } else if (fileItem.getFieldName().equals("ln")) {
-                            ln = fileItem.getString();
-                        }else if(fileItem.equals(null)){
-                            fp = "img/Profile_avatar_placeholder_large.png";
-                        }
-                    }
-                }
-                DB.iud("UPDATE `users` SET `firstname` = '" + fin + "', `lastname` = '" + ln + "' WHERE `users`.`idusers` = '" + uid + "';");
+                String fn = request.getParameter("fn");
+                String ln = request.getParameter("ln");
+                String fp = "img/Profile_avatar_placeholder_large.png";
+                DB.iud("UPDATE `users` SET `firstname` = '" + fn + "', `lastname` = '" + ln + "' WHERE `users`.`idusers` = '" + uid + "';");
                 DB.iud("INSERT INTO `user_profile_pic` (`image`, `users_idusers`) VALUES ('" + fp + "', '" + uid + "');");
                 DB.iud("INSERT INTO `app_theme` (`themename`, `users_idusers`) VALUES ('purplelight', '" + uid + "');");
                 DB.iud("INSERT INTO `app_layout` (`users_idusers`, `layout`) VALUES ('" + uid + "', 1);");
                 DB.iud("INSERT INTO `uap` (`Preference`, `users_idusers`) VALUES ('1', '" + uid + "');");
+                DB.iud("INSERT INTO `user_privacy` (`privacy_name`, `users_idusers`) VALUES ('public', '" + uid + "');");
                 response.sendRedirect("login-register.jsp");
             } catch (Exception e) {
                 e.printStackTrace();

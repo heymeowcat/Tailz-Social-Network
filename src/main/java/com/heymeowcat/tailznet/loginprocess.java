@@ -5,7 +5,6 @@ package com.heymeowcat.tailznet;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
@@ -16,7 +15,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import org.apache.commons.codec.digest.DigestUtils;
-import com.heymeowcat.tailznet.DB;
 
 /**
  *
@@ -32,23 +30,24 @@ public class loginprocess extends HttpServlet {
             String usn = request.getParameter("usn");
             String psn = DigestUtils.md5Hex(request.getParameter("psn"));
             String check = request.getParameter("check");
-            java.sql.ResultSet loginrs = DB.search("Select password,users_idusers,iduser_login from `user_login` where username= '" + usn + "' ");
+            java.sql.ResultSet loginrs = DB.search("Select password,users_idusers,iduser_login from sEXUaFqh92.`user_login` where username= '" + usn + "' ");
             if (loginrs.next()) {
                 if (loginrs.getString(1).equals(psn)) {
                     HttpSession ses = request.getSession();
                     ses.setAttribute("user", loginrs.getInt(2));
                     if (check != null) {
-                        Cookie cookie = new Cookie("JSESSIONID", "" + ses.getId());
+                        String encryptedString = ENCDEC.encrypt(loginrs.getString(2), new KEY().secretKey);
+                        Cookie cookie = new Cookie("MEOWID", encryptedString);
                         cookie.setMaxAge(60 * 60 * 24 * 30);
                         response.addCookie(cookie);
-                    } else {
-
                     }
-                    DB.iud("INSERT INTO `login_sessions` ( `ip_address`, `in_time`,`user_login_iduser_login`) VALUES ('"+request.getRemoteHost().toString()+"',CURRENT_TIMESTAMP, '"+loginrs.getString(3)+"');");
-                     response.sendRedirect("index.jsp");
+                    DB.iud("INSERT INTO `login_sessions` ( `ip_address`, `in_time`,`user_login_iduser_login`) VALUES ('" + request.getRemoteHost() + "',CURRENT_TIMESTAMP, '" + loginrs.getString(3) + "');");
+                    response.sendRedirect("index.jsp");
+                } else {
+                    response.sendRedirect("login-register.jsp?error=Come On!");
                 }
-            }else{
-                 response.sendRedirect("login-register.jsp");
+            } else {
+                response.sendRedirect("login-register.jsp");
             }
         } catch (Exception e) {
             e.printStackTrace();

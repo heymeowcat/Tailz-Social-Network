@@ -119,7 +119,7 @@ public class commentlive extends HttpServlet {
 
             java.sql.ResultSet cmntsrs = DB.search("Select * from `post_comment` where post_idpost='" + pid + "' ORDER BY `post_comment`.`datetime` DESC ");
             if (!cmntsrs.isBeforeFirst()) {
-                out.write("<div class='valign center'><img src='img/no-feeds.png' class='responsiveimg' ></div>");
+                out.write("<div class='center' style='top:40%; position:relative'><img src ='img/commentlive.png' class='animated pulse responsiveimg '></div>");
             } else {
                 while (cmntsrs.next()) {
                     String cmpic = "";

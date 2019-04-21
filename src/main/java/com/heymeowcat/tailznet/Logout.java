@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -36,13 +37,25 @@ public class Logout extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             if (request.getSession().getAttribute("user") != null) {
                 int uid = Integer.parseInt(request.getSession().getAttribute("user").toString());
-                java.sql.ResultSet themers = DB.search("SELECT `idlogin_sessions` FROM `login_sessions` where  user_login_iduser_login=(SELECT  iduser_login from user_login where users_idusers= '"+uid+"' order by idlogin_sessions desc LIMIT 1)ORDER BY `login_sessions`.`idlogin_sessions` DESC LIMIT 1");
+                java.sql.ResultSet themers = DB.search("SELECT `idlogin_sessions` FROM `login_sessions` where  user_login_iduser_login=(SELECT  iduser_login from user_login where users_idusers= '" + uid + "' order by idlogin_sessions desc LIMIT 1)ORDER BY `login_sessions`.`idlogin_sessions` DESC LIMIT 1");
                 if (themers.next()) {
                     DB.iud("UPDATE `login_sessions` SET `out_time` =CURRENT_TIMESTAMP WHERE idlogin_sessions='" + themers.getInt(1) + "'");
                 }
             }
             HttpSession ses = request.getSession();
             ses.invalidate();
+
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (int i = 0; i < cookies.length; i++) {
+                    Cookie c = cookies[i];
+                    if (c.getName().equals("MEOWID")) {
+                        c.setMaxAge(0);
+                        response.addCookie(c);
+                    }
+                }
+            }
+
             response.sendRedirect("login-register.jsp");
         } catch (Exception ex) {
             ex.printStackTrace();

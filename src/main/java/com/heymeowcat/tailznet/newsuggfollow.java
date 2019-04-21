@@ -120,7 +120,7 @@ public class newsuggfollow extends HttpServlet {
             }
             java.sql.ResultSet rsop = DB.search("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT `receiver`FROM follow WHERE `sender` = ANY(SELECT `receiver` FROM follow WHERE sender ='" + loggeduid + "') ) AND NOT idusers='" + loggeduid + "' AND NOT idusers =ANY(SELECT `receiver` FROM follow WHERE `sender` = '" + loggeduid+ "')");
             if (!rsop.isBeforeFirst()) {
-                out.write("<div class='center'><img src='img/business.png' class='responsiveimg' ></div>");
+                out.write("<div class='center'><img src='img/friendship.png' class='responsiveimg' ></div>");
             }
         } catch (Exception e) {
             e.printStackTrace();

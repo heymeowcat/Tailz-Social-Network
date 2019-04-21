@@ -106,7 +106,7 @@ public class expiredadsrefresh extends HttpServlet {
 
             java.sql.ResultSet ssexp = DB.search("Select Adid from ads where status='6' and users_idusers='" + uid + "' order by (SELECT `adendtime` FROM adtiming WHERE Ads_Adid = ads.Adid) DESC");
             while (ssexp.next()) {
-                java.sql.ResultSet adstolivers = DB.search("Select Adid,Text,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid='" + ssexp.getString(1) + "' and status='6'");
+                java.sql.ResultSet adstolivers = DB.search("Select Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid='" + ssexp.getString(1) + "' and status='6'");
                 while (adstolivers.next()) {
 
                     out.write("\n");
@@ -122,10 +122,10 @@ public class expiredadsrefresh extends HttpServlet {
                     out.write("\">\n");
                     out.write("                                            <div class=\"card-image resizeimg\" style=\"overflow: hidden\">\n");
                     out.write("                                            <a href=\"");
-                    out.print(adstolivers.getString(4));
+                    out.print(adstolivers.getString(3));
                     out.write("\">\n");
                     out.write("                                                <img src=\"");
-                    out.print(adstolivers.getString(3));
+                    out.print(adstolivers.getString(2));
                     out.write("\" >\n");
                     out.write("                                            </a>\n");
                     out.write("                                            </div>\n");
@@ -138,7 +138,7 @@ public class expiredadsrefresh extends HttpServlet {
                     out.write(" btn-floating center\">\n");
                     out.write("                                                <span><i class=\"material-icons ");
                     out.print(Dcolor);
-                    out.write("\">refresh</i></span>\n");
+                    out.write("\">do_not_disturb_on</i></span>\n");
                     out.write("                                            </div>\n");
                     out.write("                                            ");
 
@@ -170,7 +170,7 @@ public class expiredadsrefresh extends HttpServlet {
             }
             java.sql.ResultSet rs = DB.search("Select * from ads where status='6' and users_idusers=" + uid + "");
             if (!rs.isBeforeFirst()) {
-                out.write("<div class='center'><img src ='img/nolive.png' class='animated pulse responsiveimg '></div>");
+                out.write("<div class='center'><img src ='img/email.png' height='130px' class='animated pulse responsiveimg '></div>");
             }
         } catch (Exception e) {
             e.printStackTrace();

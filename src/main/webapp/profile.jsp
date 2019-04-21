@@ -3,6 +3,9 @@
     Created on : Aug 26, 2018, 3:58:44 PM
     Author     : HEYMEOWCAT
 --%>
+<%@page import="com.heymeowcat.tailznet.KEY"%>
+<%@page import="org.apache.commons.codec.digest.DigestUtils"%>
+<%@page import="com.heymeowcat.tailznet.ENCDEC"%>
 <%@page import="com.heymeowcat.tailznet.DB"%>
 <%@page import="java.text.SimpleDateFormat"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
@@ -13,26 +16,25 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
         <title>Tailz</title>
         <link href="img/logo.png" rel="icon">
+        <script src="js/pace.js"></script>
         <link href="css/animate.css" type="text/css" rel="stylesheet">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <link rel="stylesheet" href="css/normalize.min.css">
-        <link rel='stylesheet' href='css/cropper.min.css'>
         <link href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
         <%
-            System.gc();
             if (request.getSession().getAttribute("user") != null) {
                 int uid = Integer.parseInt(request.getSession().getAttribute("user").toString());
                 String up = "";
-                String fn="";
-                String ln="";
+                String fn = "";
+                String ln = "";
                 String usrpostcount = "";
                 String followercount = "";
                 String followingcount = "";
                 java.sql.ResultSet ufl = DB.search("Select firstname,lastname FROM `users` where idusers='" + uid + "' ");
                 if (ufl.next()) {
-                    fn =ufl.getString(1);
-                    ln =ufl.getString(2);
-                } 
+                    fn = ufl.getString(1);
+                    ln = ufl.getString(2);
+                }
                 java.sql.ResultSet usp = DB.search("Select image FROM `user_profile_pic` where users_idusers='" + uid + "' ");
                 if (!usp.isBeforeFirst()) {
                     up = "img/Profile_avatar_placeholder_large.png";
@@ -122,13 +124,12 @@
         %>
         <style>
             .noselect {
-                -webkit-touch-callout: none; /* iOS Safari */
-                -webkit-user-select: none; /* Safari */
-                -khtml-user-select: none; /* Konqueror HTML */
-                -moz-user-select: none; /* Firefox */
-                -ms-user-select: none; /* Internet Explorer/Edge */
-                user-select: none; /* Non-prefixed version, currently
-                                      supported by Chrome and Opera */
+                -webkit-touch-callout: none; 
+                -webkit-user-select: none; 
+                -khtml-user-select: none; 
+                -moz-user-select: none; 
+                -ms-user-select: none;
+                user-select: none; 
             }
             html {
                 overflow: scroll;
@@ -185,26 +186,15 @@
                 content: '😍';
             }
 
-
-
-            .box-2 {
-                padding: 0.5em;
-                width: calc(100%/2 - 1em);
+            iframe{
+                padding:0px;
+                width: 100%;
+                height: 181px;
             }
-
-            .options label,
-            .options input{
-                width:4em;
-                padding:0.5em 1em;
-            }
-
-
-            .hide {
-                display: none;
-            }
-
-            img {
-                max-width: 100%;
+            ul.dropdown-content.select-dropdown li span {
+                background-color:  <%=Acolor%>;
+                border-color: <%=Acolor%>;
+                color: <%=Fcolor%>;
             }
             input:not([type]), input[type=text]:not(.browser-default), input[type=password]:not(.browser-default), input[type=email]:not(.browser-default), input[type=url]:not(.browser-default), input[type=time]:not(.browser-default), input[type=date]:not(.browser-default), input[type=datetime]:not(.browser-default), input[type=datetime-local]:not(.browser-default), input[type=tel]:not(.browser-default), input[type=number]:not(.browser-default), input[type=search]:not(.browser-default), textarea.materialize-textarea {
                 color: <%=Fcolor%>;
@@ -212,25 +202,16 @@
             .select-wrapper .caret {
                 fill: <%=Fcolor%>;
             }
-
         </style>
     </head>
     <body onload="hideloader(<%=uid%>)" class="noselect">
-        <div id="fb-root"></div>
-        <script async defer src="https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v3.2&appId=2789629401262230&autoLogAppEvents=1"></script>
-        <div id="loading">
-            <div style="height: 100vh; width: 100%; background-color: <%= Ccolor%>; text-align: center;" class="valign-wrapper">
-                <div class="progress <%= Acolor%>">
-                    <div class="indeterminate <%= Bcolor%>" ></div>
-                </div>
-            </div>
-        </div>
+
         <header class="StickyHeader" style="position:relative;  z-index: 10;">
             <nav class="<%=Acolor%> ">
                 <div class=" nav-wrapper center container">
                     <div class="row hide-on-small-and-down">
                         <div class="col s2  waves-effect waves-light ">   <a href="index.jsp"><i class="  material-icons <%=Dcolor%>">library_books</i></a></div>
-                        <div class="col s2 waves-effect waves-light <%=Bcolor%> animated bounce">   <a href="profile.jsp"><i class=" material-icons  <%=Dcolor%>">account_circle</i></a></div>
+                        <div class="col s2 waves-effect waves-light <%=Bcolor%> animated rubberBand">   <a href="profile.jsp"><i class=" material-icons  <%=Dcolor%>">account_circle</i></a></div>
                         <div class="col s2 waves-effect waves-light">   <a href="messege.jsp"><i class=" material-icons <%=Dcolor%> ">message</i><div id="chatnumber" class="badge <%=Dcolor%>" style="position: absolute; top:0px"></div></a></div>
                         <div class="col s2 waves-effect waves-light">   <a href="notifications.jsp"><i class=" material-icons <%=Dcolor%>">notifications_none</i><div id="notificationnumber" class="badge <%=Dcolor%>" style="position: absolute; top:0px"></div></a></div>
                         <div class="col s2 waves-effect waves-light">   <a href="search-trending.jsp"><i class=" material-icons <%=Dcolor%>">search</i></a></div>
@@ -238,23 +219,22 @@
                     </div>
                     <div class="row hide-on-med-and-up">
                         <div class="col s6">
-                            <a href="#!" class="brand-logo"><i class=" material-icons center <%=Dcolor%>">whatshot</i><B class="<%=Dcolor%>">tailz</B></a>
+                            <a class="brand-logo"><B class="<%=Dcolor%>">TAILZ</B></a>
                         </div>
                     </div>
                 </div>
             </nav>
         </header>
 
-
         <main class="StickyContent">
-            <div class="animated zoomIn  container">
+            <div class="animated fadeIn container">
                 <ul class="<%=Acolor%> collapsible " style="border-color: <%=Ccolor%>">
                     <li class="active" >
                         <div class="<%=Acolor%> collapsible-header" style="border-color: <%=Ccolor%>"><b class="<%=Dcolor%>">Profile</b></div>
                         <div class="<%=Ecolor%> collapsible-body " style="border-color: <%=Ccolor%>">
                             <div class="center">
-                                <img id="propiche" style="height: 150px; width: 150px" src="<%=up%>" alt="" class="circle responsive-img hide-on-small-and-down animated fadeIn">
-                                <img style="height: 100px; width: 100px" src="<%=up%>" alt="" class="circle responsive-img hide-on-med-and-up animated fadeIn">
+                                <img onclick="expandupdateprofile();" id="propiche" style="height: 150px; width: 150px;   cursor: pointer;" src="<%=up%>" alt="" class="circle responsive-img hide-on-small-and-down animated fadeIn">
+                                <img onclick="expandupdateprofile();" style="height: 100px; width: 100px;   cursor: pointer;" src="<%=up%>" alt="" class="circle responsive-img hide-on-med-and-up animated fadeIn">
                                 <br>
                                 <h4 class="hide-on-small-and-down <%=Dcolor%>"><%=fn + " " + ln%></h4>    
                                 <h5 class="hide-on-med-and-up <%=Dcolor%>"><%=fn + " " + ln%></h5>    
@@ -271,7 +251,7 @@
                                         e.printStackTrace();
                                     }
                                 %>
-                                <div class="col s4 waves-effect <%=Dcolor%>"> <span class="transparent ">Posts</span><br><b><%=usrpostcount%></b></div>
+                                <div  onclick="expandposts();" class="col s4 waves-effect <%=Dcolor%>"> <span class="transparent ">Posts</span><br><b><%=usrpostcount%></b></div>
                                     <%
                                         try {
                                             java.sql.ResultSet postcount = DB.search("SELECT DISTINCT COUNT(`sender`) FROM `follow` WHERE `receiver`='" + uid + "' ");
@@ -282,7 +262,7 @@
                                             e.printStackTrace();
                                         }
                                     %>
-                                <div class="col s4 waves-effect <%=Dcolor%>"> <span class="transparent ">Followers</span><br><b><%=followercount%></b></div>
+                                <div onclick="expandfollowers();" class="col s4 waves-effect <%=Dcolor%>"> <span class="transparent ">Followers</span><br><b><%=followercount%></b></div>
                                     <%
                                         try {
                                             java.sql.ResultSet postcount = DB.search("SELECT DISTINCT COUNT(`receiver`) FROM `follow` WHERE `sender`='" + uid + "' ");
@@ -293,10 +273,11 @@
                                             e.printStackTrace();
                                         }
                                     %>
-                                <div class="col s4 waves-effect <%=Dcolor%>"> <span class="transparent ">Following</span><br><b><%=followingcount%></b></div>
+                                <div onclick="expandfollowing();" class="col s4 waves-effect <%=Dcolor%>"> <span class="transparent ">Following</span><br><b><%=followingcount%></b></div>
                             </div>
                         </div>
                     </li>
+
 
                     <li>
                         <div class="<%=Acolor%> <%=Dcolor%> collapsible-header" style="border-color: <%=Ccolor%>"><b>Posts</b></div>
@@ -310,14 +291,14 @@
                                 <div class="col s12 m6 l4 ">
                                     <div class=" <%=Acolor%> <%=Dcolor%> card small hoverable">
                                         <div class="card-image">
-                                            <img class="responsive-img" src="<%=rs.getString(3)%>">
+                                            <img class="responsive-img" src="<%=ENCDEC.decrypt(rs.getString(3), new KEY().secretKey)%>">
                                         </div>
                                         <div class="card-content">
-                                            <span class="card-title <%=Dcolor%>"><b class="truncate<%=Dcolor%>"><%=rs.getString(2)%></b><i class="material-icons right activator waves-effect  <%=Dcolor%>">more_vert</i></span>    
-                                            <p class="truncate"><%=rs.getString(4)%></p>
+                                            <span class="card-title <%=Dcolor%>"><b class="truncate<%=Dcolor%>"><%=ENCDEC.decrypt(rs.getString(2), new KEY().secretKey)%></b><i class="material-icons right activator waves-effect  <%=Dcolor%>">more_vert</i></span>    
+                                            <p class="truncate"><%=ENCDEC.decrypt(rs.getString(4), new KEY().secretKey)%></p>
                                         </div>
                                         <div class=" <%=Dcolor%> <%=Acolor%>  card-reveal">
-                                            <span class="card-title <%=Dcolor%> text-darken-4 truncate "><%=rs.getString(2)%><i class="material-icons right waves-effect">close</i></span>
+                                            <span class="card-title <%=Dcolor%> text-darken-4 truncate "><%=ENCDEC.decrypt(rs.getString(2), new KEY().secretKey)%><i class="material-icons right waves-effect">close</i></span>
                                             <div class="card-content ">
                                                 <div class="<%=Bcolor%>  <%=Dcolor%> chip waves-effect waves-light ">
                                                     <%
@@ -393,18 +374,15 @@
                                 <div class="col s12 m6 l4 ">
                                     <div class=" <%=Acolor%> <%=Dcolor%> card small hoverable ">
                                         <div class="card-image">
-                                            <video class="responsive-video" controls>
-                                                <source src="<%=rs.getString(3)%>" type="video/mp4" >
-                                            </video>
-
+                                            <%=ENCDEC.decrypt(rs.getString(3), new KEY().secretKey)%>
                                         </div>
                                         <div class="card-content">
-                                            <span class="card-title <%=Dcolor%>"><b class="truncate <%=Dcolor%>"><%=rs.getString(2)%></b><i class="material-icons right activator waves-effect <%=Dcolor%>">more_vert</i></span>    
-                                            <p class="truncate"><%=rs.getString(4)%></p>
+                                            <span class="card-title <%=Dcolor%>"><b class="truncate <%=Dcolor%>"><%=ENCDEC.decrypt(rs.getString(2), new KEY().secretKey)%></b><i class="material-icons right activator waves-effect <%=Dcolor%>">more_vert</i></span>    
+                                            <p class="truncate"><%=ENCDEC.decrypt(rs.getString(4), new KEY().secretKey)%></p>
                                         </div>
                                         <div class="<%=Acolor%> <%=Dcolor%> card-reveal">
                                             <i class="material-icons right waves-effect card-title <%=Dcolor%>">close</i>
-                                            <span class="card-title <%=Dcolor%> text-darken-4 truncate"><%=rs.getString(2)%></span>
+                                            <span class="card-title <%=Dcolor%> text-darken-4 truncate"><%=ENCDEC.decrypt(rs.getString(2), new KEY().secretKey)%></span>
                                             <div class="card-content ">
                                                 <div class="<%=Bcolor%>  <%=Dcolor%> chip waves-effect waves-light ">
                                                     <%
@@ -498,6 +476,231 @@
                         </div>
                     </li>
 
+                    <li >
+                        <div class="<%=Acolor%> collapsible-header" style="border-color: <%=Ccolor%>"><b class="<%=Dcolor%>">Bookmarks</b></div>
+                        <div class="<%=Ecolor%> collapsible-body " style="border-color: <%=Ccolor%>">
+                            <div class="row">
+                                <%
+                                    try {
+                                        java.sql.ResultSet rs = DB.search("Select * FROM `post` where idpost = ANY (Select post_idpost FROM `user_bookmarks` where users_idusers ='" + uid + "' ORDER BY `user_bookmarks`.`notice_time` DESC)");
+                                        while (rs.next()) {
+                                            if (rs.getString(7).equals("1")) {%>
+                                <div class="col s12 m6 l4 ">
+                                    <div class=" <%=Acolor%> <%=Dcolor%> card small hoverable">
+                                        <div class="card-image">
+                                            <img class="responsive-img" src="<%=ENCDEC.decrypt(rs.getString(3), new KEY().secretKey)%>">
+                                        </div>
+                                        <div class="card-content">
+                                            <span class="card-title <%=Dcolor%>"><b class="truncate<%=Dcolor%>"><%=ENCDEC.decrypt(rs.getString(2), new KEY().secretKey)%></b><i class="material-icons right activator waves-effect  <%=Dcolor%>">more_vert</i></span>    
+                                            <p class="truncate"><%=ENCDEC.decrypt(rs.getString(4), new KEY().secretKey)%></p>
+                                        </div>
+                                        <div class=" <%=Dcolor%> <%=Acolor%>  card-reveal">
+                                            <span class="card-title <%=Dcolor%> text-darken-4 truncate "><%=ENCDEC.decrypt(rs.getString(2), new KEY().secretKey)%><i class="material-icons right waves-effect">close</i></span>
+                                            <div class="card-content ">
+                                                <div class="<%=Bcolor%>  <%=Dcolor%> chip waves-effect waves-light ">
+                                                    <%
+                                                        String imgup = "";
+                                                        String fnamepost = "";
+                                                        String lnamepost = "";
+                                                        String postdate = "";
+                                                        String posttime = "";
+                                                        java.sql.ResultSet imgpostuser = DB.search("Select image From user_profile_pic where users_idusers='" + rs.getInt(6) + "' ");
+                                                        if (imgpostuser.next()) {
+                                                            imgup = imgpostuser.getString(1);
+                                                        }
+                                                        java.sql.ResultSet firstimguser = DB.search("Select firstname From users where idusers='" + rs.getInt(6) + "' ");
+                                                        if (firstimguser.next()) {
+                                                            fnamepost = firstimguser.getString(1);
+                                                        }
+                                                        java.sql.ResultSet lastimguser = DB.search("Select lastname From users where idusers='" + rs.getInt(6) + "' ");
+                                                        if (lastimguser.next()) {
+                                                            lnamepost = lastimguser.getString(1);
+                                                        }
+                                                        java.sql.ResultSet imgdate = DB.search("Select cast(post_time as date) From post where idpost='" + rs.getInt(1) + "' ");
+                                                        if (imgdate.next()) {
+                                                            postdate = imgdate.getString(1);
+                                                        }
+                                                        java.sql.ResultSet imgtime = DB.search("Select cast(post_time as time) From post where idpost='" + rs.getInt(1) + "' ");
+                                                        if (imgtime.next()) {
+                                                            posttime = imgtime.getString(1);
+                                                        }
+
+                                                    %>
+                                                    <img src="<%=imgup%>">
+                                                    <%= fnamepost + " " + lnamepost%>
+                                                </div>
+                                                <div class="<%=Bcolor%>  <%=Dcolor%> chip waves-effect waves-light ">
+                                                    Date: <%=postdate%>
+                                                </div>
+                                                <div class="<%=Bcolor%>  <%=Dcolor%> chip waves-effect waves-light ">
+                                                    Time:  <%=posttime%>
+                                                </div>
+                                            </div>
+                                            <div class="card-action">
+                                                <%
+                                                    try {
+                                                        java.sql.ResultSet likechech = DB.search("Select likes from post_rank where likedby='" + uid + "' AND `post_rank`.`post_idpost` ='" + rs.getString(1) + "' ");
+                                                        if (!likechech.isBeforeFirst()) {
+                                                %>
+                                                <label class="toggle seedling-flower" >
+                                                    <input type="checkbox" class="toggle-checkbox" onchange="like('<%=rs.getString(1)%>', '<%=uid%>')">
+                                                    <div class="toggle-btn"></div>
+                                                </label>
+
+
+                                                <%
+                                                } else if (likechech.next()) {%>
+                                                <label class="toggle seedling-flower" >
+                                                    <input type="checkbox" checked="" class="toggle-checkbox" onchange="like('<%=rs.getString(1)%>', '<%=uid%>')">
+                                                    <div class="toggle-btn"></div>
+                                                </label>
+
+                                                <%
+                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                %>
+
+                                                <i class=" material-icons right waves-effect waves-circle waves-light" onclick="$('#opncmnts').modal('open'); showpostcmnts('<%=uid%>', '<%=rs.getString(1)%>')">open_in_new</i>
+                                                <%
+                                                    try {
+                                                        java.sql.ResultSet bookmarkrs = DB.search("Select post_idpost from user_bookmarks where users_idusers='" + uid + "'  AND `user_bookmarks`.`post_idpost` ='" + rs.getString(1) + "'  ");
+                                                        if (!bookmarkrs.isBeforeFirst()) {
+                                                %>
+                                                <i id="bookmark<%=rs.getString(1)%>" class=" material-icons right waves-effect waves-circle waves-light" onclick="bookmarkthis('<%=uid%>', '<%=rs.getString(1)%>')">bookmark_border</i>
+                                                <%
+                                                } else if (bookmarkrs.next()) {%>
+                                                <i id="bookmark<%=rs.getString(1)%>" class=" material-icons right waves-effect waves-circle waves-light" onclick="bookmarkthis('<%=uid%>', '<%=rs.getString(1)%>')">bookmark</i>
+                                                <%
+                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <%} else if (rs.getString(7).equals("2")) {%>
+                                <div class="col s12 m6 l4 ">
+                                    <div class=" <%=Acolor%> <%=Dcolor%> card small hoverable ">
+                                        <div class="card-image">
+                                            <%=ENCDEC.decrypt(rs.getString(3), new KEY().secretKey)%>
+                                        </div>
+                                        <div class="card-content">
+                                            <span class="card-title <%=Dcolor%>"><b class="truncate <%=Dcolor%>"><%=ENCDEC.decrypt(rs.getString(2), new KEY().secretKey)%></b><i class="material-icons right activator waves-effect <%=Dcolor%>">more_vert</i></span>    
+                                            <p class="truncate"><%=ENCDEC.decrypt(rs.getString(4), new KEY().secretKey)%></p>
+                                        </div>
+                                        <div class="<%=Acolor%> <%=Dcolor%> card-reveal">
+                                            <i class="material-icons right waves-effect card-title <%=Dcolor%>">close</i>
+                                            <span class="card-title <%=Dcolor%> text-darken-4 truncate"><%=ENCDEC.decrypt(rs.getString(2), new KEY().secretKey)%></span>
+                                            <div class="card-content ">
+                                                <div class="<%=Bcolor%>  <%=Dcolor%> chip waves-effect waves-light ">
+                                                    <%
+                                                        String imgup = "";
+                                                        String fnamepost = "";
+                                                        String lnamepost = "";
+                                                        String postdate = "";
+                                                        String posttime = "";
+                                                        java.sql.ResultSet imgpostuser = DB.search("Select image From user_profile_pic where users_idusers='" + rs.getInt(6) + "' ");
+                                                        if (imgpostuser.next()) {
+                                                            imgup = imgpostuser.getString(1);
+                                                        }
+                                                        java.sql.ResultSet firstimguser = DB.search("Select firstname From users where idusers='" + rs.getInt(6) + "' ");
+                                                        if (firstimguser.next()) {
+                                                            fnamepost = firstimguser.getString(1);
+                                                        }
+                                                        java.sql.ResultSet lastimguser = DB.search("Select lastname From users where idusers='" + rs.getInt(6) + "' ");
+                                                        if (lastimguser.next()) {
+                                                            lnamepost = lastimguser.getString(1);
+                                                        }
+                                                        java.sql.ResultSet imgdate = DB.search("Select cast(post_time as date) From post where idpost='" + rs.getInt(1) + "' ");
+                                                        if (imgdate.next()) {
+                                                            postdate = imgdate.getString(1);
+                                                        }
+                                                        java.sql.ResultSet imgtime = DB.search("Select cast(post_time as time) From post where idpost='" + rs.getInt(1) + "' ");
+                                                        if (imgtime.next()) {
+                                                            posttime = imgtime.getString(1);
+                                                        }
+
+                                                    %>
+                                                    <img src="<%=imgup%>">
+                                                    <%= fnamepost + " " + lnamepost%>
+                                                </div>
+                                                <div class="<%=Bcolor%>  <%=Dcolor%> chip waves-effect waves-light ">
+                                                    Date: <%=postdate%>
+                                                </div>
+                                                <div class="<%=Bcolor%>  <%=Dcolor%> chip waves-effect waves-light ">
+                                                    Time:  <%=posttime%>
+                                                </div>
+                                            </div>
+                                            <div class="card-action">
+                                                <%
+                                                    try {
+                                                        java.sql.ResultSet likechech = DB.search("Select likes from post_rank where likedby='" + uid + "' AND `post_rank`.`post_idpost` ='" + rs.getString(1) + "' ");
+                                                        if (!likechech.isBeforeFirst()) {
+                                                %>
+                                                <label class="toggle seedling-flower" >
+                                                    <input type="checkbox" class="toggle-checkbox" onchange="like('<%=rs.getString(1)%>', '<%=uid%>')">
+                                                    <div class="toggle-btn"></div>
+                                                </label>
+
+                                                <%
+                                                } else if (likechech.next()) {%>
+                                                <label class="toggle seedling-flower" >
+                                                    <input type="checkbox" checked="" class="toggle-checkbox" onchange="like('<%=rs.getString(1)%>', '<%=uid%>')">
+                                                    <div class="toggle-btn"></div>
+                                                </label>
+
+                                                <%
+                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                %>
+
+                                                <i class=" material-icons right waves-effect waves-circle waves-light" onclick="$('#opncmnts').modal('open'); showpostcmnts('<%=uid%>', '<%=rs.getString(1)%>')">open_in_new</i>
+                                                <%
+                                                    try {
+                                                        java.sql.ResultSet bookmarkrs = DB.search("Select post_idpost from user_bookmarks where users_idusers='" + uid + "'  AND `user_bookmarks`.`post_idpost` ='" + rs.getString(1) + "'  ");
+                                                        if (!bookmarkrs.isBeforeFirst()) {
+                                                %>
+                                                <i id="bookmark<%=rs.getString(1)%>" class=" material-icons right waves-effect waves-circle waves-light" onclick="bookmarkthis('<%=uid%>', '<%=rs.getString(1)%>')">bookmark_border</i>
+                                                <%
+                                                } else if (bookmarkrs.next()) {%>
+                                                <i id="bookmark<%=rs.getString(1)%>" class=" material-icons right waves-effect waves-circle waves-light" onclick="bookmarkthis('<%=uid%>', '<%=rs.getString(1)%>')">bookmark</i>
+                                                <%
+                                                        }
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <%}
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+
+                                %>
+                                <% java.sql.ResultSet nobookrs = DB.search("Select * FROM `user_bookmarks` where users_idusers = '" + uid + "' ORDER BY `notice_time` DESC");
+                                    if (!nobookrs.isBeforeFirst()) {
+                                %>
+                                <div class='center'><img src='img/bookmark.png' class='responsiveimg' ></div>
+                                    <%
+                                        }
+                                    %>
+                            </div>
+                        </div>
+                    </li>
+
+
                     <li>
                         <div class="collapsible-header <%=Acolor%> <%=Dcolor%>" style="border-color: <%=Ccolor%>"><b>Followers</b></div>
                         <div class="collapsible-body <%=Ecolor%> <%=Dcolor%>" style="border-color: <%=Ccolor%>">
@@ -528,7 +731,7 @@
                                 if (!meowrs.isBeforeFirst()) {
                             %>
 
-                            <div class='center'><img src='img/business.png' class='responsiveimg ' ></div>
+                            <div class='center'><img src='img/friendship.png' class='responsiveimg ' ></div>
                                 <%
                                     }
                                 %>
@@ -560,7 +763,7 @@
                                 if (!coolrs.isBeforeFirst()) {
                             %>
 
-                            <div class='center'><img src='img/business.png' class='responsiveimg ' ></div>
+                            <div class='center'><img src='img/friendship.png' class='responsiveimg ' ></div>
                                 <%
                                     }
                                 %>
@@ -570,66 +773,35 @@
                     <li id="updateprofilesegment">
                         <div class="collapsible-header <%=Acolor%> <%=Dcolor%>" style="border-color: <%=Ccolor%>"><b>Update Profile</b></div>
                         <div class="collapsible-body <%=Ecolor%> <%=Dcolor%>" style="border-color: <%=Ccolor%>">
-                            <form method="post" enctype="multipart/form-data" action="update?uid=<%=uid%>">
+                            <div class="<%=Acolor%> <%=Dcolor%> card-panel">
                                 Change Profile Name
                                 <div class="row">
-                                    <div class="input-field col s12 m6">
-                                        <input checked placeholder="First Name" id="first_name" name="fn" type="text" class="validate <%=Dcolor%>" value="<%=fn%>" minlength="3">
-                                    </div>
-                                    <div class="input-field col s12 m6">
-                                        <input placeholder="Last Name" id="last_name" name="ln" type="text" class="validate <%=Dcolor%>" value="<%=ln%>" minlength="3">
-                                    </div>
+                                    <form method="post"  action="update">
+                                        <input name="uid" value="<%=uid%>" type="hidden">
+                                        <div class="input-field col s12 m6">
+                                            <input checked placeholder="First Name" id="first_name" name="fn" type="text" class="validate <%=Dcolor%>" value="<%=fn%>" minlength="3" required="">
+                                        </div>
+                                        <div class="input-field col s12 m6">
+                                            <input placeholder="Last Name" id="last_name" name="ln" type="text" class="validate <%=Dcolor%>" value="<%=ln%>" minlength="3" required="">
+                                        </div>
+                                        <input type="submit" value="Update" class="<%=Bcolor%> <%=Dcolor%> btn center">
+                                    </form>
                                 </div>
+                            </div>
+                            <div class="<%=Acolor%> <%=Dcolor%> card-panel">
                                 Change Profile Picture
                                 <div class="file-field input-field">
                                     <div class="<%=Bcolor%> <%=Dcolor%> btn">
                                         <span>Choose Image</span>
-                                        <input type="file"  name="file-input" id="file-input" >
+                                        <input type="file"  name="file-input" id="imgfile" >
                                     </div>
                                     <div class="file-path-wrapper">
                                         <input class="file-path validate <%=Dcolor%>" type="text">
                                     </div>
                                 </div>
-                                <!-- leftbox -->
-                                <div class="row">
-                                    <div class=" col s12">
-                                        <div class="result"></div>
-                                    </div>
-                                </div>
-                                <!--rightbox-->
-                                <div class="box-2 img-result hide">
-                                    <!-- result of crop -->
-                                    <img class="cropped" src="" alt="" id="crpimg">
-                                </div>
-                                <!-- input file -->
-                                <div class="box ">
-                                    <div class="row hiddendiv">
-                                        <div class="col s12 m6">
-                                            <div class="options hide" >
-                                                <input type="number" class="img-w" value="300" min="100" max="1200" />
-                                            </div>
-                                        </div>
-                                    </div>
+                                <button class="<%=Bcolor%> <%=Dcolor%> btn" onclick="profilepicupdate();refreshhhh();">Update</button><br><br>
+                                <a class="<%=Bcolor%> <%=Dcolor%> btn center" href="resetprofilepic?uid=<%=uid%>">Remove</a><br><br>
 
-                                    <!-- save btn -->
-                                    <button class="<%=Bcolor%> <%=Dcolor%> btn save hide">Crop</button>
-                                    <!-- download btn -->
-                                    <a href="" class="<%=Bcolor%> <%=Dcolor%> btn download hide">Download</a>
-                                </div>
-                                <br>
-                                <a class="<%=Bcolor%> <%=Dcolor%> btn center" href="resetprofilepic?uid=<%=uid%>">Remove Profile Picture</a><br><br>
-                                <input type="submit" value="Update" class="<%=Bcolor%> <%=Dcolor%> btn center">
-                            </form>
-
-                        </div>
-                    </li>
-                    <li>
-                        <div class="collapsible-header <%=Acolor%> <%=Dcolor%>" style="border-color: <%=Ccolor%>"><b>Update Profile with Facebook</b></div>
-                        <div class="collapsible-body <%=Ecolor%> <%=Dcolor%>" style="border-color: <%=Ccolor%>">
-                            <div class="fb-login-button" data-size="large" data-button-type="continue_with" data-auto-logout-link="true" data-use-continue-as="true"></div>
-                            <br><br>
-                            <div id="fbupdateseg">
-                                <button class="<%=Bcolor%> <%=Dcolor%> btn" onclick="getInfo()">Update Profile</button>
                             </div>
                         </div>
                     </li>
@@ -638,25 +810,27 @@
                         <div class="collapsible-header <%=Acolor%> <%=Dcolor%>" style="border-color: <%=Ccolor%>"><b>Change Password</b></div>
                         <div class="collapsible-body <%=Ecolor%> <%=Dcolor%>" style="border-color: <%=Ccolor%>">
                             <form action="updatepassword" method="post">
-                                <div class="row">
+                                <div class="row <%=Acolor%> <%=Dcolor%> card-panel">
+                                    <input name="uid" type="hidden" value="<%=uid%>">
                                     <div class="input-field col s12 m6">
                                         <input placeholder="New Password" name="newpsw" type="password" class="validate <%=Dcolor%>" minlength="8">
                                     </div>
                                     <div class="input-field col s12 m6">
                                         <input placeholder="Confirm New Name" name="conpsw" type="password" class="validate <%=Dcolor%>" minlength="8">
                                     </div>
+                                    <input type="submit" value="Change Password" class="<%=Bcolor%> btn <%=Dcolor%>">
                                 </div>
-                                <input type="submit" value="Change Password" class="<%=Bcolor%> btn <%=Dcolor%>">
+
                             </form>
                         </div>
                     </li>
                     <li>
                         <div class="collapsible-header <%=Acolor%> <%=Dcolor%>" style="border-color: <%=Ccolor%>"><b>Settings</b></div>
                         <div class="collapsible-body <%=Ecolor%> <%=Dcolor%>" style="border-color: <%=Ccolor%>">
-                            <div class="input-field col s12">
+                            <div class="input-field col s12  <%=Acolor%> <%=Dcolor%> card-panel">
                                 <B>Change Color Theme</b>
                                     <%
-                                        java.sql.ResultSet lightrs = DB.search("SELECT `themename`FROM app_theme WHERE users_idusers='5' AND themename LIKE '%light'");
+                                        java.sql.ResultSet lightrs = DB.search("SELECT `themename` FROM app_theme WHERE users_idusers='" + uid + "' AND themename LIKE '%light'");
                                         if (lightrs.next()) {
                                     %>
                                 <select  id="themeid"  class="<%=Dcolor%>" >
@@ -675,7 +849,7 @@
                                 %>
                                 Change Accent Colors
                                 <%
-                                    java.sql.ResultSet acccolorrs = DB.search("SELECT `themename` FROM app_theme WHERE users_idusers='5'");
+                                    java.sql.ResultSet acccolorrs = DB.search("SELECT `themename` FROM app_theme WHERE users_idusers='" + uid + "'");
                                     if (acccolorrs.next()) {
                                         if (acccolorrs.getString(1).equals("pinklight") || acccolorrs.getString(1).equals("pinkdark")) {
                                 %>
@@ -732,18 +906,124 @@
                                 %>
                                 <button onclick="themechange(themeaccent.value + themeid.value, '<%=uid%>');refreshhhh()" class="<%=Bcolor%> btn <%=Dcolor%>">CHANGE THEME</button>
                             </div>
+                            <div class="input-field col s12 <%=Acolor%> <%=Dcolor%> card-panel">
+                                <B>Change Privacy</b>
+                                    <%
+                                        java.sql.ResultSet privacyrs = DB.search("SELECT `privacy_name` FROM user_privacy WHERE users_idusers='" + uid + "' ");
+                                        if (privacyrs.next()) {
+                                            if (privacyrs.getString(1).equals("public")) {
+                                    %>
+                                <select  id="privacyid"  class="<%=Dcolor%>" >
+                                    <option value="public" selected class="<%=Dcolor%>">Public</option>
+                                    <option value="private" class="<%=Dcolor%>">Private</option>
+                                </select>
+                                <%
+                                } else {
+                                %>
+                                <select  id="privacyid"  class="<%=Dcolor%>" >
+                                    <option value="public"  class="<%=Dcolor%>">Public</option>
+                                    <option value="private" selected class="<%=Dcolor%>">Private</option>
+                                </select>
+                                <%
+                                        }
+                                    }
+                                %>
+
+                                <button onclick="privacychange(privacyid.value, '<%=uid%>');refreshhhh()" class="<%=Bcolor%> btn <%=Dcolor%>">CHANGE PRIVACY</button>
+                            </div>
+                            <div class="input-field col s12 <%=Acolor%> <%=Dcolor%> card-panel">
+                                <B>Change Dashboard Page</b>
+                                    <%
+                                        java.sql.ResultSet customerrs = DB.search("SELECT `user_type_iduser_type` FROM users WHERE idusers='" + uid + "' ");
+                                        if (customerrs.next()) {
+                                            if (customerrs.getInt(1) == 2) {
+                                    %>
+                                <select  id="dashid"  class="<%=Dcolor%>" >
+                                    <option value="2" selected class="<%=Dcolor%>">Get Started</option>
+                                    <option value="3" class="<%=Dcolor%>">Dashboard</option>
+                                </select>
+                                <%
+                                } else if (customerrs.getInt(1) == 3) {
+                                %>
+                                <select  id="dashid"  class="<%=Dcolor%>" >
+                                    <option value="2"  class="<%=Dcolor%>">Get Started</option>
+                                    <option value="3" selected class="<%=Dcolor%>">Dashboard</option>
+                                </select>
+                                <%
+                                        }
+                                    }
+                                %>
+
+                                <button onclick="dashboardchange(dashid.value, '<%=uid%>');refreshhhh()" class="<%=Bcolor%> btn <%=Dcolor%>">CHANGE  PAGE</button>
+
+                            </div>
+                            <div class="input-field col s12 <%=Acolor%> <%=Dcolor%> card-panel">                                
+                                <B>User Ad Preference</b>
+                                    <%
+                                        java.sql.ResultSet adprers = DB.search("SELECT `Preference` FROM uap WHERE users_idusers='" + uid + "' ");
+                                        if (adprers.next()) {
+                                            if (adprers.getInt(1) == 1) {
+                                    %>
+                                <select  id="uapid"  class="<%=Dcolor%>" >
+                                    <option value="1" selected class="<%=Dcolor%>">Turned On</option>
+                                    <option value="0" class="<%=Dcolor%>">Turned Off</option>
+                                </select>
+                                <select id="adcate">
+                                    <%java.sql.ResultSet adcaters = DB.search("Select idAd_category,Ad_category_name from ad_categories ");
+                                        while (adcaters.next()) {%>
+                                    <%
+                                        String classtext = "";
+                                        java.sql.ResultSet adcatersprof = DB.search("SELECT `adcategory` FROM user_followed_ad_catergories WHERE users_idusers='" + uid + "' ");
+                                        if (adcatersprof.next()) {
+                                            if (adcatersprof.getInt(1) == adcaters.getInt(1)) {
+                                                classtext = "selected";
+                                            }
+                                        }%>
+                                    <option <%=classtext%> value="<%=adcaters.getString(1)%>"><%=adcaters.getString(2)%></option>
+                                    <%}%>
+                                </select>
+                                <%
+                                } else {
+                                %>
+                                <select  id="uapid"  class="<%=Dcolor%>" >
+                                    <option value="1"  class="<%=Dcolor%>">Turned On</option>
+                                    <option value="0" selected class="<%=Dcolor%>">Turned Off</option>
+                                </select>
+                                <select id="adcate">
+                                    <%java.sql.ResultSet adcaters = DB.search("Select idAd_category,Ad_category_name from ad_categories ");
+                                        while (adcaters.next()) {%>
+                                    <%
+                                        String classtext = "";
+                                        java.sql.ResultSet adcatersprof = DB.search("SELECT `adcategory` FROM user_followed_ad_catergories WHERE users_idusers='" + uid + "' ");
+                                        if (adcatersprof.next()) {
+                                            if (adcatersprof.getInt(1) == adcaters.getInt(1)) {
+                                                classtext = "selected";
+                                            }
+                                        }%>
+                                    <option <%=classtext%> value="<%=adcaters.getString(1)%>"><%=adcaters.getString(2)%></option>
+                                    <%}%>
+                                </select>
+                                <%
+                                        }
+                                    }
+                                %>
+                                <button onclick="uapchange(uapid.value, '<%=uid%>', adcate.value);refreshhhh()" class="<%=Bcolor%> btn <%=Dcolor%>">CHANGE UAP</button>
+
+                            </div>
                         </div>
                     </li>
                     <li>
                         <div class="collapsible-header <%=Acolor%> <%=Dcolor%>" style="border-color: <%=Ccolor%>"><b>Logout</b></div>
                         <div class="collapsible-body <%=Ecolor%> <%=Dcolor%>" style="border-color: <%=Ccolor%>">
                             <form action="Logout">
-                                <input type="submit" value="Logout" class="<%=Bcolor%> <%=Dcolor%> btn">
+                                <input onclick="signOut();" type="submit" value="Logout" class="<%=Bcolor%> <%=Dcolor%> btn">
                             </form>
                         </div>
 
                     </li>
                 </ul>
+                <div class="grey-text">Icons made by <a href="https://www.freepik.com/" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
+
             </div>
             <div id="peekprofile" class=" modal bottom-sheet card" style="max-height:100%;background-color: <%=Ccolor%>"">
                 <div id="profilepeek" class="container <%=Bcolor%> <%=Dcolor%>">
@@ -760,6 +1040,7 @@
 
                 </div>
             </div>
+
         </main>
 
         <footer class="StickyFooter hide-on-med-and-up ">
@@ -767,7 +1048,7 @@
                 <div class=" nav-wrapper center z-depth-5" style=" width: 100%">
                     <div class="row">
                         <div class="col s2  waves-effect waves-light">   <a href="index.jsp"><i class="  material-icons <%=Dcolor%>">library_books</i></a></div>
-                        <div class="col s2 waves-effect waves-light <%=Bcolor%> animated bounce">   <a href="profile.jsp"><i class=" material-icons <%=Dcolor%> ">account_circle</i></a></div>
+                        <div class="col s2 waves-effect waves-light <%=Bcolor%> animated rubberBand">   <a href="profile.jsp"><i class=" material-icons <%=Dcolor%> ">account_circle</i></a></div>
                         <div class="col s2 waves-effect waves-light">   <a href="messege.jsp"><i class=" material-icons <%=Dcolor%>">message</i><div id="chatnumber2" class="badge <%=Dcolor%>" style="position: absolute; top:0px"></div></a></div>
                         <div class="col s2 waves-effect waves-light">   <a href="notifications.jsp"><i class=" material-icons <%=Dcolor%>">notifications_none</i><div id="notificationnumber2" class="badge <%=Dcolor%>" style="position: absolute; top:0px"></div></a></div>
                         <div class="col s2 waves-effect waves-light">   <a href="search-trending.jsp"><i class=" material-icons <%=Dcolor%>">search</i></a></div>
@@ -776,17 +1057,11 @@
                 </div>
             </nav>
         </footer>
-    </body>
-    <%
-        } else {
-            response.sendRedirect("login-register.jsp");
-        }
-    %>
-    <!--  Scripts-->
-    <script src="js/jquery-3.2.1.min.js"></script>
-    <script src="js/materialize.js"></script>
-    <script src='js/cropper.min.js'></script>
-    <script>
+
+        <script src="js/jquery-3.2.1.min.js"></script>
+        <script src="js/materialize.js"></script>
+
+        <script>
                                     var userid;
                                     $(document).ready(function () {
                                         $('.collapsible').collapsible();
@@ -796,14 +1071,96 @@
                                         $('select').formSelect();
                                         $('#commentsection').load('commentlive');
                                         $('.materialboxed').materialbox();
+                                        $("body").on("contextmenu", function (e) {
+                                            return false;
+                                        });
                                     });
                                     function hideloader(x) {
                                         userid = x;
-                                        document.getElementById('loading').style.display = "none";
                                         numberrefresh();
                                         chatnumberrefresh();
                                     }
+                                    function expandposts() {
+                                        var instance = M.Collapsible.getInstance($('.collapsible'));
+                                        instance.open(1)
+                                    }
+                                    function expandfollowers() {
+                                        var instance = M.Collapsible.getInstance($('.collapsible'));
+                                        instance.open(3)
+                                    }
+                                    function expandfollowing() {
+                                        var instance = M.Collapsible.getInstance($('.collapsible'));
+                                        instance.open(4)
+                                    }
+                                    function expandupdateprofile() {
+                                        var instance = M.Collapsible.getInstance($('.collapsible'));
+                                        instance.open(5)
+                                    }
+                                    function profilepicupdate() {
+                                        var $files = $('#imgfile').get(0).files;
+                                        var fp;
+                                        if ($files.length) {
+                                            // Reject big files
+                                            if ($files[0].size > $(this).data("max-size") * 1024) {
+                                                console.log("Please select a smaller file");
+                                                return false;
+                                            }
+                                            // Begin file upload
+                                            console.log("Uploading file to Imgur..");
 
+                                            // Replace ctrlq with your own API key
+                                            var apiUrl = 'https://api.imgur.com/3/image';
+                                            var apiKey = 'Bearer c9b33c9056e4378e365513146667e74f40cb9684';
+
+                                            var settings = {
+                                                async: false,
+                                                crossDomain: true,
+                                                processData: false,
+                                                contentType: false,
+                                                type: 'POST',
+                                                url: apiUrl,
+                                                headers: {
+                                                    Authorization: '01dd5cfeb1621b4' + apiKey,
+                                                    Accept: 'application/json'
+                                                },
+                                                mimeType: 'multipart/form-data'
+                                            };
+
+                                            var formData = new FormData();
+                                            formData.append("image", $files[0]);
+                                            settings.data = formData;
+
+                                            // Response contains stringified JSON
+                                            // Image URL available at response.data.link
+                                            $.ajax(settings).done(function (response) {
+                                                var obj = JSON.parse(response);
+                                                fp = obj.data.link;
+                                            });
+
+                                        }
+                                        var xhttp;
+                                        xhttp = new XMLHttpRequest();
+                                        xhttp.onreadystatechange = function () {
+                                            if (this.readyState == 4 && this.status == 200) {
+
+                                            }
+                                        };
+                                        xhttp.open("GET", "updateprofilepic?fp=" + fp, true);
+                                        xhttp.send();
+
+                                    }
+                                    function bookmarkthis(uid, x) {
+                                        var xhttp;
+                                        xhttp = new XMLHttpRequest();
+                                        xhttp.onreadystatechange = function () {
+                                            if (this.readyState == 4 && this.status == 200) {
+                                                document.getElementById("bookmark" + x).innerHTML = this.responseText;
+                                            }
+                                        };
+                                        xhttp.open("GET", "bookmarkprocess?x=" + x + "&uid=" + uid, true);
+                                        xhttp.send();
+
+                                    }
                                     function showdelpost(x, y) {
                                         var xhttp;
                                         xhttp = new XMLHttpRequest();
@@ -875,6 +1232,39 @@
                                         xhttp.open("GET", "themechange?x=" + x + "&uid=" + uid, true);
                                         xhttp.send();
                                     }
+                                    function uapchange(x, uid, y) {
+                                        var xhttp;
+                                        xhttp = new XMLHttpRequest();
+                                        xhttp.onreadystatechange = function () {
+                                            if (this.readyState == 4 && this.status == 200) {
+                                                //document.getElementById("profilepeek").innerHTML = this.responseText;
+                                            }
+                                        };
+                                        xhttp.open("GET", "uapchange?x=" + x + "&uid=" + uid + "&y=" + y, true);
+                                        xhttp.send();
+                                    }
+                                    function dashboardchange(x, uid) {
+                                        var xhttp;
+                                        xhttp = new XMLHttpRequest();
+                                        xhttp.onreadystatechange = function () {
+                                            if (this.readyState == 4 && this.status == 200) {
+                                                //document.getElementById("profilepeek").innerHTML = this.responseText;
+                                            }
+                                        };
+                                        xhttp.open("GET", "changedashboardpage?x=" + x + "&uid=" + uid, true);
+                                        xhttp.send();
+                                    }
+                                    function privacychange(x, uid) {
+                                        var xhttp;
+                                        xhttp = new XMLHttpRequest();
+                                        xhttp.onreadystatechange = function () {
+                                            if (this.readyState == 4 && this.status == 200) {
+                                                //document.getElementById("profilepeek").innerHTML = this.responseText;
+                                            }
+                                        };
+                                        xhttp.open("GET", "privacychange?x=" + x + "&uid=" + uid, true);
+                                        xhttp.send();
+                                    }
                                     function like(x, uid) {
                                         setTimeout(function () {
                                             var xhttp;
@@ -941,106 +1331,29 @@
                                             chatnumberrefresh();
                                         }, 1000);
                                     }
-                                    // initialize and setup facebook js sdk
-                                    window.fbAsyncInit = function () {
-                                        FB.init({
-                                            appId: '2789629401262230',
-                                            xfbml: true,
-                                            version: 'v2.5'
-                                        });
-                                        //FB.getLoginStatus(function (response) {
-                                        //      if (response.status === 'connected') {
-                                        //      
-                                        //     } else {
-                                        //          document.getElementById('fbupdateseg').parentNode.removeChild(document.getElementById('fbupdateseg'));
-                                        //       }
-                                        // });
-                                    };
-                                    (function (d, s, id) {
-                                        var js, fjs = d.getElementsByTagName(s)[0];
-                                        if (d.getElementById(id)) {
-                                            return;
-                                        }
-                                        js = d.createElement(s);
-                                        js.id = id;
-                                        js.src = "//connect.facebook.net/en_US/sdk.js";
-                                        fjs.parentNode.insertBefore(js, fjs);
-                                    }(document, 'script', 'facebook-jssdk'));
 
-                                    // getting basic user info
-                                    function getInfo() {
-                                        FB.api('/me', 'GET', {fields: 'first_name,last_name,id,picture.width(250).height(250),email'}, function (response) {
-                                            var img = response.picture.data.url;
-                                            document.getElementById('propiche').src = img;
-                                            var firstn = response.first_name;
-                                            var lastn = response.last_name;
-                                            var xhttp;
-                                            xhttp = new XMLHttpRequest();
-                                            xhttp.onreadystatechange = function () {
-                                                if (this.readyState == 4 && this.status == 200) {
 
-                                                }
-                                            };
-                                            xhttp.open("GET", "fbupdate?x=" + img + "&y=" + firstn + "&z=" + lastn + "&uid=" + userid, true);
-                                            xhttp.send();
-                                        });
-                                    }
-                                    // vars
-                                    var result = document.querySelector('.result'),
-                                            img_result = document.querySelector('.img-result'),
-                                            img_w = document.querySelector('.img-w'),
-                                            img_h = document.querySelector('.img-h'),
-                                            options = document.querySelector('.options'),
-                                            save = document.querySelector('.save'),
-                                            cropped = document.querySelector('.cropped'),
-                                            dwn = document.querySelector('.download'),
-                                            upload = document.querySelector('#file-input'),
-                                            cropper = '';
 
-                                    // on change show image with crop options
-                                    upload.addEventListener('change', function (e) {
-                                        if (e.target.files.length) {
-                                            // start file reader
-                                            var reader = new FileReader();
-                                            reader.onload = function (e) {
-                                                if (e.target.result) {
-                                                    // create new image
-                                                    var img = document.createElement('img');
-                                                    img.id = 'image';
-                                                    img.src = e.target.result;
-                                                    // clean result before
-                                                    result.innerHTML = '';
-                                                    // append new image
-                                                    result.appendChild(img);
-                                                    // show save btn and options
-                                                    save.classList.remove('hide');
-                                                    options.classList.remove('hide');
-                                                    // init cropper
-                                                    cropper = new Cropper(img);
-                                                }
-                                            };
-                                            reader.readAsDataURL(e.target.files[0]);
-                                        }
-                                    });
-
-                                    // save on click
-                                    save.addEventListener('click', function (e) {
-                                        e.preventDefault();
-                                        // get result to data uri
-                                        var imgSrc = cropper.getCroppedCanvas({
-                                            width: img_w.value // input value
-                                        }).toDataURL();
-                                        // remove hide class of img
-                                        cropped.classList.remove('hide');
-                                        img_result.classList.remove('hide');
-                                        // show image cropped
-                                        cropped.src = imgSrc;
-                                        dwn.classList.remove('hide');
-                                        dwn.download = 'imagename.png';
-                                        dwn.setAttribute('href', imgSrc);
-                                        document.getElementById('file-input').value = dwn;
-                                    });
-
-    </script>
-
+        </script>
+        <%} else {
+                Cookie[] cookies = request.getCookies();
+                boolean b = false;
+                if (cookies != null) {
+                    for (int i = 0; i < cookies.length; i++) {
+                        Cookie c = cookies[i];
+                        if (c.getName().equals("MEOWID")) {
+                            HttpSession ses = request.getSession();
+                            String decryptedString = ENCDEC.decrypt(c.getValue(), new KEY().secretKey);
+                            ses.setAttribute("user", decryptedString);
+                            b = true;
+                            response.sendRedirect("index.jsp");
+                        }
+                    }
+                }
+                if (!b) {
+                    response.sendRedirect("login-register.jsp");
+                }
+            }
+        %>
+    </body>
 </html>

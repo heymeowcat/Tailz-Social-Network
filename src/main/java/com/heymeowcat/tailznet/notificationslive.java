@@ -35,11 +35,12 @@ public class notificationslive extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             System.gc();
             int uid = Integer.parseInt(request.getParameter("uid"));
-            String Acolor = "";
+         String Acolor = "";
                 String Bcolor = "";
                 String Ccolor = "";
                 String Dcolor = "";
                 String Ecolor = "";
+                String Fcolor = "";
                 java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + uid + "' ");
                 if (themers.next()) {
                     if (themers.getString(1).equals("pinkdark")) {
@@ -48,106 +49,148 @@ public class notificationslive extends HttpServlet {
                         Ccolor = "#1c1c1c";
                         Dcolor = "white-text";
                         Ecolor = "grey darken-4";
+                        Fcolor = "white";
                     } else if (themers.getString(1).equals("pinklight")) {
                         Acolor = "white";
                         Bcolor = "pink lighten-4";
                         Ccolor = "#f7f4f4";
                         Dcolor = "black-text";
                         Ecolor = "red lighten-5";
+                        Fcolor = "black";
                     } else if (themers.getString(1).equals("bluelight")) {
                         Acolor = "white";
                         Bcolor = "light-blue lighten-2";
                         Ccolor = "#f7f4f4";
                         Dcolor = "black-text";
                         Ecolor = "light-blue lighten-5";
+                        Fcolor = "black";
                     } else if (themers.getString(1).equals("bluedark")) {
                         Acolor = "black";
                         Bcolor = "blue";
                         Ccolor = "#1c1c1c";
                         Dcolor = "white-text";
                         Ecolor = "grey darken-4";
+                        Fcolor = "white";
                     } else if (themers.getString(1).equals("yellowlight")) {
                         Acolor = "white";
                         Bcolor = "yellow lighten-2";
                         Ccolor = "#f7f4f4";
                         Dcolor = "black-text";
                         Ecolor = "yellow lighten-4";
+                        Fcolor = "black";
                     } else if (themers.getString(1).equals("yellowdark")) {
                         Acolor = "black";
                         Bcolor = "yellow darken-4";
                         Ccolor = "#1c1c1c";
                         Dcolor = "white-text";
                         Ecolor = "grey darken-4";
+                        Fcolor = "white";
                     } else if (themers.getString(1).equals("greenlight")) {
                         Acolor = "white";
                         Bcolor = "light-green lighten-2";
                         Ccolor = "#f7f4f4";
                         Dcolor = "black-text";
                         Ecolor = "light-green lighten-4";
+                        Fcolor = "black";
                     } else if (themers.getString(1).equals("greendark")) {
                         Acolor = "black";
                         Bcolor = "green";
                         Ccolor = "#1c1c1c";
                         Dcolor = "white-text";
                         Ecolor = "grey darken-4";
+                        Fcolor = "white";
                     } else if (themers.getString(1).equals("purplelight")) {
                         Acolor = "white";
                         Bcolor = "purple lighten-3";
                         Ccolor = "#f7f4f4";
                         Dcolor = "black-text";
                         Ecolor = "purple lighten-5";
+                        Fcolor = "black";
                     } else if (themers.getString(1).equals("purpledark")) {
                         Acolor = "black";
                         Bcolor = "purple";
                         Ccolor = "#1c1c1c";
                         Dcolor = "white-text";
                         Ecolor = "grey darken-4";
+                        Fcolor = "white";
                     }
                 }
-            String commenttext = "";
-            String notificationtxt = "";
-            java.sql.ResultSet rs = DB.search("Select * FROM `notification` where notificationfor = '" + uid + "' ORDER BY time DESC");
-            while (rs.next()) {
-                if (rs.getString(4).equals("1")) {
-                    commenttext = "started following you";
-                } else if (rs.getString(4).equals("2")) {
-                    commenttext = "commented on your post";
-                }
-                String imgup = "";
-                String fnamepost = "";
-                String lnamepost = "";
-                java.sql.ResultSet imgpostuser = DB.search("Select image From user_profile_pic where users_idusers='" + rs.getInt(3) + "' ");
-                if (imgpostuser.next()) {
-                    imgup = imgpostuser.getString(1);
-                }
-                java.sql.ResultSet firstimguser = DB.search("Select firstname From users where idusers='" + rs.getInt(3) + "' ");
-                if (firstimguser.next()) {
-                    fnamepost = firstimguser.getString(1);
-                }
-                java.sql.ResultSet lastimguser = DB.search("Select lastname From users where idusers='" + rs.getInt(3) + "' ");
-                if (lastimguser.next()) {
-                    lnamepost = lastimguser.getString(1);
-                }
-                notificationtxt = fnamepost + " " + lnamepost + " " + commenttext;
-                if (rs.getInt(6) == 0) {
-                    out.write("<li class='" + Bcolor + " " + Dcolor + " collection-item avatar' style='border-color: " + Ccolor + "'>");
-                    out.write("<img src=" + imgup + " class='circle'>");
-                    out.write("<span class='title'>" + notificationtxt + "</span>");
-                    out.write("<p>");
-                    out.write("" + rs.getString(5) + "");
-                    out.write("</p>");
-                    out.write("</li>");
-                } else if (rs.getInt(6) == 1) {
-                    out.write("<li class='" + Acolor + " " + Dcolor + " collection-item avatar' style='border-color: " + Ccolor + "'>");
-                    out.write("<img src=" + imgup + " class='circle'>");
-                    out.write("<span class='title'>" + notificationtxt + "</span>");
-                    out.write("<p>");
-                    out.write("" + rs.getString(5) + "");
-                    out.write("</p>");
-                    out.write("</li>");
-                }
+            java.sql.ResultSet rsop = DB.search("Select * FROM `notification` where notificationfor = '" + uid + "' ORDER BY time DESC");
+            if (!rsop.isBeforeFirst()) {
 
+                out.write("\n");
+                out.write("\n");
+                out.write("<div class='center'><img style=\"margin-top: 100px\" src='img/notifications-silenced.png' class='responsiveimg' style=\"margin-top: 100px\"></div>\n");
+                    out.write("   <div class=\"grey-text center\">Icons made by <a href=\"https://www.freepik.com/\" title=\"Freepik\">Freepik</a> from <a href=\"https://www.flaticon.com/\" title=\"Flaticon\">www.flaticon.com</a> is licensed by <a href=\"http://creativecommons.org/licenses/by/3.0/\" title=\"Creative Commons BY 3.0\" target=\"_blank\">CC 3.0 BY</a>");
+            } else {
+                out.write("\n");
+                out.write("                <a class=\"");
+                out.print(Bcolor);
+                out.write(' ');
+                out.print(Dcolor);
+                out.write(" btn\" onclick=\"clearnotifications(");
+                out.print(uid);
+                out.write(")\">Mark All as Read</a>\n");
             }
+
+            out.write("\n");
+            out.write("                <ul class=\"");
+            out.print(Acolor);
+            out.write(" collection\" style=\"border-color: ");
+            out.print(Ccolor);
+            out.write("\" >\n");
+            out.write("                    ");
+            try {
+                String commenttext = "";
+                String notificationtxt = "";
+                java.sql.ResultSet rs = DB.search("Select * FROM `notification` where notificationfor = '" + uid + "' ORDER BY time DESC");
+                while (rs.next()) {
+                    if (rs.getString(4).equals("1")) {
+                        commenttext = "started following you";
+                    } else if (rs.getString(4).equals("2")) {
+                        commenttext = "commented on your post";
+                    }
+                    String imgup = "";
+                    String fnamepost = "";
+                    String lnamepost = "";
+                    java.sql.ResultSet imgpostuser = DB.search("Select image From user_profile_pic where users_idusers='" + rs.getInt(3) + "' ");
+                    if (imgpostuser.next()) {
+                        imgup = imgpostuser.getString(1);
+                    }
+                    java.sql.ResultSet firstimguser = DB.search("Select firstname From users where idusers='" + rs.getInt(3) + "' ");
+                    if (firstimguser.next()) {
+                        fnamepost = firstimguser.getString(1);
+                    }
+                    java.sql.ResultSet lastimguser = DB.search("Select lastname From users where idusers='" + rs.getInt(3) + "' ");
+                    if (lastimguser.next()) {
+                        lnamepost = lastimguser.getString(1);
+                    }
+                    notificationtxt = fnamepost + " " + lnamepost + " " + commenttext;
+                    if (rs.getInt(6) == 0) {
+                        out.write("<li class='" + Bcolor + " " + Dcolor + " collection-item avatar' style='border-color: " + Ccolor + "'>");
+                        out.write("<img src=" + imgup + " class='circle' >");
+                        out.write("<span class='title'>" + notificationtxt + "</span>");
+                        out.write("<p>");
+                        out.write("" + rs.getString(5) + "");
+                        out.write("</p>");
+                        out.write("</li>");
+                    } else if (rs.getInt(6) == 1) {
+                        out.write("<li class='" + Acolor + " " + Dcolor + " collection-item avatar' style='border-color: " + Ccolor + "'>");
+                        out.write("<img src=" + imgup + " class='circle' >");
+                        out.write("<span class='title'>" + notificationtxt + "</span>");
+                        out.write("<p>");
+                        out.write("" + rs.getString(5) + "");
+                        out.write("</p>");
+                        out.write("</li>");
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            out.write("\n");
+            out.write("\n");
+            out.write("                </ul>\n");
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -17,8 +17,8 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author heymeowcat
  */
-@WebServlet(name = "searchhistory", urlPatterns = {"/searchhistory"})
-public class searchhistory extends HttpServlet {
+@WebServlet(name = "updateprofilepic", urlPatterns = {"/updateprofilepic"})
+public class updateprofilepic extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -33,16 +33,12 @@ public class searchhistory extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet searchhistory</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet searchhistory at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
+            int uid = 0;
+            uid = Integer.parseInt(request.getSession().getAttribute("user").toString());
+            String fp = request.getParameter("fp");
+            DB.iud("UPDATE `user_profile_pic` SET `image` = '" + fp + "' WHERE users_idusers= '"+uid+"';");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

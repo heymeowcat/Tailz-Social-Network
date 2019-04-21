@@ -18,16 +18,21 @@
         <title>Tailz</title>
         <link href="img/logo.png" rel="icon">
         <link href="css/animate.css" type="text/css" rel="stylesheet">
-        <link href="css/materialize.min.css" rel="stylesheet" type="text/css" media="screen,projection"/>
+        <link href="css/materialize.css" rel="stylesheet" type="text/css" media="screen,projection"/>
         <style>
             ::-webkit-scrollbar {
                 width: 0px;
                 background: transparent;
             }
-            html, body {
-                height:100%;
-                min-height:100%;
-                overflow: hidden;
+            html{
+                height: 100%;
+                max-width: 100%;
+                overflow-x: hidden;
+                background: url(img/bg.jpg)no-repeat center center fixed;
+                -webkit-background-size: cover;
+                -moz-background-size: cover;
+                -o-background-size: cover;
+                background-size: cover;
             }
             body {
                 display: flex;
@@ -42,6 +47,25 @@
                 overflow-y: scroll;
             }
             .modal { width: 70% !important ; height: 75% !important ; }
+              .tabs .tab a{
+                color:#9c27b0;
+            }
+
+            .tabs .tab a:hover {
+                background-color:#f3e5f5;
+                color:#7b1fa2;
+            } 
+
+            .tabs .tab a.active {
+                background-color:#f3e5f5;
+                color:#9c27b0;
+            } 
+            .tabs .tab a:focus.active {
+                background-color: #f3e5f5
+            }
+            .tabs .indicator {
+                background-color:#ab47bc;
+            }
         </style>
     </head>
     <body onload="hideloader()" >
@@ -54,9 +78,9 @@
             </div>
         </div>
         <%
-            if (email != null & hash != null) {%>
+         if (email != null & hash != null) {%>
         <main class="StickyContent animated zoomIn ">
-            <div style="height: 100vh; width: 100%; background-color: white; " class="valign-wrapper ">
+            <div style="height: 100vh; width: 100%; background-color: transparent; " class="valign-wrapper ">
                 <div class="row ">
                     <div class="col s12 m12 l12">
                         <ul class=" tabs">
@@ -86,7 +110,7 @@
                                         <input  name="conpsn" type="password" class="validate" required="" minlength="8">
                                     </div>
                                 </div>
-                                <input type="submit" value="Register" class="pink lighten-4 black-text btn center">
+                                <input type="submit" value="Register" class="purple lighten-4 black-text btn center">
                                 <br>
                                 <br>
                                 <a  href="terms.html">Terms and Conditions</a> &
@@ -101,7 +125,7 @@
             </div>
 
                     <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
-                    <script type="text/javascript" src="js/materialize.min.js"></script>
+                    <script type="text/javascript" src="js/materialize.js"></script>
                     <script>
                                     $(document).ready(function () {
                                         $('.tabs').tabs();

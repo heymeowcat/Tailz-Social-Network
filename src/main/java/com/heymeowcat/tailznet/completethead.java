@@ -5,19 +5,13 @@
  */
 package com.heymeowcat.tailznet;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileItemFactory;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 /**
  *
@@ -39,32 +33,12 @@ public class completethead extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            FileItemFactory fi = new DiskFileItemFactory();
-            ServletFileUpload upload = new ServletFileUpload(fi);
-            List<FileItem> li = upload.parseRequest(request);
-            int adid = Integer.parseInt(request.getParameter("adid"));
-            String title = "";
-            String link = "";
-            String fp = "";
-            for (FileItem fileItem : li) {
-                if (!fileItem.isFormField()) {
-                    String fn = "_Ad_" + System.currentTimeMillis() + "_" + fileItem.getName();
-                    String path = request.getServletContext().getRealPath("/");
-                    path = path.replace("\\", "/");
-                    String folder = "img/";
-                    File f = new File(path + folder + fn);
-                    fileItem.write(f);
-                    fp = folder + fn;
-                } else {
-                    if (fileItem.getFieldName().equals("title")) {
-                        title = fileItem.getString();
-                    } else if (fileItem.getFieldName().equals("link")) {
-                        link = fileItem.getString();
-                    }
-                }
-            }
-             DB.iud("UPDATE `ads` SET `Text` = '" +title+ "', `src` = '" +fp+ "', `link`='"+link+"',`status`='3' WHERE `ads`.`Adid` = '" + adid + "';");
-             response.sendRedirect("dashboard.jsp");
+            String adid = request.getParameter("adid");
+            int cate = Integer.parseInt(request.getParameter("cate"));
+            String src = request.getParameter("src");
+            String link = request.getParameter("url");
+            DB.iud("UPDATE ads SET adcategory = '" + cate + "' , src = '" + src + "', link='" + link + "', status='3' WHERE Adid = '" + adid + "' ");
+            response.sendRedirect("dashboard.jsp");
         } catch (Exception e) {
             e.printStackTrace();
         }

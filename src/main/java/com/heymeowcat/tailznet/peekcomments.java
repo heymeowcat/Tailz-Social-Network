@@ -112,16 +112,12 @@ public class peekcomments extends HttpServlet {
                 out.write("<div class='row'>");
                 out.write("<div class='col s12 m6' style='max-height:100% ;overflow: scroll' > ");
                 if (rs.getString(7).equals("1")) {
-                    out.write("<img class='responsive-img materialboxed' src='" + rs.getString(3) + "' ");
+                    out.write("<img class='responsive-img materialboxed' src='" + ENCDEC.decrypt(rs.getString(3), new KEY().secretKey) + "' ");
                 } else if (rs.getString(7).equals("2")) {
-                    out.write("<span class='materialboxed'>");
-                    out.write("<video class='responsive-video' controls>");
-                    out.write("<source src='" + rs.getString(3) + "' type='video/mp4'>");
-                    out.write("</video>");
-                    out.write("</span>");
+                    out.write(ENCDEC.decrypt(rs.getString(3), new KEY().secretKey));
                 }
-                out.write("<span><h5>" + rs.getString(2) + "</h5></span>");
-                out.write("<p>" + rs.getString(4) + "</p>");
+                out.write("<span><h5>" + ENCDEC.decrypt(rs.getString(2), new KEY().secretKey) + "</h5></span>");
+                out.write("<p>" + ENCDEC.decrypt(rs.getString(4), new KEY().secretKey) + "</p>");
                 out.write("<br>");
                 String imgup = "";
                 String fnamepost = "";
@@ -156,7 +152,7 @@ public class peekcomments extends HttpServlet {
                 out.write("<div class='" + Bcolor + "  " + Dcolor + " chip waves-effect waves-light'><img src='" + imgup + "'>" + fnamepost + " " + lnamepost + "</div>");
                 out.write("<div class='" + Bcolor + "  " + Dcolor + " chip waves-effect waves-light'>" + postdate + "</div>");
                 out.write("<div class='" + Bcolor + "  " + Dcolor + " chip waves-effect waves-light'>" + posttime + "</div>");
-                out.write("<div class='" + Bcolor + "  " + Dcolor + " chip waves-effect waves-light'>😍 " + likecount + "</div>");
+                out.write("<div onclick='$('#peekwholikesthis').modal('open')'; class='" + Bcolor + "  " + Dcolor + " chip waves-effect waves-light'>😍 " + likecount + "</div>");
                 out.write("</div>");
                 out.write("<div class='col s12 m6'>");
                 out.write("<h6>Comments</h6>");
@@ -165,7 +161,7 @@ public class peekcomments extends HttpServlet {
 
             java.sql.ResultSet cmntsrs = DB.search("Select * from `post_comment` where post_idpost='" + pid + "' ORDER BY `post_comment`.`datetime` DESC ");
             if (!cmntsrs.isBeforeFirst()) {
-                out.write("<div class='center'><img src='img/no-feeds.png' class='responsiveimg' ></div>");
+                out.write("<div class='center' style='top:40%; position:relative'><img src ='img/commentlive.png' class='animated pulse responsiveimg '></div>");
             } else {
                 while (cmntsrs.next()) {
                     String cmpic = "";

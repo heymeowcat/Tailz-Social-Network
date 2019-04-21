@@ -104,72 +104,107 @@ public class finaladdsforindexrefresh extends HttpServlet {
                     Ecolor = "grey darken-4";
                 }
             }
-
+            int usap = 1;
+            java.sql.ResultSet raters = DB.search("Select idAPPHPI from apphpi");
+            if (raters.next()) {
+                rate = Double.parseDouble(raters.getString(1));
+            }
             java.sql.ResultSet ssm = DB.search("Select Preference from uap where users_idusers=" + uid + "");
             if (ssm.next()) {
                 if (ssm.getInt(1) == 0) {
                     out.write("<div class='col s12 m12'>");
                     out.write("<div class='card " + Acolor + " '>");
                     out.write("<div class='card-content " + Dcolor + "'>");
-                    out.write("<span class='card-title'>sponsored Content Turned Off</span>");
+                    out.write("<span class='card-title'>Sponsored Content Turned Off</span>");
                     out.write("<img src='img/seo.png' class='responsive-img center-block'>");
                     out.write("</div>");
                     out.write("<div class='card-action'>");
-                    out.write("<a href='profile.jsp' class='<%=Dcolor%>'>Manage Settings</a>");
-                    out.write("</div>");
-                    out.write("</div>");
-                    out.write("</div>");
-                    out.write("<div class='col s12 m12'>");
-                    out.write("<div class='card " + Acolor + "'>");
-                    out.write("<div class='card-content " + Dcolor + "'>");
-                    out.write("<span class='card-title'>Publish Your Advertisement for only <br>Rs." + rate + "/=</span>");
-                    out.write("<img src='img/seo.png' class='responsive-img center-block'>");
-                    out.write("</div>");
-                    out.write("<div class='card-action'>");
-                    out.write("<a href='profile.jsp' class=" + Dcolor + ">Publish Now</a>");
+                    out.write("<a href='profile.jsp' class='" + Dcolor + "'>Manage Settings</a>");
                     out.write("</div>");
                     out.write("</div>");
                     out.write("</div>");
                 } else {
-                    java.sql.ResultSet ss = DB.search("Select Adid from ads where status='4' ");
-                    while (ss.next()) {
-                        java.sql.ResultSet adstolivers = DB.search("Select Adid,Text,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid='" + ss.getString(1) + "' and status='4'");
-                        while (adstolivers.next()) {
-                            out.write("\n");
-                            out.write("                                <div class=\"col s12 m12\">\n");
-                            out.write("                                    <div class=\"card ");
-                            out.print(Acolor);
-                            out.write(" \">\n");
-                            out.write("                                    <div class=\"card-content ");
-                            out.print(Dcolor);
-                            out.write("\">\n");
-                            out.write("                                            <div class=\"card-image resizeimg\" style=\"overflow: hidden\">\n");
-                            out.write("                                            <a href=\"");
-                            out.print(adstolivers.getString(4));
-                            out.write("\">\n");
-                            out.write("                                                <img src=\"");
-                            out.print(adstolivers.getString(3));
-                            out.write("\" >\n");
-                            out.write("                                            </a>\n");
-                            out.write("                                            </div>\n");
-                            out.write("                                        </div>\n");
-                            out.write("</div>");
-                            out.write("                                        </div>");
+                    java.sql.ResultSet usaprs = DB.search("Select adcategory from user_followed_ad_catergories where users_idusers='" + uid + "' ");
+                    if (usaprs.next()) {
+                        usap = usaprs.getInt(1);
+                        if (usap == 1) {
+                            java.sql.ResultSet ss = DB.search("Select Adid from ads where status='4'");
+                            while (ss.next()) {
+                                java.sql.ResultSet adstolivers = DB.search("Select Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid='" + ss.getString(1) + "' and status='4'");
+                                while (adstolivers.next()) {
+                                    out.write("\n");
+                                    out.write("                                <div class=\"col s12 m12\">\n");
+                                    out.write("                                    <div class=\"card ");
+                                    out.print(Acolor);
+                                    out.write(" \">\n");
+                                    out.write("                                    <div class=\"card-content ");
+                                    out.print(Dcolor);
+                                    out.write("\">\n");
+                                    out.write("                                            <div class=\"card-image resizeimg\" style=\"overflow: hidden\">\n");
+                                    out.write("                                            <a href=\"");
+                                    out.print(adstolivers.getString(3));
+                                    out.write("\">\n");
+                                    out.write("                                                <img src=\"");
+                                    out.print(adstolivers.getString(2));
+                                    out.write("\" >\n");
+                                    out.write("                                            </a>\n");
+                                    out.write("                                            </div>\n");
+                                    out.write("                                        </div>\n");
+                                    out.write("</div>");
+                                    out.write("                                        </div>");
 
-                            java.sql.ResultSet timedifrs = DB.search("SELECT TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP),(SELECT CAST(TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP) AS CHAR) FROM sEXUaFqh92.adtiming WHERE Ads_Adid ='" + ss.getInt(1) + "') FROM adtiming WHERE Ads_Adid ='" + ss.getInt(1) + "' ");
-                            if (timedifrs.next()) {
-                                if (timedifrs.getString(2).startsWith("-")) {
-                                    DB.iud("UPDATE `ads` SET `status` = '6'  WHERE `ads`.`Adid` = '" + ss.getInt(1) + "';");
-                                } else {
-                                    DB.iud("UPDATE `ads` SET `status` = '4'  WHERE `ads`.`Adid` = '" + ss.getInt(1) + "';");
+                                    java.sql.ResultSet timedifrs = DB.search("SELECT TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP),(SELECT CAST(TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP) AS CHAR) FROM sEXUaFqh92.adtiming WHERE Ads_Adid ='" + ss.getInt(1) + "') FROM adtiming WHERE Ads_Adid ='" + ss.getInt(1) + "' ");
+                                    if (timedifrs.next()) {
+                                        if (timedifrs.getString(2).startsWith("-")) {
+                                            DB.iud("UPDATE `ads` SET `status` = '6'  WHERE `ads`.`Adid` = '" + ss.getInt(1) + "';");
+                                        } else {
+                                            DB.iud("UPDATE `ads` SET `status` = '4'  WHERE `ads`.`Adid` = '" + ss.getInt(1) + "';");
+                                        }
+                                    }
+                                }
+                            }
+                            if (!ss.isBeforeFirst()) {
+
+                            }
+
+                        } else {
+                            java.sql.ResultSet ss = DB.search("Select Adid from ads where status='4' and adcategory='" + usap + "' ");
+                            while (ss.next()) {
+                                java.sql.ResultSet adstolivers = DB.search("Select Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid='" + ss.getString(1) + "' and status='4'");
+                                while (adstolivers.next()) {
+                                    out.write("\n");
+                                    out.write("                                <div class=\"col s12 m12\">\n");
+                                    out.write("                                    <div class=\"card ");
+                                    out.print(Acolor);
+                                    out.write(" \">\n");
+                                    out.write("                                    <div class=\"card-content ");
+                                    out.print(Dcolor);
+                                    out.write("\">\n");
+                                    out.write("                                            <div class=\"card-image resizeimg\" style=\"overflow: hidden\">\n");
+                                    out.write("                                            <a href=\"");
+                                    out.print(adstolivers.getString(3));
+                                    out.write("\">\n");
+                                    out.write("                                                <img src=\"");
+                                    out.print(adstolivers.getString(2));
+                                    out.write("\" >\n");
+                                    out.write("                                            </a>\n");
+                                    out.write("                                            </div>\n");
+                                    out.write("                                        </div>\n");
+                                    out.write("</div>");
+                                    out.write("                                        </div>");
+
+                                    java.sql.ResultSet timedifrs = DB.search("SELECT TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP),(SELECT CAST(TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP) AS CHAR) FROM sEXUaFqh92.adtiming WHERE Ads_Adid ='" + ss.getInt(1) + "') FROM adtiming WHERE Ads_Adid ='" + ss.getInt(1) + "' ");
+                                    if (timedifrs.next()) {
+                                        if (timedifrs.getString(2).startsWith("-")) {
+                                            DB.iud("UPDATE `ads` SET `status` = '6'  WHERE `ads`.`Adid` = '" + ss.getInt(1) + "';");
+                                        } else {
+                                            DB.iud("UPDATE `ads` SET `status` = '4'  WHERE `ads`.`Adid` = '" + ss.getInt(1) + "';");
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    java.sql.ResultSet raters = DB.search("Select idAPPHPI from apphpi");
-                    if (raters.next()) {
-                        rate = Double.parseDouble(raters.getString(1));
                     }
 
                     java.sql.ResultSet rs = DB.search("Select * from ads where status='4' ");
@@ -185,8 +220,8 @@ public class finaladdsforindexrefresh extends HttpServlet {
                         out.write("</div>");
                         out.write("</div>");
                         out.write("</div>");
-
                     }
+
                 }
             }
 

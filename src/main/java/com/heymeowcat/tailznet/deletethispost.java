@@ -35,9 +35,11 @@ public class deletethispost extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             int uid = Integer.parseInt(request.getParameter("x"));
             int pid = Integer.parseInt(request.getParameter("y"));
-            DB.iud("DELETE FROM `post_rank` WHERE `post_rank`.`post_idpost` ="+pid);
-            DB.iud("DELETE FROM `post_comment` WHERE `post_idpost` ="+pid);
-            DB.iud("DELETE FROM `post` WHERE `post`.`idpost` ="+pid);
+            DB.iud("DELETE FROM `post_rank` WHERE `post_rank`.`post_idpost` =" + pid);
+            DB.iud("DELETE FROM `post_comment` WHERE `post_idpost` =" + pid);
+            DB.iud("DELETE FROM `user_bookmarks` WHERE `post_idpost` =" + pid);
+            DB.iud("DELETE FROM `post` WHERE `post`.`idpost` =" + pid);
+
         } catch (Exception e) {
             e.printStackTrace();
         }

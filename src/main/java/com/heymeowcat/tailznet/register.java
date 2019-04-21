@@ -30,11 +30,14 @@ public class register extends HttpServlet {
             Random random = new Random();
             random.nextInt(999999);
             String myhash = DigestUtils.md5Hex("" + random);
-            java.sql.ResultSet regrs = DB.search("Select email from `users` where email= '" + newemail + "' ");
-            if (!regrs.next()) {
+            java.sql.ResultSet regrs = DB.search("Select email from `users` where email= '" + newemail + "' and status='1' ");
+            java.sql.ResultSet regrss = DB.search("Select email from `users` where email= '" + newemail + "'");
+            if (!regrs.isBeforeFirst()) {
                 SendingEmail se = new SendingEmail();
                 se.sendMail(newemail, myhash);
-                DB.iud("INSERT INTO `users` (`email`, `status`, `hash`, `user_type_iduser_type`) VALUES ('"+newemail+"', '0', '"+myhash+"', '2');");
+                if (!regrss.isBeforeFirst()) {
+                    DB.iud("INSERT INTO `users` (`email`, `status`, `hash`, `user_type_iduser_type`) VALUES ('" + newemail + "', '0', '" + myhash + "', '2');");
+                }
                 response.sendRedirect("verify.jsp");
             } else {
                 response.sendRedirect("login-register.jsp");
