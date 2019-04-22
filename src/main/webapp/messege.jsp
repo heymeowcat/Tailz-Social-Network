@@ -16,6 +16,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
         <title>Tailz</title>
         <link href="img/logo.png" rel="icon">
+        <script>
+            window.paceOptions = {
+                ajax: false,
+                restartOnRequestAfter: false,
+            };
+        </script>
         <script src="js/pace.js"></script>
         <link href="css/animate.css" type="text/css" rel="stylesheet">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -255,6 +261,33 @@
             </nav>
         </header>
 
+        <div id="opncreategroup" class=" modal bottom-sheet card" style="max-height:100%; background-color: <%=Ccolor%>">
+            <div class="container">
+                <div class="<%=Acolor%> card-panel">
+                    <h5 class="<%=Dcolor%>">New Group<i class="material-icons right waves-effect modal-close">close</i></h5>
+                    <div class="row">
+
+                        <div class="input-field col s12 m6">
+                            <input id="titletext" placeholder="Group Name" name="title" type="text" class="validate <%=Dcolor%>" required>
+                        </div>
+                        <div class="file-field input-field col s12 m6">
+                            <div class="<%=Bcolor%> <%=Dcolor%> btn">
+                                <span>Image</span>
+                                <input id="imgfile" type="file" class="imgur" accept="image/*" data-max-size="5000" required=""/>
+                            </div>
+                            <div class="file-path-wrapper ">
+                                <input id="filepathimg" class="file-path validate <%=Dcolor%>" type="text"  >
+                            </div>
+                        </div>
+
+                    </div>
+                    <button class="<%=Bcolor%> <%=Dcolor%> btn" id="imgpostbtn" onclick="imgpost();">Create</button>
+                </div>
+
+            </div>
+        </div>
+
+
         <main class="StickyContent">
             <div class="container animated fadeIn">             
                 <div  id="frontmsgui" class="row">
@@ -299,10 +332,38 @@
                     %>
 
                 </div>
+                <div class="row">
+                    <%java.sql.ResultSet rsgroup = DB.search("SELECT * FROM `groups` where group_id= ANY(SELECT Groups_group_id from group_members where members='" + uid + "') ORDER BY (Select count(chatstatus) from group_chat where chatstatus='0' and users_idusers!='" + uid + "' ) DESC,(Select count(chatstatus) from group_chat where chatstatus='0' and  users_idusers='" + uid + "' ) DESC,(Select count(chatstatus) from group_chat where chatstatus='1' and  users_idusers!='" + uid + "' ) DESC");
+                        String outString = "<i class='material-icons " + Dcolor + " '>add</i>";
+                        while (rsgroup.next()) {
+                    %>
+                    <div class="col s6 m3 l2">
+                        <div class="<%=Acolor%> card-panel hoverable ">
+                            <img src="<%=rsgroup.getString(3)%>" class="circle responsive-img">
+                            <div class="card-content center <%=Dcolor%>">
+                                <p class="truncate"><%=rsgroup.getString(2)%></p>
+                                <a onclick="setusergroup('<%=rsgroup.getString(1)%>');"  class="btn-floating <%=Bcolor%> <%=Dcolor%> waves-effect"><%=outString%></a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <%}%>
+
+                </div>
 
             </div>
         </main>
 
+        <div  class ="fixed-action-btn hide-on-med-and-up" style="bottom:60px; right: 5px;" >
+            <a onclick="$('#opncreategroup').modal('open');" class="btn-floating btn-large <%=Bcolor%>" >       
+                <i class="large material-icons <%=Dcolor%>">group_add</i>
+            </a>
+        </div>
+        <div class="fixed-action-btn hide-on-small-and-down">
+            <a onclick="$('#opncreategroup').modal('open');" class="btn-floating btn-large <%=Bcolor%>">
+                <i class="large material-icons <%=Dcolor%>">group_add</i>
+            </a>
+        </div>
 
 
 
@@ -324,39 +385,90 @@
         <script src="js/materialize.js"></script>
         <script>
 
-                                    var userid;
-                                    var outmuid;
-                                    var timer;
-                                    function hideloader(x) {
-                                        userid = x;
-                                    }
-                                    $(document).ready(function () {
-                                        $("body").on("contextmenu", function (e) {
-                                            return false;
-                                        });
-                                    });
-                                    function refreshfrontmsg() {
-                                        setTimeout(function () {
-                                            $('#frontmsgui').load("refreshmsgoverview?uid=" + userid);
-                                            chatnumberrefresh();
-                                            refreshfrontmsg();
-                                        }, 2000);
-                                    }
-                                    function setuser(x) {
-                                        var xhttp = new XMLHttpRequest();
-                                        xhttp.open("GET", "messenginguser?x=" + x, true);
-                                        xhttp.send();
-                                        window.location = "chathead.jsp";
-                                    }
+                var userid;
+                function hideloader(x) {
+                    userid = x;
+                    refreshfrontmsg();
+                }
+                $(document).ready(function () {
+                    $('#opncreategroup').modal();
+                    $("body").on("contextmenu", function (e) {
+                        return false;
+                    });
+                });
+                function refreshfrontmsg() {
+                    setTimeout(function () {
+                        $('#frontmsgui').load("refreshmsgoverview?uid=" + userid);
+                        chatnumberrefresh();
+                        refreshfrontmsg();
+                    }, 2000);
+                }
+                function setuser(x) {
+                    var xhttp = new XMLHttpRequest();
+                    xhttp.open("GET", "messenginguser?x=" + x, true);
+                    xhttp.send();
+                    window.location = "chathead.jsp";
+                }
+                function setusergroup(x) {
+                    var xhttp = new XMLHttpRequest();
+                    xhttp.open("GET", "messenginggroup?x=" + x, true);
+                    xhttp.send();
+                    window.location = "groupchathead.jsp";
+                }
 
-                                    function numberrefresh() {
-                                        $('#notificationnumber').load("notificationnumber?uid=" + userid);
-                                        $('#notificationnumber2').load("notificationnumber?uid=" + userid);
-                                    }
-                                    function chatnumberrefresh() {
-                                        $('#chatnumber').load("chatnumber?uid=" + userid);
-                                    }
+                function numberrefresh() {
+                    $('#notificationnumber').load("notificationnumber?uid=" + userid);
+                    $('#notificationnumber2').load("notificationnumber?uid=" + userid);
+                }
+                function chatnumberrefresh() {
+                    $('#chatnumber').load("chatnumber?uid=" + userid);
+                }
+                function imgpost() {
+                    var $files = $('#imgfile').get(0).files;
+                    var fp;
+                    if ($files.length) {
+                        if ($files[0].size > $(this).data("max-size") * 1024) {
+                            console.log("Please select a smaller file");
+                            return false;
+                        }
+                        console.log("Uploading file to Imgur..");
+                        var apiUrl = 'https://api.imgur.com/3/image';
+                        var apiKey = 'Bearer c9b33c9056e4378e365513146667e74f40cb9684';
 
+                        var settings = {
+                            async: false,
+                            crossDomain: true,
+                            processData: false,
+                            contentType: false,
+                            type: 'POST',
+                            url: apiUrl,
+                            headers: {
+                                Authorization: '01dd5cfeb1621b4' + apiKey,
+                                Accept: 'application/json'
+                            },
+                            mimeType: 'multipart/form-data'
+                        };
+                        var formData = new FormData();
+                        formData.append("image", $files[0]);
+                        settings.data = formData;
+                        $.ajax(settings).done(function (response) {
+                            var obj = JSON.parse(response);
+                            fp = obj.data.link;
+                        });
+
+                    }
+                    var x = document.getElementById("titletext").value;
+                    var xhttp;
+                    xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function () {
+                        if (this.readyState == 4 && this.status == 200) {
+                            window.location="messege.jsp";
+                        }
+                    };
+                    xhttp.open("GET", "createnewgroup?uid=" + userid + "&title=" + x + "&fp=" + fp, true);
+                    xhttp.send();
+
+                }
 
         </script>
         <%} else {

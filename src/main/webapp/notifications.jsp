@@ -16,6 +16,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
         <title>Tailz</title>
         <link href="img/logo.png" rel="icon">
+        <script>
+            window.paceOptions = {
+                ajax: false,
+                restartOnRequestAfter: false,
+            };
+        </script>
         <script src="js/pace.js"></script>
         <link href="css/animate.css" type="text/css" rel="stylesheet">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -213,7 +219,7 @@
                     <div class='center'><img style="margin-top: 100px" src='img/notifications-silenced.png' class='responsiveimg' ></div>
                     <div class="grey-text center">Icons made by <a href="https://www.freepik.com/" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
                     <%
-                        } else {%>
+                    } else {%>
                     <a class="<%=Bcolor%> <%=Dcolor%> btn" onclick="clearnotifications(<%=uid%>)">Mark All as Read</a>
                     <%}
                     %>

@@ -16,6 +16,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
         <title>Tailz</title>
         <link href="img/logo.png" rel="icon">
+        <script>
+            window.paceOptions = {
+                ajax: false,
+                restartOnRequestAfter: false,
+            };
+        </script>
         <script src="js/pace.js"></script>
         <link href="css/animate.css" type="text/css" rel="stylesheet">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">

@@ -5,9 +5,9 @@
  */
 package com.heymeowcat.tailznet;
 
-
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.UUID;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -18,8 +18,8 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author heymeowcat
  */
-@WebServlet(name = "newmessage", urlPatterns = {"/newmessage"})
-public class newmessage extends HttpServlet {
+@WebServlet(name = "createnewgroup", urlPatterns = {"/createnewgroup"})
+public class createnewgroup extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -34,18 +34,13 @@ public class newmessage extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
+            String groupname = request.getParameter("title");
+            String groupimg = request.getParameter("fp");
             int uid = Integer.parseInt(request.getParameter("uid"));
-            int muid = Integer.parseInt(request.getParameter("muid"));
-            String msg = request.getParameter("msg");
-            String src = request.getParameter("src");
-            if (msg.isEmpty() && src.equals("undefined")) {
-            } else if (src.equals("undefined")) {
-                DB.iud("INSERT INTO `chat` (`chat_text`,`user_sender`, `users_receiver`, `chattype_idchattype`, `chatlinestatus`) VALUES ('" + ENCDEC.encrypt(msg, new KEY().secretKey) + "','" + uid + "', '" + muid + "',1,0);");
-            } else if (msg.isEmpty()) {
-                DB.iud("INSERT INTO `chat` (`src`, `user_sender`, `users_receiver`, `chattype_idchattype`, `chatlinestatus`) VALUES ('" + ENCDEC.encrypt(src, new KEY().secretKey) + "', '" + uid + "', '" + muid + "',1,0);");
-            } else {
-                DB.iud("INSERT INTO `chat` (`chat_text`, `src`, `user_sender`, `users_receiver`, `chattype_idchattype`, `chatlinestatus`) VALUES ('" + ENCDEC.encrypt(msg, new KEY().secretKey) + "','" + ENCDEC.encrypt(src, new KEY().secretKey) + "', '" + uid + "', '" + muid + "',1,0);");
-            }
+            String groupid = UUID.randomUUID().toString();
+            DB.iud("INSERT INTO `groups` (`group_id`, `groupname`, `groupimg`, `groupadmin`) VALUES ('" + groupid + "', '" + groupname + "', '"+groupimg+"', '"+uid+"');");
+            DB.iud("INSERT INTO `group_members` (`Groups_group_id`, `members`) VALUES ('" + groupid + "', '"+uid+"');");
+            response.sendRedirect("messege.jsp");
         } catch (Exception e) {
             e.printStackTrace();
         }

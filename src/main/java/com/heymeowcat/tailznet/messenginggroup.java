@@ -5,7 +5,6 @@
  */
 package com.heymeowcat.tailznet;
 
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
@@ -13,13 +12,14 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  *
  * @author heymeowcat
  */
-@WebServlet(name = "newmessage", urlPatterns = {"/newmessage"})
-public class newmessage extends HttpServlet {
+@WebServlet(name = "messenginggroup", urlPatterns = {"/messenginggroup"})
+public class messenginggroup extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -34,20 +34,8 @@ public class newmessage extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            int uid = Integer.parseInt(request.getParameter("uid"));
-            int muid = Integer.parseInt(request.getParameter("muid"));
-            String msg = request.getParameter("msg");
-            String src = request.getParameter("src");
-            if (msg.isEmpty() && src.equals("undefined")) {
-            } else if (src.equals("undefined")) {
-                DB.iud("INSERT INTO `chat` (`chat_text`,`user_sender`, `users_receiver`, `chattype_idchattype`, `chatlinestatus`) VALUES ('" + ENCDEC.encrypt(msg, new KEY().secretKey) + "','" + uid + "', '" + muid + "',1,0);");
-            } else if (msg.isEmpty()) {
-                DB.iud("INSERT INTO `chat` (`src`, `user_sender`, `users_receiver`, `chattype_idchattype`, `chatlinestatus`) VALUES ('" + ENCDEC.encrypt(src, new KEY().secretKey) + "', '" + uid + "', '" + muid + "',1,0);");
-            } else {
-                DB.iud("INSERT INTO `chat` (`chat_text`, `src`, `user_sender`, `users_receiver`, `chattype_idchattype`, `chatlinestatus`) VALUES ('" + ENCDEC.encrypt(msg, new KEY().secretKey) + "','" + ENCDEC.encrypt(src, new KEY().secretKey) + "', '" + uid + "', '" + muid + "',1,0);");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+            HttpSession ses = request.getSession();
+            ses.setAttribute("groupid", request.getParameter("x"));
         }
     }
 

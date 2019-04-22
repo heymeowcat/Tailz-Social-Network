@@ -22,8 +22,8 @@
         <%
             if (request.getSession().getAttribute("user") != null) {
                 int uid = Integer.parseInt(request.getSession().getAttribute("user").toString());
-                if (request.getSession().getAttribute("muid") != null) {
-                    int muid = Integer.parseInt(request.getSession().getAttribute("muid").toString());
+                if (request.getSession().getAttribute("groupid") != null) {
+                    String groupid = request.getSession().getAttribute("groupid").toString();
                     String up = "";
                     String Acolor = "";
                     String Bcolor = "";
@@ -112,6 +112,7 @@
                 background: transparent;
             }
             html, body {
+
                 height:100%;
                 min-height:100%;
                 overflow: hidden;
@@ -202,25 +203,19 @@
 
         </style>
     </head>
-    <body onload="hideloader(<%=uid%>,<%=muid%>);" class="noselect animated fadeIn  faster">
+    <body onload="hideloader(<%=uid%>, '<%=groupid%>');" class="noselect animated fadeIn  faster">
+
         <header class="StickyHeader" style="position:relative;  z-index: 10;">
             <nav class="<%=Bcolor%>">
                 <div class=" nav-wrapper center container">
                     <div class="row ">
                         <a href="messege.jsp" onclick="seen();"><i class="material-icons left modal-close  <%=Dcolor%> waves-effect  waves-circle " id="back">arrow_back</i></a>
-                        <div onclick="showprofile('<%=muid%>', '<%=uid%>');$('#peekprofile').modal('open');"class="<%=Bcolor%> <%=Dcolor%> truncate chip waves-effect waves-light center">
-                            <% String name = "";
-                                String url = "";
-                                java.sql.ResultSet rs = DB.search("Select image from user_profile_pic where users_idusers='" + muid + "' ");
-                                if (rs.next()) {
-                                    url = rs.getString(1);
+                        <div onclick="$('#opncreategroup').modal('open');" class="<%=Bcolor%> <%=Dcolor%> truncate chip waves-effect waves-light center">
+                            <% java.sql.ResultSet groupheaderrs = DB.search("Select groupimg,groupname from groups where `group_id`='" + groupid + "' ");
+                                if (groupheaderrs.next()) {
+                                    out.write("<img src='" + groupheaderrs.getString(1) + "'>");
+                                    out.write(groupheaderrs.getString(2));
                                 }
-                                java.sql.ResultSet rs1 = DB.search("SELECT CONCAT(`firstname`,' ',`lastname`) FROM users WHERE idusers ='" + muid + "'");
-                                if (rs1.next()) {
-                                    name = rs1.getString(1);
-                                }
-                                out.write("<img src='" + url + "'>");
-                                out.write(name);
                             %>
                         </div>
                     </div>
@@ -228,17 +223,33 @@
             </nav>
         </header>
 
+        <div id="opncreategroup" class=" modal bottom-sheet card" style="max-height:100%; background-color: <%=Ccolor%>">
+            <div class="container">
+                <i class="material-icons right waves-effect modal-close">close</i>
+                <div class="<%=Ecolor%> center card-panel">
+                    <div class="row">
+                        <% java.sql.ResultSet openedgroup = DB.search("Select groupimg,groupname from groups where `group_id`='" + groupid + "' ");
+                            if (openedgroup.next()) {%>
+                        <img style='height: 150px; width: 150px' src='<%=openedgroup.getString(1)%>'  class='circle responsive-img hide-on-small-and-down animated fadeIn'>
+                        <img style='height: 100px; width: 100px' src='<%=openedgroup.getString(1)%>'  class='circle responsive-img hide-on-med-and-up animated fadeIn'>
+                        <h4 class='hide-on-small-and-down'><%=openedgroup.getString(2)%></h4>
+                        <h5 class='hide-on-med-and-up'><%=openedgroup.getString(2)%></h5>
+                        <%}
+                        %>
 
-        <div id="peekprofile" class=" modal bottom-sheet card" style="max-height:100%;background-color: <%=Ccolor%>"">
-            <div id="profilepeek" class="container <%=Bcolor%> <%=Dcolor%>">
+                    </div>
+
+                </div>
 
             </div>
-        </div>                  
+        </div>
 
         <main id="peekmessage" class="StickyContent <%= Acolor%> container" style="padding: 15px;border-radius: 5px;scroll-behavior: smooth;">
         </main>
+
+
         <footer class="StickyFooter container">
-            <form method="POST" enctype="multipart/form-data" accept-charset="UTF-8" id="fileUploadForm">
+            <form method="POST" enctype="multipart/form-data" accept-charset="UTF-8" id="fileUploadForm" >
                 <input class="<%=Dcolor%>" name="msg" required=""  id="msg"  type="text"  placeholder="New message">
                 <div class="file-field input-field">
                     <div class="<%=Bcolor%> <%=Dcolor%> btn-floating center">
@@ -250,7 +261,7 @@
                             <input class="file-path validate <%=Dcolor%>" type="text" id="filet">
                         </div>
                     </div>
-                    <input style="display: none" type="submit" value="Send" id="btnSubmit" class="<%=Dcolor%> <%=Bcolor%> btn right" />
+                    <input style="display: none" type="submit" value="Send" id="btnSubmit" class="<%=Dcolor%> <%=Bcolor%> btn-floating right" />
                     <a id="btnSubmit" class="<%=Dcolor%> <%=Bcolor%> btn-floating right"><i class="material-icons <%=Dcolor%>">send</i></a>
                 </div>
             </form>
@@ -259,16 +270,16 @@
         <script src="js/materialize.js"></script>
         <script>
                             var userid;
-                            var outmuid;
+                            var groupid;
                             var timer;
+                            var objDiv = document.getElementById("peekmessage");
                             function hideloader(x, y) {
                                 userid = x;
-                                outmuid = y;
+                                groupid = y;
                                 chatfirst();
-                                seen();
                             }
                             $(document).ready(function () {
-                                $('#peekprofile').modal();
+                                $('#opncreategroup').modal();
                                 $("body").on("contextmenu", function (e) {
                                     return false;
                                 });
@@ -312,11 +323,10 @@
                                         if (this.readyState == 4 && this.status == 200) {
                                             document.getElementById("msg").value = null;
                                             document.getElementById("filef").value = null;
-                                            document.getElementById("filet").value = null
-
+                                            document.getElementById("filet").value = null;
                                         }
                                     };
-                                    xhttp.open("GET", "newmessage?src=" + fp + "&uid=" + userid + "&muid=" + outmuid + "&msg=" + msg, true);
+                                    xhttp.open("GET", "newgroupmessage?src=" + fp + "&uid=" + userid + "&muid=" + groupid + "&msg=" + msg, true);
                                     xhttp.send();
                                 });
                                 $("#back").click(
@@ -337,51 +347,23 @@
                                             if ($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight)
                                             {
                                                 chatrefresh();
-                                                seen();
+
                                             }
                                         })
                                     }
                             );
-                            function showprofile(str, loggedurs) {
-                                var xhttp;
-                                xhttp = new XMLHttpRequest();
-                                xhttp.onreadystatechange = function () {
-                                    if (this.readyState == 4 && this.status == 200) {
-                                        document.getElementById("profilepeek").innerHTML = this.responseText;
-                                        $('.collapsible').collapsible();
-                                    }
-                                };
-                                xhttp.open("GET", "peekprofile?q=" + str + "&loggedusr=" + loggedurs, true);
-                                xhttp.send();
-                            }
                             function chatrefresh() {
-                                var objDiv = document.getElementById("peekmessage");
+
                                 timer = setTimeout(function () {
-                                    $('#peekmessage').load("directmessages?uid=" + userid + "&muid=" + outmuid);
+                                    $('#peekmessage').load("groupmessages?uid=" + userid + "&muid=" + groupid);
                                     objDiv.scrollTop = objDiv.scrollHeight * objDiv.scrollHeight;
                                     chatrefresh();
                                 }, 1000);
                             }
                             function chatfirst() {
-                                var objDiv = document.getElementById("peekmessage");
-                                $('#peekmessage').load("directmessages?uid=" + userid + "&muid=" + outmuid);
+                                $('#peekmessage').load("groupmessages?uid=" + userid + "&muid=" + groupid);
                                 objDiv.scrollTop = objDiv.scrollHeight * objDiv.scrollHeight;
-
                                 chatrefresh();
-                            }
-
-                            var input = document.getElementById("msg");
-                            input.addEventListener("keyup", function (event) {
-                                event.preventDefault();
-                                if (event.keyCode === 13) {
-
-                                }
-                            });
-                            function seen() {
-                                var xhttp;
-                                xhttp = new XMLHttpRequest();
-                                xhttp.open("GET", "setmessageseen?uid=" + userid + "&muid=" + outmuid, true);
-                                xhttp.send();
                             }
 
         </script>

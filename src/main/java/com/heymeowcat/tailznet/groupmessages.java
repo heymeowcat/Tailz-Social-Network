@@ -5,7 +5,8 @@ package com.heymeowcat.tailznet;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-import com.heymeowcat.tailznet.DB;
+
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
@@ -18,8 +19,8 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author heymeowcat
  */
-@WebServlet(name = "directmessages", urlPatterns = {"/directmessages"})
-public class directmessages extends HttpServlet {
+@WebServlet(urlPatterns = {"/groupmessages"})
+public class groupmessages extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -35,7 +36,7 @@ public class directmessages extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             int uid = Integer.parseInt(request.getParameter("uid"));
-            int muid = Integer.parseInt(request.getParameter("muid"));
+            String muid = request.getParameter("muid");
             String up = "";
             String Acolor = "";
             String Bcolor = "";
@@ -117,16 +118,16 @@ public class directmessages extends HttpServlet {
                     Fcolor = "#9c27b0";
                 }
             }
-            java.sql.ResultSet rs = DB.search("SELECT * FROM `chat` where user_sender=" + muid + " and users_receiver =" + uid + " OR user_sender=" + uid + " AND users_receiver =" + muid + " ORDER BY chat_datetime asc ");
+            java.sql.ResultSet rs = DB.search("SELECT * FROM `group_chat` where Groups_group_id='" + muid + "'  ORDER BY chat_datetime asc ");
             while (rs.next()) {
-                java.sql.ResultSet muidprofiles = DB.search("SELECT firstname FROM `users` where idusers='" + muid + "' ");
-                java.sql.ResultSet uidprofiles = DB.search("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers where idusers =" + uid + " ");
+                java.sql.ResultSet muidprofiles = DB.search("SELECT firstname FROM `users` where idusers='" + rs.getString(6) + "' ");
+                java.sql.ResultSet uidprofiles = DB.search("SELECT chat_text,src,chat_datetime FROM `group_chat` where Groups_group_id='" + muid + "' and users_idusers=" + uid + " ");
                 if (muidprofiles.next() | uidprofiles.next()) {
-                    if (rs.getString(5).equals("" + muid)) {
+                    if (!rs.getString(6).equals("" + uid)) {
                         out.write("<div class='message__list'>");
                         out.write("<div class='message__item message__item--bot'>");
                         out.write("<span class='message message--bot " + Dcolor + "'  data-balloon='" + rs.getString(4) + "' data-balloon-pos='right' >");
-                        out.write("<b>" + muidprofiles.getString(1) + "</b><br>");
+                        out.write("<b>"+muidprofiles.getString(1)+"</b><br>");
                         if (rs.getString(2) != null) {
                             out.write(ENCDEC.decrypt(rs.getString(2), new KEY().secretKey));
                         }
@@ -140,11 +141,11 @@ public class directmessages extends HttpServlet {
                         out.write("</span>");
                         out.write("</div>");
                         out.write("</div>");
-                    } else if (rs.getString(5).equals("" + uid)) {
+                    } else if (rs.getString(6).equals("" + uid)) {
                         out.write("<div class='message__list'>");
                         out.write("<div class='message__item message__item--user'>");
-                        out.write("<span class='message message--user " + Dcolor + "' data-balloon='" + rs.getString(4) + "' data-balloon-pos='left' >");
-                        out.write("<b class='right'>Me</b><br>");
+                        out.write("<span class='message message--user " + Dcolor + " ' data-balloon='" + rs.getString(4) + "' data-balloon-pos='left' >");
+                         out.write("<b class='right'>Me</b><br>");
                         if (rs.getString(2) != null) {
                             out.write(ENCDEC.decrypt(rs.getString(2), new KEY().secretKey));
                         }
@@ -158,9 +159,7 @@ public class directmessages extends HttpServlet {
                         out.write("</span>");
                         out.write("</div>");
                         out.write("</div>");
-
                     }
-
                 }
             }
         } catch (Exception e) {

@@ -7,6 +7,8 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.ResultSet;
+import java.util.UUID;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -17,8 +19,8 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author heymeowcat
  */
-@WebServlet(name = "chatheader", urlPatterns = {"/chatheader"})
-public class chatheader extends HttpServlet {
+@WebServlet(name = "testing", urlPatterns = {"/testing"})
+public class testing extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -33,21 +35,15 @@ public class chatheader extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            int muid = Integer.parseInt(request.getParameter("muid"));
-            String name="";
-            String url="";
-            java.sql.ResultSet rs= DB.search("Select image from user_profile_pic where users_idusers='"+muid+"' ");
-            if(rs.next()){
-                url=rs.getString(1);
-            }
-            java.sql.ResultSet rs1= DB.search("SELECT CONCAT(`firstname`,' ',`lastname`) FROM users WHERE idusers ='"+muid+"'");
-            if(rs1.next()){
-                name=rs1.getString(1);
-            }
-            out.write("<img src='"+url+"'>");
-            out.write(name);
-        
-        }catch(Exception e){
+            String groupname = request.getParameter("groupname");
+            int member = Integer.parseInt(request.getParameter("memberid"));
+            String groupid = UUID.randomUUID().toString();
+            DB.iud("INSERT INTO `groups` (`group id`, `groupname`, `groupimg`, `groupadmin`) VALUES ('" + groupid + "', '" + groupname + "', 'img/Profile_avatar_placeholder_large.png', '1');");
+            DB.iud("INSERT INTO `group_members` (`Groups_group_id`, `members`) VALUES ('" + groupid + "', '1');");
+            DB.iud("INSERT INTO `group_members` (`Groups_group_id`, `members`) VALUES ('" + groupid + "', '"+member+"');");
+            response.sendRedirect("groups.jsp");
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

@@ -16,6 +16,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
         <title>Tailz</title>
         <link href="img/logo.png" rel="icon">
+        <script>
+            window.paceOptions = {
+                ajax: false,
+                restartOnRequestAfter: false,
+            };
+        </script>
         <script src="js/pace.js"></script>
         <link href="css/animate.css" type="text/css" rel="stylesheet">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -830,7 +836,8 @@
                                         <input class="file-path validate <%=Dcolor%>" type="text">
                                     </div>
                                 </div>
-                                <button class="<%=Bcolor%> <%=Dcolor%> btn" onclick="profilepicupdate();refreshhhh();">Update</button><br><br>
+                                <button class="<%=Bcolor%> <%=Dcolor%> btn" onclick="profilepicupdate();
+                                        refreshhhh();">Update</button><br><br>
                                 <a class="<%=Bcolor%> <%=Dcolor%> btn center" href="resetprofilepic?uid=<%=uid%>">Remove</a><br><br>
 
                             </div>
@@ -935,7 +942,8 @@
                                         }
                                     }
                                 %>
-                                <button onclick="themechange(themeaccent.value + themeid.value, '<%=uid%>');refreshhhh()" class="<%=Bcolor%> btn <%=Dcolor%>">CHANGE THEME</button>
+                                <button onclick="themechange(themeaccent.value + themeid.value, '<%=uid%>');
+                                        refreshhhh()" class="<%=Bcolor%> btn <%=Dcolor%>">CHANGE THEME</button>
                             </div>
                             <div class="input-field col s12 <%=Acolor%> <%=Dcolor%> card-panel">
                                 <B>Change Privacy</b>
@@ -960,7 +968,8 @@
                                     }
                                 %>
 
-                                <button onclick="privacychange(privacyid.value, '<%=uid%>');refreshhhh()" class="<%=Bcolor%> btn <%=Dcolor%>">CHANGE PRIVACY</button>
+                                <button onclick="privacychange(privacyid.value, '<%=uid%>');
+                                        refreshhhh()" class="<%=Bcolor%> btn <%=Dcolor%>">CHANGE PRIVACY</button>
                             </div>
                             <div class="input-field col s12 <%=Acolor%> <%=Dcolor%> card-panel">
                                 <B>Change Dashboard Page</b>
@@ -985,7 +994,8 @@
                                     }
                                 %>
 
-                                <button onclick="dashboardchange(dashid.value, '<%=uid%>');refreshhhh()" class="<%=Bcolor%> btn <%=Dcolor%>">CHANGE  PAGE</button>
+                                <button onclick="dashboardchange(dashid.value, '<%=uid%>');
+                                        refreshhhh()" class="<%=Bcolor%> btn <%=Dcolor%>">CHANGE  PAGE</button>
 
                             </div>
                             <div class="input-field col s12 <%=Acolor%> <%=Dcolor%> card-panel">                                
@@ -1038,7 +1048,8 @@
                                         }
                                     }
                                 %>
-                                <button onclick="uapchange(uapid.value, '<%=uid%>', adcate.value);refreshhhh()" class="<%=Bcolor%> btn <%=Dcolor%>">CHANGE UAP</button>
+                                <button onclick="uapchange(uapid.value, '<%=uid%>', adcate.value);
+                                        refreshhhh()" class="<%=Bcolor%> btn <%=Dcolor%>">CHANGE UAP</button>
 
                             </div>
                         </div>

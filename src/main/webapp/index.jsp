@@ -17,6 +17,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
         <title>Tailz</title>
         <link href="img/logo.png" rel="icon">
+        <script>
+            window.paceOptions = {
+                ajax: false,
+                restartOnRequestAfter: false,
+            };
+        </script>
         <script src="js/pace.js"></script>
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
@@ -472,7 +478,8 @@
                             %>
                         </div>
                         <div class="grey-text">Icons made by <a href="https://www.freepik.com/" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
-                        <div class="green-text"><a href="about.jsp">About this App</a></div>
+                        <div class="green-text"><a href="terms.html" class="grey-text">Terms and Conditions</a></div>
+                        <div class="green-text"><a href="privacy.html" class="grey-text">Privacy Policy</a></div> 
                         <div class="grey-text">Made by <a href="https://www.facebook.com/heymeowcat/">heymeowcat</a></div>
                     </div>
                 </div>
@@ -517,18 +524,7 @@
 
                 </div>
             </div>
-            <div id="opnmore" class="modal bottom-sheet card" style="background-color: <%=Ccolor%>">
-                <div id="peekcommentss" class="<%=Bcolor%> <%=Dcolor%> container">
-                    <ul class="<%=Acolor%> <%=Dcolor%> collapsible" style="border-color: <%=Ccolor%>">
-                        <li class="active">
-                            <div class="<%=Acolor%> collapsible-header" style="border-color: <%=Ccolor%>"><i class="material-icons">filter_list</i>Search Post</div>
-                            <div class="<%=Acolor%> collapsible-body" style="border-color: <%=Ccolor%>">
 
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
             <div id="opnembedpost" class=" modal bottom-sheet card" style="max-height:100%; background-color: <%=Ccolor%>">
                 <div class="container">
                     <div class="<%=Acolor%> card-panel">
@@ -618,7 +614,6 @@
                                 $('#opnembedpost').modal();
                                 $('#peekprofile').modal();
                                 $('#peekwholikesthis').modal();
-                                $('#opnmore').modal();
                                 $('.materialboxed').materialbox();
                                 $('.fixed-action-btn').floatingActionButton();
                                 $("body").on("contextmenu", function (e) {
