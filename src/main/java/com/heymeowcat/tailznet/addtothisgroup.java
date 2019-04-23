@@ -7,8 +7,6 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.ResultSet;
-import java.util.UUID;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -19,8 +17,8 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author heymeowcat
  */
-@WebServlet(name = "testing", urlPatterns = {"/testing"})
-public class testing extends HttpServlet {
+@WebServlet(name = "addtothisgroup", urlPatterns = {"/addtothisgroup"})
+public class addtothisgroup extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -35,14 +33,9 @@ public class testing extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            String groupname = request.getParameter("groupname");
-            int member = Integer.parseInt(request.getParameter("memberid"));
-            String groupid = UUID.randomUUID().toString();
-            DB.iud("INSERT INTO `groups` (`group id`, `groupname`, `groupimg`, `groupadmin`) VALUES ('" + groupid + "', '" + groupname + "', 'img/Profile_avatar_placeholder_large.png', '1');");
-            DB.iud("INSERT INTO `group_members` (`Groups_group_id`, `members`) VALUES ('" + groupid + "', '1');");
-            DB.iud("INSERT INTO `group_members` (`Groups_group_id`, `members`) VALUES ('" + groupid + "', '"+member+"');");
-            response.sendRedirect("groups.jsp");
-
+            String groupid =request.getParameter("x");
+            int member =Integer.parseInt(request.getParameter("y"));
+            DB.iud("INSERT INTO `group_members` (`Groups_group_id`, `members`) VALUES ('" + groupid + "', '" + member + "');");
         } catch (Exception e) {
             e.printStackTrace();
         }

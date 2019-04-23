@@ -7,7 +7,6 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.UUID;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -18,8 +17,8 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author heymeowcat
  */
-@WebServlet(name = "createnewgroup", urlPatterns = {"/createnewgroup"})
-public class createnewgroup extends HttpServlet {
+@WebServlet(name = "deletethisgroup", urlPatterns = {"/deletethisgroup"})
+public class deletethisgroup extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -34,20 +33,11 @@ public class createnewgroup extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            String groupname = request.getParameter("title");
-            String groupimg = request.getParameter("fp");
-            int uid = Integer.parseInt(request.getParameter("uid"));
-            String groupid = UUID.randomUUID().toString();
-            if (!groupname.isEmpty()) {
-                if (groupimg.equals("undefined")) {
-                    DB.iud("INSERT INTO `groups` (`group_id`, `groupname`, `groupimg`, `groupadmin`) VALUES ('" + groupid + "', '" + groupname + "', 'img/Profile_avatar_placeholder_large.png', '" + uid + "');");
-                    DB.iud("INSERT INTO `group_members` (`Groups_group_id`, `members`) VALUES ('" + groupid + "', '" + uid + "');");
-                } else {
-                    DB.iud("INSERT INTO `groups` (`group_id`, `groupname`, `groupimg`, `groupadmin`) VALUES ('" + groupid + "', '" + groupname + "', '" + groupimg + "', '" + uid + "');");
-                    DB.iud("INSERT INTO `group_members` (`Groups_group_id`, `members`) VALUES ('" + groupid + "', '" + uid + "');");
-                }
-            }
-        } catch (Exception e) {
+           String groupid = request.getParameter("x");
+           DB.iud("DELETE FROM `group_chat` WHERE `Groups_group_id`='"+groupid+"'");
+           DB.iud("DELETE FROM `group_members` WHERE `Groups_group_id`='"+groupid+"'");
+           DB.iud("DELETE FROM `groups` WHERE `group_id`='"+groupid+"'");
+        }catch(Exception  e){
             e.printStackTrace();
         }
     }

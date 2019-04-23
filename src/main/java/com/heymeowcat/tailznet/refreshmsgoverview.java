@@ -109,12 +109,10 @@ public class refreshmsgoverview extends HttpServlet {
             if (!rsop.isBeforeFirst()) {
                 out.write("\n");
                 out.write("                    <div class='center'><img src='img/conversation.png' class='responsiveimg' style=\"margin-top: 100px\"></div>\n");
-                out.write("   <div class=\"grey-text center\">Icons made by <a href=\"https://www.freepik.com/\" title=\"Freepik\">Freepik</a> from <a href=\"https://www.flaticon.com/\" title=\"Flaticon\">www.flaticon.com</a> is licensed by <a href=\"http://creativecommons.org/licenses/by/3.0/\" title=\"Creative Commons BY 3.0\" target=\"_blank\">CC 3.0 BY</a></div>");
-                out.write("                        ");
-            }
-            out.write("\n");
-            out.write("                        ");
+                out.write("                    <div class=\"grey-text center\">Icons made by <a href=\"https://www.freepik.com/\" title=\"Freepik\">Freepik</a> from <a href=\"https://www.flaticon.com/\" title=\"Flaticon\">www.flaticon.com</a> is licensed by <a href=\"http://creativecommons.org/licenses/by/3.0/\" title=\"Creative Commons BY 3.0\" target=\"_blank\">CC 3.0 BY</a></div>\n");
+                out.write("                    ");
 
+            }
             java.sql.ResultSet rs = DB.search("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT idusers from users WHERE idusers = ANY(SELECT receiver FROM follow WHERE sender='" + uid + "') AND idusers= ANY(SELECT sender FROM follow WHERE receiver='" + uid + "'))  ORDER BY (Select count(chatlinestatus) from chat where chatlinestatus='0' and user_sender=idusers and users_receiver='" + uid + "' ) DESC,(Select count(chatlinestatus) from chat where chatlinestatus='0' and users_receiver=idusers and user_sender='" + uid + "' ) DESC,(Select count(chatlinestatus) from chat where chatlinestatus='1' and users_receiver=idusers and user_sender='" + uid + "' ) DESC");
             while (rs.next()) {
                 muiddd = Integer.parseInt(rs.getString(4));
@@ -131,17 +129,19 @@ public class refreshmsgoverview extends HttpServlet {
                         outString = "<b>" + unseenno + "</b>";
                     }
                 }
-                out.write("<div class=\"col s6 m3 l2\">\n");
-                out.write("<div class=\"");
+
+                out.write("\n");
+                out.write("                    <div class=\"col s6 m3 l2\">\n");
+                out.write("                        <div class=\"");
                 out.print(Acolor);
-                out.write(" card-panel\">\n");
-                out.write("<img  src=\"");
+                out.write(" card-panel hoverable \">\n");
+                out.write("                            <img src=\"");
                 out.print(rs.getString(3));
                 out.write("\" class=\"circle responsive-img\">\n");
-                out.write("<div class=\"card-content center ");
+                out.write("                            <div class=\"card-content center ");
                 out.print(Dcolor);
                 out.write("\">\n");
-                out.write("<p class=\"truncate\">");
+                out.write("                                <p class=\"truncate\">");
                 out.print(rs.getString(1));
                 out.write(' ');
                 out.print(rs.getString(2));
@@ -149,6 +149,40 @@ public class refreshmsgoverview extends HttpServlet {
                 out.write("                                <a onclick=\"setuser(");
                 out.print(muiddd);
                 out.write(");\"  class=\"btn-floating ");
+                out.print(Bcolor);
+                out.write(' ');
+                out.print(Dcolor);
+                out.write(" waves-effect\">");
+                out.print(outString);
+                out.write("</a>\n");
+                out.write("                            </div>\n");
+                out.write("                        </div>\n");
+                out.write("                    </div>\n");
+                out.write("\n");
+                out.write("                    ");
+
+            }
+            java.sql.ResultSet rsgroup = DB.search("SELECT * FROM `groups` where group_id= ANY(SELECT Groups_group_id from group_members where members='" + uid + "') ORDER BY (Select count(chatstatus) from group_chat where chatstatus='0' and users_idusers!='" + uid + "' ) DESC,(Select count(chatstatus) from group_chat where chatstatus='0' and  users_idusers='" + uid + "' ) DESC,(Select count(chatstatus) from group_chat where chatstatus='1' and  users_idusers!='" + uid + "' ) DESC");
+            String outString = "<i class='material-icons " + Dcolor + " '>add</i>";
+            while (rsgroup.next()) {
+
+                out.write("\n");
+                out.write("                    <div class=\"col s6 m3 l2\">\n");
+                out.write("                        <div class=\"");
+                out.print(Acolor);
+                out.write(" card-panel hoverable \">\n");
+                out.write("                            <img src=\"");
+                out.print(rsgroup.getString(3));
+                out.write("\" class=\"circle responsive-img\">\n");
+                out.write("                            <div class=\"card-content center ");
+                out.print(Dcolor);
+                out.write("\">\n");
+                out.write("                                <p class=\"truncate\">");
+                out.print(rsgroup.getString(2));
+                out.write("</p>\n");
+                out.write("                                <a onclick=\"setusergroup('");
+                out.print(rsgroup.getString(1));
+                out.write("');\"  class=\"btn-floating ");
                 out.print(Bcolor);
                 out.write(' ');
                 out.print(Dcolor);

@@ -733,6 +733,7 @@
                                                         chatnumberrefresh();
                                                     }, 1000);
                                                 }
+                                                
         </script>
         <%} else {
                 Cookie[] cookies = request.getCookies();

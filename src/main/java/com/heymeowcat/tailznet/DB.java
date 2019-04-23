@@ -18,7 +18,7 @@ public class DB {
     private static void setConnection()throws Exception{
      Class.forName("com.mysql.jdbc.Driver");
         try {
-            conn=DriverManager.getConnection("jdbc:mysql://localhost:3306/sEXUaFqh92","root","");
+            conn=DriverManager.getConnection("jdbc:mysql://remotemysql.com:3306/sEXUaFqh92","sEXUaFqh92","tkitcG2BYH");
         } catch (Exception e) {
            
         }

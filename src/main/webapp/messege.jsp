@@ -328,12 +328,7 @@
 
                     <%
                         }
-
-                    %>
-
-                </div>
-                <div class="row">
-                    <%java.sql.ResultSet rsgroup = DB.search("SELECT * FROM `groups` where group_id= ANY(SELECT Groups_group_id from group_members where members='" + uid + "') ORDER BY (Select count(chatstatus) from group_chat where chatstatus='0' and users_idusers!='" + uid + "' ) DESC,(Select count(chatstatus) from group_chat where chatstatus='0' and  users_idusers='" + uid + "' ) DESC,(Select count(chatstatus) from group_chat where chatstatus='1' and  users_idusers!='" + uid + "' ) DESC");
+                        java.sql.ResultSet rsgroup = DB.search("SELECT * FROM `groups` where group_id= ANY(SELECT Groups_group_id from group_members where members='" + uid + "') ORDER BY (Select count(chatstatus) from group_chat where chatstatus='0' and users_idusers!='" + uid + "' ) DESC,(Select count(chatstatus) from group_chat where chatstatus='0' and  users_idusers='" + uid + "' ) DESC,(Select count(chatstatus) from group_chat where chatstatus='1' and  users_idusers!='" + uid + "' ) DESC");
                         String outString = "<i class='material-icons " + Dcolor + " '>add</i>";
                         while (rsgroup.next()) {
                     %>
@@ -348,12 +343,15 @@
                     </div>
 
                     <%}%>
-
                 </div>
 
             </div>
         </main>
-
+        <%
+            java.sql.ResultSet rsgroupfeature = DB.search("Select COUNT(idusers) FROM users WHERE users.idusers = ANY(SELECT idusers from users WHERE idusers = ANY(SELECT receiver FROM follow WHERE sender='" + uid + "') AND idusers= ANY(SELECT sender FROM follow WHERE receiver='" + uid + "'))");
+            if (rsgroupfeature.next()) {
+                if (rsgroupfeature.getInt(1) > 1) {
+        %>
         <div  class ="fixed-action-btn hide-on-med-and-up" style="bottom:60px; right: 5px;" >
             <a onclick="$('#opncreategroup').modal('open');" class="btn-floating btn-large <%=Bcolor%>" >       
                 <i class="large material-icons <%=Dcolor%>">group_add</i>
@@ -364,6 +362,11 @@
                 <i class="large material-icons <%=Dcolor%>">group_add</i>
             </a>
         </div>
+        <%}
+            }
+        %>
+
+
 
 
 
@@ -462,7 +465,7 @@
                     xhttp = new XMLHttpRequest();
                     xhttp.onreadystatechange = function () {
                         if (this.readyState == 4 && this.status == 200) {
-                            window.location="messege.jsp";
+                            window.location = "messege.jsp";
                         }
                     };
                     xhttp.open("GET", "createnewgroup?uid=" + userid + "&title=" + x + "&fp=" + fp, true);
