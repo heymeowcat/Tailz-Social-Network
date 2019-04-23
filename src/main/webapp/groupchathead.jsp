@@ -211,10 +211,10 @@
                     <div class="row ">
                         <a href="messege.jsp" onclick="seen();"><i class="material-icons left modal-close  <%=Dcolor%> waves-effect  waves-circle " id="back">arrow_back</i></a>
                         <div onclick="$('#opncreategroup').modal('open');" class="<%=Bcolor%> <%=Dcolor%> truncate chip waves-effect waves-light center">
-                            <% java.sql.ResultSet groupheaderrs = DB.search("Select groupimg,groupname from groups where `group_id`='" + groupid + "' ");
+                            <% java.sql.ResultSet groupheaderrs = DB.search("SELECT `groupname`, `groupimg` FROM `groups` WHERE `group_id` ='"+groupid+"'");
                                 if (groupheaderrs.next()) {
-                                    out.write("<img src='" + groupheaderrs.getString(1) + "'>");
-                                    out.write(groupheaderrs.getString(2));
+                                    out.write("<img src='" + groupheaderrs.getString(2) + "'>");
+                                    out.write(groupheaderrs.getString(1));
                                 }
                             %>
                         </div>
@@ -228,14 +228,14 @@
                 <i class="material-icons right waves-effect modal-close <%=Dcolor%>">close</i>
                 <div class="<%=Acolor%> center card-panel">
                     <div class="row">
-                        <% java.sql.ResultSet openedgroup = DB.search("Select groupimg,groupname,groupadmin from groups where `group_id`='" + groupid + "' ");
+                        <% java.sql.ResultSet openedgroup = DB.search("SELECT `groupname`, `groupimg`,`groupadmin` FROM `groups` WHERE `group_id` ='"+groupid+"'");
                             if (openedgroup.next()) {%>
-                        <img style='height: 150px; width: 150px' src='<%=openedgroup.getString(1)%>'  class='circle responsive-img hide-on-small-and-down animated fadeIn'>
-                        <img style='height: 100px; width: 100px' src='<%=openedgroup.getString(1)%>'  class='circle responsive-img hide-on-med-and-up animated fadeIn'>
-                        <h4 class='hide-on-small-and-down <%=Dcolor%>'><%=openedgroup.getString(2)%></h4>
-                        <h5 class='hide-on-med-and-up <%=Dcolor%>'><%=openedgroup.getString(2)%></h5>
+                        <img style='height: 150px; width: 150px' src='<%=openedgroup.getString(2)%>'  class='circle responsive-img hide-on-small-and-down animated fadeIn'>
+                        <img style='height: 100px; width: 100px' src='<%=openedgroup.getString(2)%>'  class='circle responsive-img hide-on-med-and-up animated fadeIn'>
+                        <h4 class='hide-on-small-and-down <%=Dcolor%>'><%=openedgroup.getString(1)%></h4>
+                        <h5 class='hide-on-med-and-up <%=Dcolor%>'><%=openedgroup.getString(1)%></h5>
 
-                        <table id="followsuggestionsid" class="<%=Acolor%> highlight" style="margin: 0px;padding: 0px" >
+                        <table class="<%=Acolor%> highlight" style="margin: 0px;padding: 0px" >
                             <%
                                 java.sql.ResultSet rs2 = DB.search("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers ='" + openedgroup.getString(3) + "' ");
                                 if (rs2.next()) {
