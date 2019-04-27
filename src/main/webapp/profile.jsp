@@ -836,8 +836,7 @@
                                         <input class="file-path validate <%=Dcolor%>" type="text">
                                     </div>
                                 </div>
-                                <button class="<%=Bcolor%> <%=Dcolor%> btn" onclick="profilepicupdate();
-                                        refreshhhh();">Update</button><br><br>
+                                <button class="<%=Bcolor%> <%=Dcolor%> btn" onclick="profilepicupdate();">Update</button><br><br>
                                 <a class="<%=Bcolor%> <%=Dcolor%> btn center" href="resetprofilepic?uid=<%=uid%>">Remove</a><br><br>
 
                             </div>
@@ -942,8 +941,7 @@
                                         }
                                     }
                                 %>
-                                <button onclick="themechange(themeaccent.value + themeid.value, '<%=uid%>');
-                                        refreshhhh()" class="<%=Bcolor%> btn <%=Dcolor%>">CHANGE THEME</button>
+                                <button onclick="themechange(themeaccent.value + themeid.value, '<%=uid%>');" class="<%=Bcolor%> btn <%=Dcolor%>">CHANGE THEME</button>
                             </div>
                             <div class="input-field col s12 <%=Acolor%> <%=Dcolor%> card-panel">
                                 <B>Change Privacy</b>
@@ -968,8 +966,7 @@
                                     }
                                 %>
 
-                                <button onclick="privacychange(privacyid.value, '<%=uid%>');
-                                        refreshhhh()" class="<%=Bcolor%> btn <%=Dcolor%>">CHANGE PRIVACY</button>
+                                <button onclick="privacychange(privacyid.value, '<%=uid%>');" class="<%=Bcolor%> btn <%=Dcolor%>">CHANGE PRIVACY</button>
                             </div>
                             <div class="input-field col s12 <%=Acolor%> <%=Dcolor%> card-panel">
                                 <B>Change Dashboard Page</b>
@@ -994,8 +991,7 @@
                                     }
                                 %>
 
-                                <button onclick="dashboardchange(dashid.value, '<%=uid%>');
-                                        refreshhhh()" class="<%=Bcolor%> btn <%=Dcolor%>">CHANGE  PAGE</button>
+                                <button onclick="dashboardchange(dashid.value, '<%=uid%>');" class="<%=Bcolor%> btn <%=Dcolor%>">CHANGE  PAGE</button>
 
                             </div>
                             <div class="input-field col s12 <%=Acolor%> <%=Dcolor%> card-panel">                                
@@ -1048,8 +1044,7 @@
                                         }
                                     }
                                 %>
-                                <button onclick="uapchange(uapid.value, '<%=uid%>', adcate.value);
-                                        refreshhhh()" class="<%=Bcolor%> btn <%=Dcolor%>">CHANGE UAP</button>
+                                <button onclick="uapchange(uapid.value, '<%=uid%>', adcate.value);" class="<%=Bcolor%> btn <%=Dcolor%>">CHANGE UAP</button>
 
                             </div>
                         </div>
@@ -1147,13 +1142,8 @@
                                                 console.log("Please select a smaller file");
                                                 return false;
                                             }
-                                            // Begin file upload
-                                            console.log("Uploading file to Imgur..");
-
-                                            // Replace ctrlq with your own API key
                                             var apiUrl = 'https://api.imgur.com/3/image';
                                             var apiKey = 'Bearer c9b33c9056e4378e365513146667e74f40cb9684';
-
                                             var settings = {
                                                 async: false,
                                                 crossDomain: true,
@@ -1167,13 +1157,9 @@
                                                 },
                                                 mimeType: 'multipart/form-data'
                                             };
-
                                             var formData = new FormData();
                                             formData.append("image", $files[0]);
                                             settings.data = formData;
-
-                                            // Response contains stringified JSON
-                                            // Image URL available at response.data.link
                                             $.ajax(settings).done(function (response) {
                                                 var obj = JSON.parse(response);
                                                 fp = obj.data.link;
@@ -1184,7 +1170,7 @@
                                         xhttp = new XMLHttpRequest();
                                         xhttp.onreadystatechange = function () {
                                             if (this.readyState == 4 && this.status == 200) {
-
+                                                window.location = "profile.jsp";
                                             }
                                         };
                                         xhttp.open("GET", "updateprofilepic?fp=" + fp, true);
@@ -1243,7 +1229,7 @@
                                         xhttp = new XMLHttpRequest();
                                         xhttp.onreadystatechange = function () {
                                             if (this.readyState == 4 && this.status == 200) {
-
+                                                window.location = "profile.jsp";
                                             }
                                         };
                                         xhttp.open("GET", "follow?x=" + x + "&y=" + y, true);
@@ -1254,21 +1240,18 @@
                                         xhttp = new XMLHttpRequest();
                                         xhttp.onreadystatechange = function () {
                                             if (this.readyState == 4 && this.status == 200) {
-
+                                                window.location = "profile.jsp";
                                             }
                                         };
                                         xhttp.open("GET", "unfollow?x=" + x + "&y=" + y, true);
                                         xhttp.send();
-                                    }
-                                    function refreshhhh() {
-                                        window.location.replace("profile.jsp");
                                     }
                                     function themechange(x, uid) {
                                         var xhttp;
                                         xhttp = new XMLHttpRequest();
                                         xhttp.onreadystatechange = function () {
                                             if (this.readyState == 4 && this.status == 200) {
-                                                //document.getElementById("profilepeek").innerHTML = this.responseText;
+                                                window.location = "profile.jsp";
                                             }
                                         };
                                         xhttp.open("GET", "themechange?x=" + x + "&uid=" + uid, true);
@@ -1279,7 +1262,7 @@
                                         xhttp = new XMLHttpRequest();
                                         xhttp.onreadystatechange = function () {
                                             if (this.readyState == 4 && this.status == 200) {
-                                                //document.getElementById("profilepeek").innerHTML = this.responseText;
+                                                window.location = "profile.jsp";
                                             }
                                         };
                                         xhttp.open("GET", "uapchange?x=" + x + "&uid=" + uid + "&y=" + y, true);
@@ -1290,7 +1273,7 @@
                                         xhttp = new XMLHttpRequest();
                                         xhttp.onreadystatechange = function () {
                                             if (this.readyState == 4 && this.status == 200) {
-                                                //document.getElementById("profilepeek").innerHTML = this.responseText;
+                                                window.location = "profile.jsp";
                                             }
                                         };
                                         xhttp.open("GET", "changedashboardpage?x=" + x + "&uid=" + uid, true);
@@ -1301,7 +1284,7 @@
                                         xhttp = new XMLHttpRequest();
                                         xhttp.onreadystatechange = function () {
                                             if (this.readyState == 4 && this.status == 200) {
-                                                //document.getElementById("profilepeek").innerHTML = this.responseText;
+                                                  window.location ="profile.jsp";
                                             }
                                         };
                                         xhttp.open("GET", "privacychange?x=" + x + "&uid=" + uid, true);
@@ -1373,8 +1356,6 @@
                                             chatnumberrefresh();
                                         }, 1000);
                                     }
-
-
 
         </script>
         <%} else {

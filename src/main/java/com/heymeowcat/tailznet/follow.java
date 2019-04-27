@@ -36,7 +36,7 @@ public class follow extends HttpServlet {
             String sender = request.getParameter("x");
             String receiver = request.getParameter("y");
             DB.iud("INSERT INTO `follow` (`sender`, `receiver`) VALUES ('" + sender + "', '" + receiver + "');");
-            DB.iud("INSERT INTO `notification` (`notificationfor`, `notificationfrom`,`notification-type`,`status`) VALUES ('" + receiver + "', '" + sender + "','1','0');");
+            DB.iud("INSERT INTO `notification` (`notificationfor`, `notificationfrom`,`notification-type`,`status`,`target`) VALUES ('" + receiver + "', '" + sender + "','1','0','0');");
             out.write("followed");
         } catch (Exception e) {
             e.printStackTrace();

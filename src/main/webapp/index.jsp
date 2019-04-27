@@ -472,10 +472,11 @@
                                     if (!rsop.isBeforeFirst()) {
                                 %>
                                 <div class='center'><img src='img/friendship.png' class='responsiveimg' ></div>
-                            </div>
+                        
                             <%
                                 }
                             %>
+                                </div>
                         </div>
                         <div class="grey-text">Icons made by <a href="https://www.freepik.com/" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
                         <div class="green-text"><a href="terms.html" class="grey-text">Terms and Conditions</a></div>
@@ -596,7 +597,6 @@
 
             <script src="js/jquery-3.2.1.min.js"></script>
             <script src="js/materialize.js"></script>
-
             <script>
                             var selectedpid;
                             var userid;
@@ -649,7 +649,7 @@
                                 xhttp = new XMLHttpRequest();
                                 xhttp.onreadystatechange = function () {
                                     if (this.readyState == 4 && this.status == 200) {
-
+                                        window.location = "index.jsp";
                                     }
                                 };
                                 xhttp.open("GET", "follow?x=" + x + "&y=" + y, true);
@@ -660,7 +660,7 @@
                                 xhttp = new XMLHttpRequest();
                                 xhttp.onreadystatechange = function () {
                                     if (this.readyState == 4 && this.status == 200) {
-
+                                        window.location = "index.jsp";
                                     }
                                 };
                                 xhttp.open("GET", "unfollow?x=" + x + "&y=" + y, true);
@@ -758,7 +758,7 @@
                                         document.getElementById("titletext").value = null;
                                         document.getElementById("descriptiontext").value = null;
                                         document.getElementById("imgfile").value = null;
-                                        $('#opnimgpost').modal().destroy();
+                                        $('#opnimgpost').modal('destroy');
                                     }
                                 };
                                 xhttp.open("GET", "newpost?uid=" + userid + "&title=" + x + "&description=" + y + "&fp=" + fp, true);
@@ -833,7 +833,6 @@
                                 setTimeout(function () {
                                     $('#notificationnumber').load("notificationnumber?uid=" + userid);
                                     $('#notificationnumber2').load("notificationnumber?uid=" + userid);
-                                    numberrefresh();
                                 }, 1000);
                             }
                             function chatnumberrefresh() {

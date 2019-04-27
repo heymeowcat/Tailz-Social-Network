@@ -652,7 +652,7 @@
                                                     xhttp = new XMLHttpRequest();
                                                     xhttp.onreadystatechange = function () {
                                                         if (this.readyState == 4 && this.status == 200) {
-
+                                                            window.location = "search-trending.jsp";
                                                         }
                                                     };
                                                     xhttp.open("GET", "follow?x=" + x + "&y=" + y, true);
@@ -663,7 +663,7 @@
                                                     xhttp = new XMLHttpRequest();
                                                     xhttp.onreadystatechange = function () {
                                                         if (this.readyState == 4 && this.status == 200) {
-
+                                                            window.location = "search-trending.jsp";
                                                         }
                                                     };
                                                     xhttp.open("GET", "unfollow?x=" + x + "&y=" + y, true);
@@ -733,7 +733,7 @@
                                                         chatnumberrefresh();
                                                     }, 1000);
                                                 }
-                                                
+
         </script>
         <%} else {
                 Cookie[] cookies = request.getCookies();

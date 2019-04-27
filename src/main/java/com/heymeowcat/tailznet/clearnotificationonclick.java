@@ -1,13 +1,10 @@
-package com.heymeowcat.tailznet;
-
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+package com.heymeowcat.tailznet;
 
-
-import com.heymeowcat.tailznet.DB;
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
@@ -20,8 +17,8 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author heymeowcat
  */
-@WebServlet(name = "clearnotifications", urlPatterns = {"/clearnotifications"})
-public class clearnotifications extends HttpServlet {
+@WebServlet(name = "clearnotificationonclick", urlPatterns = {"/clearnotificationonclick"})
+public class clearnotificationonclick extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -36,9 +33,9 @@ public class clearnotifications extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-           int nid = Integer.parseInt(request.getParameter("nid"));
-           DB.iud("UPDATE `notification` SET `status` = '1' WHERE `notification`.`idnotification` ='"+nid+"'; ");
-        }catch(Exception e){
+            int nid = Integer.parseInt(request.getParameter("nid"));
+            DB.iud("UPDATE `notification` SET `status` = '1' WHERE `notification`.`idnotification` =" + nid + "; ");
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

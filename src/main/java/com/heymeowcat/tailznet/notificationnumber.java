@@ -34,7 +34,6 @@ public class notificationnumber extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            System.gc();
             int uid = Integer.parseInt(request.getParameter("uid"));
             ResultSet rs = DB.search("Select count(notificationfor) from notification where notificationfor='"+uid+"' and status='0' ");
             if (rs.next()) {

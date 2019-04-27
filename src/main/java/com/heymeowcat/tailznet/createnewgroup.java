@@ -40,7 +40,7 @@ public class createnewgroup extends HttpServlet {
             String groupid = UUID.randomUUID().toString();
             if (!groupname.isEmpty()) {
                 if (groupimg.equals("undefined")) {
-                    DB.iud("INSERT INTO `groups` (`group_id`, `groupname`, `groupimg`, `groupadmin`) VALUES ('" + groupid + "', '" + groupname + "', 'img/Profile_avatar_placeholder_large.png', '" + uid + "');");
+                    DB.iud("INSERT INTO `groups` (`group_id`, `groupname`, `groupimg`, `groupadmin`) VALUES ('" + groupid + "', '" + groupname + "', 'https://imgplaceholder.com/420x420/cccccc/757575/ion-android-people', '" + uid + "');");
                     DB.iud("INSERT INTO `group_members` (`Groups_group_id`, `members`) VALUES ('" + groupid + "', '" + uid + "');");
                 } else {
                     DB.iud("INSERT INTO `groups` (`group_id`, `groupname`, `groupimg`, `groupadmin`) VALUES ('" + groupid + "', '" + groupname + "', '" + groupimg + "', '" + uid + "');");

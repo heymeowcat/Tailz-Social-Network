@@ -128,7 +128,7 @@ public class commentsload extends HttpServlet {
                  DB.iud("INSERT INTO `post_comment` ( `comment`, `users_idusers`, `post_idpost`) VALUES ('" + z + "', '" + y + "', '" + x + "');");
             }
             if (piduid != y) {
-                DB.iud("INSERT INTO `notification` (`notificationfor`, `notificationfrom`,`notification-type`,`status`) VALUES ('" + piduid + "', '" + y + "','2','0');");
+                DB.iud("INSERT INTO `notification` (`notificationfor`, `notificationfrom`,`notification-type`,`status`,`target`) VALUES ('" + piduid + "', '" + y + "','2','0','"+x+"');");
             }
             java.sql.ResultSet cmntsrs = DB.search("Select * from `post_comment` where post_idpost='" + x + "' ORDER BY `post_comment`.`datetime` DESC ");
             while (cmntsrs.next()) {

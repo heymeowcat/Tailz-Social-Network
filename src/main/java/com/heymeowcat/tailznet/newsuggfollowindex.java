@@ -150,6 +150,7 @@ public class newsuggfollowindex extends HttpServlet {
                 out.write("                                <div class='center'><img src='img/friendship.png' class='responsiveimg' ></div>\n");
                 out.write("                            </div>\n");
                 out.write("                            ");
+                out.write("");
 
             }
         } catch (Exception e) {

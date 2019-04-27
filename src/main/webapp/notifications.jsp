@@ -208,6 +208,16 @@
             </nav>
         </header>
 
+        <div id="peekprofile" class=" modal bottom-sheet card" style="max-height:100%;background-color: <%=Ccolor%>"">
+            <div id="profilepeek" class="container <%=Bcolor%> <%=Dcolor%>">
+
+            </div>
+        </div>
+        <div id="opncmnts" class="modal bottom-sheet card" style="min-height:100vh; background-color: <%=Ccolor%>">
+            <div id="peekcomments" class="<%=Bcolor%> <%=Dcolor%> container ">
+
+            </div>
+        </div>
 
         <main class="StickyContent">
             <div class="container animated fadeIn">
@@ -250,19 +260,27 @@
                                         lnamepost = lastimguser.getString(1);
                                     }
                                     notificationtxt = fnamepost + " " + lnamepost + " " + commenttext;
+                                    if (rs.getInt(6) == 0) {
+
                         %>
 
-                        <li class="<%= Acolor%> <%= Dcolor%> collection-item avatar" style="border-color: <%=Ccolor%>">
-                            <img src="<%=imgup%>" alt="" class="circle">
+                        <li class="<%= Bcolor%> <%= Dcolor%> collection-item avatar" style="border-color: <%=Ccolor%>">
+                            <img  src="<%=imgup%>" alt="" class="circle">
                             <span class=" title"><%=notificationtxt%></span>
                             <p>
                                 <%=rs.getString(5)%>
                             </p>
-
                         </li>
-
-
+                        <%  } else if (rs.getInt(6) == 1) {%>
+                        <li class="<%= Acolor%> <%= Dcolor%> collection-item avatar" style="border-color: <%=Ccolor%>">
+                            <img  src="<%=imgup%>" alt="" class="circle">
+                            <span class=" title"><%=notificationtxt%></span>
+                            <p>
+                                <%=rs.getString(5)%>
+                            </p>
+                        </li>
                         <%}
+                                }
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -294,52 +312,121 @@
         <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
         <script type="text/javascript" src="js/materialize.js"></script>
         <script>
-                        var userid;
-                        function hideloader(x) {
-                            newassign(x);
-                        }
-                        $(document).ready(function () {
-                            $("body").on("contextmenu", function (e) {
-                                return false;
-                            });
-                        });
-                        function newassign(x) {
-                            userid = x;
-                            numberrefresh();
-                            refresh();
-                            chatnumberrefresh();
-                        }
-                        function refresh() {
-                            setTimeout(function () {
-                                $('#notificationbox').load("notificationslive?uid=" + userid);
-                                refresh();
-                            }, 1000);
-                        }
-                        function numberrefresh() {
-                            setTimeout(function () {
-                                $('#notificationnumber').load("notificationnumber?uid=" + userid);
-                                $('#notificationnumber2').load("notificationnumber?uid=" + userid);
-                                numberrefresh();
-                            }, 1000);
-                        }
-                        function clearnotifications(uid) {
-                            var xhttp;
-                            xhttp = new XMLHttpRequest();
-                            xhttp.onreadystatechange = function () {
-                                if (this.readyState == 4 && this.status == 200) {
+                                var userid;
 
+                                function hideloader(x) {
+                                    newassign(x);
                                 }
-                            };
-                            xhttp.open("GET", "clearnotifications?uid=" + uid, true);
-                            xhttp.send();
-                        }
-                        function chatnumberrefresh() {
-                            setTimeout(function () {
-                                $('#chatnumber').load("chatnumber?uid=" + userid);
-                                $('#chatnumber2').load("chatnumber?uid=" + userid);
-                                chatnumberrefresh();
-                            }, 1000);
-                        }
+                                $(document).ready(function () {
+                                    $('#peekprofile').modal();
+                                    $('#opncmnts').modal();
+                                    $("body").on("contextmenu", function (e) {
+                                        return false;
+                                    });
+                                });
+                                function newassign(x) {
+                                    userid = x;
+                                    refresh();
+                                    chatnumberrefresh();
+                                }
+                                function refresh() {
+                                    setTimeout(function () {
+                                        $('#notificationbox').load("notificationslive?uid=" + userid);
+                                        refresh();
+                                    }, 1000);
+                                }
+                                function clearnotifications(uid) {
+                                    var xhttp;
+                                    xhttp = new XMLHttpRequest();
+                                    xhttp.onreadystatechange = function () {
+                                        if (this.readyState == 4 && this.status == 200) {
+
+                                        }
+                                    };
+                                    xhttp.open("GET", "clearnotifications?uid=" + uid, true);
+                                    xhttp.send();
+                                }
+                                function clearnotification(nid) {
+                                    var xhttp;
+                                    xhttp = new XMLHttpRequest();
+                                    xhttp.onreadystatechange = function () {
+                                        if (this.readyState == 4 && this.status == 200) {
+
+                                        }
+                                    };
+                                    xhttp.open("GET", "clearnotificationonclick?nid=" + nid, true);
+                                    xhttp.send();
+                                }
+                                function chatnumberrefresh() {
+                                    setTimeout(function () {
+                                        $('#chatnumber').load("chatnumber?uid=" + userid);
+                                        $('#chatnumber2').load("chatnumber?uid=" + userid);
+                                        chatnumberrefresh();
+                                    }, 1000);
+                                }
+                                function showprofile(str, loggedurs) {
+                                         $('#opncmnts').modal('close');
+                                    var xhttp;
+                                    xhttp = new XMLHttpRequest();
+                                    xhttp.onreadystatechange = function () {
+                                        if (this.readyState == 4 && this.status == 200) {
+                                            document.getElementById("profilepeek").innerHTML = this.responseText;
+                                            $('.collapsible').collapsible();
+                                        }
+                                    };
+                                    xhttp.open("GET", "profilefullview?q=" + str + "&loggedusr=" + loggedurs, true);
+                                    xhttp.send();
+                                }
+                                function follow(x, y) {
+                                    var xhttp;
+                                    xhttp = new XMLHttpRequest();
+                                    xhttp.onreadystatechange = function () {
+                                        if (this.readyState == 4 && this.status == 200) {
+                                            window.location = "index.jsp";
+                                        }
+                                    };
+                                    xhttp.open("GET", "follow?x=" + x + "&y=" + y, true);
+                                    xhttp.send();
+                                }
+                                function unfollow(x, y) {
+                                    var xhttp;
+                                    xhttp = new XMLHttpRequest();
+                                    xhttp.onreadystatechange = function () {
+                                        if (this.readyState == 4 && this.status == 200) {
+                                            window.location = "index.jsp";
+                                        }
+                                    };
+                                    xhttp.open("GET", "unfollow?x=" + x + "&y=" + y, true);
+                                    xhttp.send();
+                                }
+                                function showpostcmnts(uid, pid) {
+                                    selectedpid = pid;
+                                    userid = uid;
+                                    var xhttp;
+                                    xhttp = new XMLHttpRequest();
+                                    xhttp.onreadystatechange = function () {
+                                        if (this.readyState == 4 && this.status == 200) {
+                                            document.getElementById("peekcomments").innerHTML = this.responseText;
+                                            $('.materialboxed').materialbox();
+                                        }
+                                    };
+                                    xhttp.open("GET", "peekcomments?uid=" + uid + "&pid=" + pid, true);
+                                    xhttp.send();
+                                }
+                                function comment(x, y) {
+                                    var z = document.getElementById("commenttextarea").value;
+                                    var xhttp;
+                                    xhttp = new XMLHttpRequest();
+                                    xhttp.onreadystatechange = function () {
+                                        if (this.readyState == 4 && this.status == 200) {
+                                            document.getElementById("commentsection").innerHTML = this.responseText;
+                                            document.getElementById("commenttextarea").value = "";
+                                        }
+                                    };
+                                    xhttp.open("GET", "commentsload?x=" + x + "&y=" + y + "&z=" + z, true);
+                                    xhttp.send();
+                                }
+
         </script>
         <%} else {
                 Cookie[] cookies = request.getCookies();
