@@ -48,7 +48,7 @@ public class google extends HttpServlet {
                 if (regidrs.next()) {
                     int uid = regidrs.getInt(1);
                     DB.iud("UPDATE `users` SET `firstname` = '" + nameparts[0] + "', `lastname` = '" + nameparts[1] + "' WHERE `users`.`idusers` = '" + uid + "';");
-                    DB.iud("INSERT INTO `user_profile_pic` (`image`, `users_idusers`) VALUES ('" + profilepic + "', '" + uid + "');");
+                    DB.iud("INSERT INTO `user_profile_pic` (`image`, `users_idusers`) VALUES ('" + profilepic + "?sz=180', '" + uid + "');");
                     DB.iud("INSERT INTO `app_theme` (`themename`, `users_idusers`) VALUES ('purplelight', '" + uid + "');");
                     DB.iud("INSERT INTO `app_layout` (`users_idusers`, `layout`) VALUES ('" + uid + "', 1);");
                     DB.iud("INSERT INTO `uap` (`Preference`, `users_idusers`) VALUES ('1', '" + uid + "');");
@@ -65,6 +65,8 @@ public class google extends HttpServlet {
                 java.sql.ResultSet regidrs = DB.search("Select idusers from `users` where email= '" + newemail + "' and status='1' ");
                 if (regidrs.next()) {
                     int uid = regidrs.getInt(1);
+                    DB.iud("UPDATE `user_profile_pic` SET `image` = '" + profilepic + "?sz=180' WHERE `user_profile_pic`.`users_idusers` = '"+uid+"';");
+                    DB.iud("UPDATE `users` SET `firstname` = '" + nameparts[0] + "', `lastname` = '" + nameparts[1] + "' WHERE `users`.`idusers` = '"+uid+"';");
                     HttpSession ses = request.getSession();
                     ses.setAttribute("user", uid);
                     out.write("<div class='fixed-action-btn'>");

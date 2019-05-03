@@ -236,7 +236,25 @@
                 left: 0;
                 border-radius: 20px;
             }
+            .ratio {
+                background-position: center center;
+                background-repeat: no-repeat;
+                background-size: cover;
+                height: 0;
+                padding-bottom: 100%;
+                position: relative;
+                width: 100%;
+            }
 
+            .img-circle {
+                border-radius: 50%;
+            }
+
+            .img-responsive {
+                display: block;
+                height: auto;
+                max-width: 100%;
+            }
         </style>
     </head>
     <body onload="hideloader(<%=uid%>);" class="noselect ">
