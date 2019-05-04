@@ -144,13 +144,12 @@
                 height: 4px;
             }
             .noselect {
-                -webkit-touch-callout: none; /* iOS Safari */
-                -webkit-user-select: none; /* Safari */
-                -khtml-user-select: none; /* Konqueror HTML */
-                -moz-user-select: none; /* Firefox */
-                -ms-user-select: none; /* Internet Explorer/Edge */
-                user-select: none; /* Non-prefixed version, currently
-                                      supported by Chrome and Opera */
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none; 
+                -moz-user-select: none;
+                -ms-user-select: none; 
+                user-select: none; 
             }
             html {
                 overflow: scroll;
@@ -306,13 +305,11 @@
                         <div class="<%=Acolor%> collapsible-header" style="border-color: <%=Ccolor%>"><b class="<%=Dcolor%>">Search</b></div>
                         <div class="<%=Ecolor%> collapsible-body " style="border-color: <%=Ccolor%>">
                             <input id="t1" type="search"  class="<%=Dcolor%> " placeholder="Type anything..." >
-                            <table id="tb1" class="<%=Dcolor%>">
-
-                            </table>
-                            <!--<ul class="ks-cboxtags">
-                                <li><input type="checkbox" id="checkboxOne" value="profile" checked><label for="checkboxOne">Profile</label></li>
-                                <li><input type="checkbox" id="checkboxTwo" value="post" ><label for="checkboxTwo">Post</label></li>
-                            </ul>-->
+                            <table id="tb1" class="<%=Acolor%> highlight"></table>
+                            <br>
+                            <div class="row">
+                                  <div id="tb2" ></div>
+                            </div>
                         </div>
                     </li>
 
@@ -615,11 +612,19 @@
                                                     var xhtp = new XMLHttpRequest();
                                                     xhtp.onreadystatechange = function () {
                                                         if (xhtp.readyState == 4 && xhtp.status == 200) {
-                                                            document.getElementById("tb1").innerHTML += xhtp.responseText;
+                                                            document.getElementById("tb1").innerHTML = xhtp.responseText;
                                                         }
                                                     }
                                                     xhtp.open("GET", "profilesearch?name=" + x + "&loggedid=" + userid, true);
                                                     xhtp.send();
+                                                    var xhtp2 = new XMLHttpRequest();
+                                                    xhtp2.onreadystatechange = function () {
+                                                        if (xhtp.readyState == 4 && xhtp.status == 200) {
+                                                            document.getElementById("tb2").innerHTML = xhtp2.responseText;
+                                                        }
+                                                    }
+                                                    xhtp2.open("GET", "postsearch?name=" + x + "&loggedid=" + userid, true);
+                                                    xhtp2.send();
                                                 }
                                                 function showprofile(str, loggedurs) {
                                                     var xhttp;

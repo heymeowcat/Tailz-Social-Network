@@ -1229,6 +1229,7 @@
                                         xhttp.onreadystatechange = function () {
                                             if (this.readyState == 4 && this.status == 200) {
                                                 document.getElementById("delpostdiv").innerHTML = this.responseText;
+                                                window.location="profile.jsp";
                                             }
                                         };
                                         xhttp.open("GET", "deletethispost?x=" + x + "&y=" + y, true);
