@@ -120,7 +120,7 @@ public class postsearch extends HttpServlet {
             }
             
            
-            java.sql.ResultSet rs = DB.search("SELECT * FROM post where idpost =ANY(Select DISTINCT `idpost` from post where post_heading = '"+ss+"' OR post_detial ='"+ss+"' OR users_idusers= ANY(SELECT `idusers` FROM users WHERE firstname LIKE '" + s + "' OR lastname LIKE '" + s + "' OR  concat(firstname,' ',lastname) LIKE '" + s + "' OR  concat(firstname,lastname) LIKE '" + s + "' ))");
+            java.sql.ResultSet rs = DB.search("SELECT * FROM post where Post_Privacy=1 and idpost =ANY(Select DISTINCT `idpost` from post where post_heading = '"+ss+"' OR post_detial ='"+ss+"' OR users_idusers= ANY(SELECT `idusers` FROM users WHERE firstname LIKE '" + s + "' OR lastname LIKE '" + s + "' OR  concat(firstname,' ',lastname) LIKE '" + s + "' OR  concat(firstname,lastname) LIKE '" + s + "' ))");
             while (rs.next()) {
                 if (rs.getString(7).equals("1")) {
                     out.write("\n");

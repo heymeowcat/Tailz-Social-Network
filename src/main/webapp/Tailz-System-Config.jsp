@@ -1,5 +1,5 @@
 <!-- 
-    Document   : dashboard
+    Document   : SystemConfig
     Created on : Aug 26, 2018, 4:24:27 PM
     Author     : HEYMEOWCAT
 -->
@@ -66,16 +66,17 @@
         </style>
     </head>
 
-    <%
-        ServletContext context = getServletContext();
-        if (request.getParameter("pwd") != null) {
-            if (request.getParameter("pwd").equals(context.getInitParameter("adminpassword"))) {
-    %>
-    <body  class="noselect">
+
+    <body  class="noselect" onload="remoesession();">
+        <%
+            ServletContext context = getServletContext();
+            if (request.getSession().getAttribute("pwd") != null) {
+                if (request.getSession().getAttribute("pwd").equals(context.getInitParameter("adminpassword"))) {
+        %>
         <header class="StickyHeader" style="position:relative;  z-index: 10;">
             <nav class="white   ">
                 <div class=" nav-wrapper LEFT container">
-                    <a href="#!" class="brand-logo  "><B class="black-text truncate">TAILZ SYSTEM CONFIG</B></a>
+                    <a href="Tailz-System-Config.jsp" class="brand-logo  "><B class="black-text truncate">TAILZ CONFIG</B></a>
                 </div>
                 </div>
 
@@ -151,6 +152,24 @@
                 <div class="divider"></div>
                 <div class="section">
                     <h5>User Options Apply to All</h5>
+                    <%
+                        boolean login = false;
+                        boolean googlelogin = false;
+                        java.sql.ResultSet setrs = DB.search("SELECT id,state FROM `tailzconfig`");
+                        if (setrs.next()) {
+                            if (setrs.getInt(1) == 1) {
+                                if (setrs.getInt(2) == 1) {
+                                    login = true;
+                                }
+                            } else if (setrs.getInt(1) == 2) {
+                                if (setrs.getInt(2) == 1) {
+                                    googlelogin = true;
+                                }else{
+                                      googlelogin = true;
+                                }
+                            }
+                        }
+                    %>
                     <div class="card-panel">
                         <table>
                             <tr>
@@ -161,33 +180,7 @@
                                     <div class="switch">
                                         <label>
                                             Disable
-                                            <input type="checkbox">
-                                            <span class="lever"></span>
-                                            Enable
-                                        </label>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Email Registration</td>
-                                <td class="right">  
-                                    <div class="switch">
-                                        <label>
-                                            Disable
-                                            <input type="checkbox">
-                                            <span class="lever"></span>
-                                            Enable
-                                        </label>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Normal Login</td>
-                                <td class="right">  
-                                    <div class="switch">
-                                        <label>
-                                            Disable
-                                            <input type="checkbox">
+                                            <input type="checkbox" <%if (login) {%> checked="" <%}%>>
                                             <span class="lever"></span>
                                             Enable
                                         </label>
@@ -200,20 +193,7 @@
                                     <div class="switch">
                                         <label>
                                             Disable
-                                            <input type="checkbox">
-                                            <span class="lever"></span>
-                                            Enable
-                                        </label>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Facebook Login</td>
-                                <td class="right">  
-                                    <div class="switch">
-                                        <label>
-                                            Disable
-                                            <input type="checkbox">
+                                            <input type="checkbox" <% if (googlelogin) {%> checked="" <%}%>>
                                             <span class="lever"></span>
                                             Enable
                                         </label>
@@ -312,7 +292,7 @@
                             </tr>
                             <tr>
                                 <td>
-                                   Update Profile 
+                                    Update Profile 
                                 </td>
                                 <td class="right">  
                                     <div class="switch">
@@ -327,7 +307,7 @@
                             </tr>
                             <tr>
                                 <td>
-                                   Profile Settings
+                                    Profile Settings
                                 </td>
                                 <td class="right">  
                                     <div class="switch">
@@ -432,39 +412,63 @@
         <script src="js/jquery-3.2.1.min.js"></script>
         <script src="js/materialize.js"></script>
         <script>
-            var input = document.getElementById("t1");
-            input.addEventListener("keyup", function (event) {
-                event.preventDefault();
-                if (event.keyCode === 13) {
-                    search();
-                    savesearchhistory();
-                }
-            });
-            function search() {
-                document.getElementById("tb1").innerHTML = "";
-                var x = document.getElementById("t1").value;
-                if (x == "") {
-                    document.getElementById("tb1").innerHTML = "";
-                }
-                var xhtp = new XMLHttpRequest();
-                xhtp.onreadystatechange = function () {
-                    if (xhtp.readyState == 4 && xhtp.status == 200) {
-                        document.getElementById("tb1").innerHTML += xhtp.responseText;
-                    }
-                }
-                xhtp.open("GET", "profilesearch?name=" + x + "&loggedid=" + 5, true);
-                xhtp.send();
+        var input = document.getElementById("t1");
+        input.addEventListener("keyup", function (event) {
+            event.preventDefault();
+            if (event.keyCode === 13) {
+                search();
+                savesearchhistory();
             }
+        });
+        function search() {
+            document.getElementById("tb1").innerHTML = "";
+            var x = document.getElementById("t1").value;
+            if (x == "") {
+                document.getElementById("tb1").innerHTML = "";
+            }
+            var xhtp = new XMLHttpRequest();
+            xhtp.onreadystatechange = function () {
+                if (xhtp.readyState == 4 && xhtp.status == 200) {
+                    document.getElementById("tb1").innerHTML += xhtp.responseText;
+                }
+            }
+            xhtp.open("GET", "profilesearch?name=" + x + "&loggedid=" + 5, true);
+            xhtp.send();
+        }
+        function remoesession() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
 
+                }
+            };
+            xhttp.open("GET", "removedangerzonesession", true);
+            xhttp.send();
+        }
         </script>
     </body>
 
 
     <%      } else {
-                out.write("<h2>Access Denied</h2>");
-            }
-        } else {
-            out.write("<h2>Access Denied</h2>");
+    %>
+    <div class="container">
+        <h1>Danger Zone</h1>
+        <form action="adminsession" method="POST" autocomplete="off"> 
+            <input name="pwd" type="password" placeholder="Password">
+        </form>
+    </div>
+
+    <%
+        }
+    } else {
+    %>
+    <div class="container">
+        <h1>Danger Zone</h1>
+        <form action="adminsession" method="POST" autocomplete="off">
+            <input name="pwd" type="password" placeholder="Password">
+        </form>
+    </div>
+    <%
         }
     %>
 

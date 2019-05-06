@@ -17,7 +17,6 @@
         <link href="img/logo.png" rel="icon">
         <link href="css/animate.css" type="text/css" rel="stylesheet">
         <link href="css/materialize.css" rel="stylesheet" type="text/css" media="screen,projection"/>
-        <link href="css/material-icons_1.css" rel="stylesheet">
         <style>
             ::-webkit-scrollbar {
                 width: 0px;
@@ -146,80 +145,82 @@
     <%
     } else {
     %>
-    <body onload="hideloader()" class="noselect">
-        <div id="loading" >
-            <div style="width: 100%; background-color: transparent; text-align: center;  " class="valign-wrapper">
-                <div class="progress white" style="margin: 0px">
-                    <div class="indeterminate purple lighten-4" ></div>
-                </div>
-
-            </div>
-        </div>
+    <body class="noselect">
         <main class="StickyContent animated zoomIn ">
             <div style="height: 100vh;  " class="valign-wrapper transparent">
 
                 <div class="row ">
-                    <div class="row ">
-                        <h3 class="black-text center">TAILZ</h3>
-                        <div class="col s12 m12 l12">
-                            <ul class=" tabs tabs-fixed-width ">
-                                <li class="tab col s6 m6 l6"><a class="active" href="#login">Login</a></li>
-                                <li class="tab col s6 m6 l6"><a  href="#signup">Sign up</a></li>
-                                <li class="indicator" style="left: 0px; right: 0px;"></li>
-                            </ul>
+                    <h3 class="black-text center">TAILZ</h3>
+                    <div class="col s12 m12 l12">
+                        <ul class=" tabs tabs-fixed-width ">
+                            <li class="tab col s6 m6 l6"><a class="active" href="#login">Login</a></li>
+                            <li class="tab col s6 m6 l6"><a  href="#signup">Sign up</a></li>
+                            <li class="indicator" style="left: 0px; right: 0px;"></li>
+                        </ul>
+                    </div>
+                    <div id="login" class="col s12 ">
+                        <div class="card-panel" >
+                            <form action="loginprocess" method="post">
+                                <div class="input-field col s12 m12">
+                                    <input  id="usn" name="usn" type="text" class="validate" required="">
+                                    <label for="usn">Username</label>
+                                </div>
+                                <div class="input-field col s12 m12">
+                                    <input  id="psn" name="psn" type="password" class="validate" required="">
+                                    <label for="psn">Password</label>
+                                    <%
+                                        if (request.getParameter("error") != null) {
+                                            out.write("<span class='red-text animated bounce'>");
+                                            out.write(request.getParameter("error"));
+                                            out.write("</span>");
+                                        }
+                                    %>
+                                    <center>or<br>
+                                        <div class="g-signin2 " data-onsuccess="onSignIn" data-theme="light" ></div></center>
+                                </div>
+                                <p class="right">
+                                    <label>
+                                        <input type="checkbox" name="check" value="remember">
+                                        <span>Remember Me</span>
+                                    </label>
+                                </p>
+                                <input type="submit" value="login" class="purple lighten-4 black-text btn center" >
+                            </form>
                         </div>
-                        <div id="login" class="col s12 ">
-                            <div class="card-panel" style="margin: 0px">
-                                <form action="loginprocess" autocomplete="off" method="post">
-                                    <div class="row">
-                                        <div class="input-field col s12 m12">
-                                            <input  id="usn" name="usn" type="text" class="validate" required="">
-                                            <label for="usn">Username</label>
-                                        </div>
+                    </div>
+                    <div id="signup" class="col s12">
+                        <div class="card-panel">
+                            <form action="register" method="post">
+                                <div class="row">
+                                    <div class="input-field col s12 m12">
+                                        <input  id="newmail" name="newmail" type="text" class="validate" required="">
+                                        <label for="newmail">New Email</label>
                                     </div>
-                                    <div class="row">
-                                        <div class="input-field col s12 m12">
-                                            <input  id="psn" name="psn" type="password" class="validate" required="">
-                                            <label for="psn">Password</label>
-                                            <%
-                                                if (request.getParameter("error") != null) {
-                                                    out.write("<span class='red-text animated bounce'>");
-                                                    out.write(request.getParameter("error"));
-                                                    out.write("</span>");
-                                                }
-                                            %>
-                                        </div>
-                                    </div>
-
-
-                                    <p class="right">
-                                        <label>
-                                            <input type="checkbox" name="check" value="remember">
-                                            <span>Remember Me</span>
-                                        </label>
-                                    </p>
-                                    <input type="submit" value="login" class="purple lighten-4 black-text btn center" >
-                                </form>
-                            </div>
-                        </div>
-                        <div id="signup" class="col s12">
-                            <div class="card-panel">
-                                <form action="register" method="post">
-                                    <div class="row">
-                                        <div class="input-field col s12 m12">
-                                            <input  id="newmail" name="newmail" type="text" class="validate" required="">
-                                            <label for="newmail">New Email</label>
-                                        </div>
-                                    </div>
-                                    <input type="submit" value="Next" class="purple lighten-4 black-text btn center" >
-                                </form>
-                            </div>
+                                    <center>or<br>
+                                        <div class="g-signin2 " data-onsuccess="onSignIn" data-theme="light" ></div></center>
+                                </div>
+                                <input type="submit" value="Next" class="purple lighten-4 black-text btn center" >
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
-
+        <script src="https://apis.google.com/js/platform.js" async defer></script>
+        <script>
+        var profile;
+        function onSignIn(googleUser) {
+            profile = googleUser.getBasicProfile();
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    window.location = "index.jsp";
+                }
+            };
+            xhttp.open("GET", "google?id=" + profile.getId() + "&name=" + profile.getName() + "&profilepic=" + profile.getImageUrl() + "&email=" + profile.getEmail(), true);
+            xhttp.send();
+        }
+        </script>
         <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
         <script type="text/javascript" src="js/materialize.js"></script>
         <script>
@@ -229,10 +230,6 @@
                 return false;
             });
         });
-        function hideloader() {
-            document.getElementById('loading').style.display = "none";
-
-        }
 
         </script> 
 
@@ -253,9 +250,6 @@
             }
         }
     %>
-
-
-
 
     <%
     } else {

@@ -1,49 +1,41 @@
-package com.heymeowcat.tailznet;
-
-
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+package com.heymeowcat.tailznet;
+
 import java.io.IOException;
-import java.util.Random;
+import java.io.PrintWriter;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.codec.digest.DigestUtils;
+import javax.servlet.http.HttpSession;
 
 /**
  *
- * @author HEYMEOWCAT
+ * @author heymeowcat
  */
-@WebServlet(name = "register", urlPatterns = {"/register"})
-public class register extends HttpServlet {
+@WebServlet(name = "removedangerzonesession", urlPatterns = {"/removedangerzonesession"})
+public class removedangerzonesession extends HttpServlet {
 
+    /**
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        try {
-            String newemail = request.getParameter("newmail");
-            Random random = new Random();
-            random.nextInt(999999);
-            String myhash = DigestUtils.md5Hex("" + random);
-            java.sql.ResultSet regrs = DB.search("Select email from `users` where email= '" + newemail + "' and status='1' ");
-            java.sql.ResultSet regrss = DB.search("Select email from `users` where email= '" + newemail + "'");
-            if (!regrs.isBeforeFirst()) {
-                SendingEmail se = new SendingEmail();
-                se.sendMail(newemail, myhash);
-                if (!regrss.isBeforeFirst()) {
-                    DB.iud("INSERT INTO `users` (`email`, `status`, `hash`, `user_type_iduser_type`) VALUES ('" + newemail + "', '0', '" + myhash + "', '2');");
-                }
-                response.sendRedirect("verify.jsp");
-            } else {
-                response.sendRedirect("login-register.jsp");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        try (PrintWriter out = response.getWriter()) {
+            HttpSession ses = request.getSession();
+            ses.invalidate();
         }
     }
 
