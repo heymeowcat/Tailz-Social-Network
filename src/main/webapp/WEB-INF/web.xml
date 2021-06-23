@@ -1,21 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+<web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+
+    <display-name>Tailz Social Network</display-name>
+
+    <!-- Default welcome file -->
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+
+    <!-- Error pages -->
     <error-page>
+        <error-code>404</error-code>
         <location>/index.jsp</location>
     </error-page>
+    <error-page>
+        <error-code>403</error-code>
+        <location>/login-register.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/index.jsp</location>
+    </error-page>
+
+    <!-- Admin password used for system configuration -->
     <context-param>
         <param-name>adminpassword</param-name>
         <param-value>meowmeow</param-value>
     </context-param>
+
+    <!-- Session configuration: -1 means no timeout (keep alive) -->
     <session-config>
-        <session-timeout>
-            -1
-        </session-timeout>
+        <session-timeout>30</session-timeout>
     </session-config>
+
+    <!-- Application language/platform label -->
     <context-param>
         <param-name>lang</param-name>
         <param-value>Java</param-value>
     </context-param>
+
+    <!-- Database connection parameters -->
     <context-param>
         <param-name>Server</param-name>
         <param-value>remotemysql.com</param-value>
@@ -36,4 +62,5 @@
         <param-name>Password</param-name>
         <param-value>tkitcG2BYH</param-value>
     </context-param>
+
 </web-app>

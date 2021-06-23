@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 /**
@@ -14,26 +15,41 @@ import java.sql.ResultSet;
  * @author Meow-Meow!
  */
 public class DB {
+
     private static Connection conn;
-    private static void setConnection()throws Exception{
-     Class.forName("com.mysql.jdbc.Driver");
-        try {
-            conn=DriverManager.getConnection("jdbc:mysql://localhost:3306/sEXUaFqh92","root","");
-        } catch (Exception e) {
-           
+    private static String dbUrl;
+    private static String dbUser;
+    private static String dbPassword;
+
+    /**
+     * Called once by AppContextListener on application startup to configure
+     * the database connection parameters from web.xml context-params.
+     */
+    public static void init(String server, String port, String db,
+            String username, String password) {
+        dbUrl = "jdbc:mysql://" + server + ":" + port + "/" + db + "?useSSL=false";
+        dbUser = username;
+        dbPassword = password;
+    }
+
+    private static Connection getConnection() throws Exception {
+        if (conn == null || conn.isClosed()) {
+            Class.forName("com.mysql.jdbc.Driver");
+            conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
         }
+        return conn;
     }
-    public static void iud(String sql) throws Exception{
-       if(conn == null){
-           setConnection();
-       }
-       conn.createStatement().executeUpdate(sql);
+
+    public static void iud(String sql) throws Exception {
+        getConnection().createStatement().executeUpdate(sql);
     }
-    public static ResultSet search(String sql)throws Exception{
-        if(conn ==null){
-            setConnection();
+
+    public static ResultSet search(String sql) throws Exception {
+        return getConnection().createStatement().executeQuery(sql);
     }
-      return conn.createStatement().executeQuery(sql);
-    } 
+
+    public static PreparedStatement prepare(String sql) throws Exception {
+        return getConnection().prepareStatement(sql);
+    }
 
 }
