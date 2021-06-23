@@ -29,8 +29,8 @@ public class SendingEmail {
     public void sendMail(String useremail, String userhash) {
         this.useremail = useremail;
         this.userhash = userhash;
-        final String email = "tailz.network@gmail.com";
-        final String password = "vidura2531";
+        final String email = "*";
+        final String password = "*";
         Properties props = new Properties();
         props.put("mail.smtp.host", "smtp.gmail.com");
         props.put("mail.smtp.auth", "true");
