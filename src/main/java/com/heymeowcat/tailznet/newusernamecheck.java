@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -36,10 +37,13 @@ public class newusernamecheck extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             try {
                 String x = request.getParameter("x");
-                ResultSet rs = DB.search("SELECT username FROM `user_login` where username='" + x + "' ");
-                if (rs.next()) {                    
+                PreparedStatement ps = DB.prepare(
+                        "SELECT username FROM user_login WHERE username=?");
+                ps.setString(1, x);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
                     out.write("exist");
-                }else if (!rs.isBeforeFirst()) {
+                } else if (!rs.isBeforeFirst()) {
                     out.write("fine");
                 }
             } catch (Exception ex) {

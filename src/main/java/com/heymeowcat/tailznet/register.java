@@ -1,12 +1,13 @@
 package com.heymeowcat.tailznet;
 
-
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 import java.io.IOException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.Random;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -28,15 +29,28 @@ public class register extends HttpServlet {
         try {
             String newemail = request.getParameter("newmail");
             Random random = new Random();
-            random.nextInt(999999);
-            String myhash = DigestUtils.md5Hex("" + random);
-            java.sql.ResultSet regrs = DB.search("Select email from `users` where email= '" + newemail + "' and status='1' ");
-            java.sql.ResultSet regrss = DB.search("Select email from `users` where email= '" + newemail + "'");
+            int randomNum = random.nextInt(999999);
+            String myhash = DigestUtils.md5Hex("" + randomNum);
+
+            PreparedStatement checkActive = DB.prepare(
+                    "SELECT email FROM users WHERE email=? AND status='1'");
+            checkActive.setString(1, newemail);
+            ResultSet regrs = checkActive.executeQuery();
+
+            PreparedStatement checkAny = DB.prepare(
+                    "SELECT email FROM users WHERE email=?");
+            checkAny.setString(1, newemail);
+            ResultSet regrss = checkAny.executeQuery();
+
             if (!regrs.isBeforeFirst()) {
                 SendingEmail se = new SendingEmail();
                 se.sendMail(newemail, myhash);
                 if (!regrss.isBeforeFirst()) {
-                    DB.iud("INSERT INTO `users` (`email`, `status`, `hash`, `user_type_iduser_type`) VALUES ('" + newemail + "', '0', '" + myhash + "', '2');");
+                    PreparedStatement ins = DB.prepare(
+                            "INSERT INTO users (email, status, hash, user_type_iduser_type) VALUES (?, '0', ?, '2')");
+                    ins.setString(1, newemail);
+                    ins.setString(2, myhash);
+                    ins.executeUpdate();
                 }
                 response.sendRedirect("verify.jsp");
             } else {

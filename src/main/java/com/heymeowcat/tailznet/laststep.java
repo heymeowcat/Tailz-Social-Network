@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -14,7 +15,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.codec.digest.DigestUtils;
-
 
 /**
  *
@@ -43,23 +43,37 @@ public class laststep extends HttpServlet {
             String conpass = DigestUtils.md5Hex(request.getParameter("conpsn"));
             int uid;
             boolean exist = false;
-            ResultSet rs2 = DB.search("SELECT username FROM `user_login` where username='" + usn + "' ");
+
+            PreparedStatement checkUsn = DB.prepare(
+                    "SELECT username FROM user_login WHERE username=?");
+            checkUsn.setString(1, usn);
+            ResultSet rs2 = checkUsn.executeQuery();
+
             if (rs2.next()) {
-                exist=false;
+                exist = false;
             } else if (!rs2.isBeforeFirst()) {
-                exist=true;
+                exist = true;
             }
-            if (pass.equals(conpass) && exist){
-                ResultSet rs = DB.search("select idusers from users where email='" + email + "' and hash='" + hash + "' and status='1'");
+
+            if (pass.equals(conpass) && exist) {
+                PreparedStatement findUser = DB.prepare(
+                        "SELECT idusers FROM users WHERE email=? AND hash=? AND status='1'");
+                findUser.setString(1, email);
+                findUser.setString(2, hash);
+                ResultSet rs = findUser.executeQuery();
                 if (rs.next()) {
                     uid = rs.getInt(1);
-                    DB.iud("INSERT INTO `user_login` (`username`, `password`, `users_idusers`) VALUES ('" + usn + "', '" + conpass + "', '" + uid + "');");
+                    PreparedStatement insLogin = DB.prepare(
+                            "INSERT INTO user_login (username, password, users_idusers) VALUES (?, ?, ?)");
+                    insLogin.setString(1, usn);
+                    insLogin.setString(2, conpass);
+                    insLogin.setInt(3, uid);
+                    insLogin.executeUpdate();
                     response.sendRedirect("firstupdateprofile.jsp?uid=" + uid);
                 }
             } else {
                 response.sendRedirect("registerdetails.jsp?mail=" + email + "&hash=" + hash);
             }
-
         } catch (Exception ex) {
             ex.printStackTrace();
         }

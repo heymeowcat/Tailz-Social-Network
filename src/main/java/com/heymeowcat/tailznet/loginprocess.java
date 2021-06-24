@@ -7,6 +7,8 @@ package com.heymeowcat.tailznet;
  */
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.Cookie;
@@ -30,7 +32,12 @@ public class loginprocess extends HttpServlet {
             String usn = request.getParameter("usn");
             String psn = DigestUtils.md5Hex(request.getParameter("psn"));
             String check = request.getParameter("check");
-            java.sql.ResultSet loginrs = DB.search("Select password,users_idusers,iduser_login from sEXUaFqh92.`user_login` where username= '" + usn + "' ");
+
+            PreparedStatement ps = DB.prepare(
+                    "SELECT password, users_idusers, iduser_login FROM user_login WHERE username=?");
+            ps.setString(1, usn);
+            ResultSet loginrs = ps.executeQuery();
+
             if (loginrs.next()) {
                 if (loginrs.getString(1).equals(psn)) {
                     HttpSession ses = request.getSession();
@@ -41,7 +48,11 @@ public class loginprocess extends HttpServlet {
                         cookie.setMaxAge(60 * 60 * 24 * 30);
                         response.addCookie(cookie);
                     }
-                    DB.iud("INSERT INTO `login_sessions` ( `ip_address`, `in_time`,`user_login_iduser_login`) VALUES ('" + request.getRemoteHost() + "',CURRENT_TIMESTAMP, '" + loginrs.getString(3) + "');");
+                    PreparedStatement logIns = DB.prepare(
+                            "INSERT INTO login_sessions (ip_address, in_time, user_login_iduser_login) VALUES (?, CURRENT_TIMESTAMP, ?)");
+                    logIns.setString(1, request.getRemoteHost());
+                    logIns.setString(2, loginrs.getString(3));
+                    logIns.executeUpdate();
                     response.sendRedirect("index.jsp");
                 } else {
                     response.sendRedirect("login-register.jsp?error=Come On!");

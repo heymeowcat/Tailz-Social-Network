@@ -7,6 +7,8 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.Cookie;
@@ -37,18 +39,28 @@ public class Logout extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             if (request.getSession().getAttribute("user") != null) {
                 int uid = Integer.parseInt(request.getSession().getAttribute("user").toString());
-                java.sql.ResultSet themers = DB.search("SELECT `idlogin_sessions` FROM `login_sessions` where  user_login_iduser_login=(SELECT  iduser_login from user_login where users_idusers= '" + uid + "' order by idlogin_sessions desc LIMIT 1)ORDER BY `login_sessions`.`idlogin_sessions` DESC LIMIT 1");
+
+                PreparedStatement ps = DB.prepare(
+                        "SELECT idlogin_sessions FROM login_sessions "
+                        + "WHERE user_login_iduser_login=(SELECT iduser_login FROM user_login WHERE users_idusers=? ORDER BY idlogin_sessions DESC LIMIT 1) "
+                        + "ORDER BY idlogin_sessions DESC LIMIT 1");
+                ps.setInt(1, uid);
+                ResultSet themers = ps.executeQuery();
+
                 if (themers.next()) {
-                    DB.iud("UPDATE `login_sessions` SET `out_time` =CURRENT_TIMESTAMP WHERE idlogin_sessions='" + themers.getInt(1) + "'");
+                    PreparedStatement upd = DB.prepare(
+                            "UPDATE login_sessions SET out_time=CURRENT_TIMESTAMP WHERE idlogin_sessions=?");
+                    upd.setInt(1, themers.getInt(1));
+                    upd.executeUpdate();
                 }
             }
+
             HttpSession ses = request.getSession();
             ses.invalidate();
 
             Cookie[] cookies = request.getCookies();
             if (cookies != null) {
-                for (int i = 0; i < cookies.length; i++) {
-                    Cookie c = cookies[i];
+                for (Cookie c : cookies) {
                     if (c.getName().equals("MEOWID")) {
                         c.setMaxAge(0);
                         response.addCookie(c);

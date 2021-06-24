@@ -7,9 +7,10 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -41,18 +42,60 @@ public class google extends HttpServlet {
             String[] nameparts = fullname.split("\\s+");
             String profilepic = request.getParameter("profilepic");
             String newemail = request.getParameter("email");
-            java.sql.ResultSet regrs = DB.search("Select email from `users` where email= '" + newemail + "' and status='1' ");
+
+            PreparedStatement checkEmail = DB.prepare(
+                    "SELECT email FROM users WHERE email=? AND status='1'");
+            checkEmail.setString(1, newemail);
+            ResultSet regrs = checkEmail.executeQuery();
+
             if (!regrs.isBeforeFirst()) {
-                DB.iud("INSERT INTO `users` (`email`, `status`, `hash`, `user_type_iduser_type`) VALUES ('" + newemail + "', '1', '" + id + "', '2');");
-                java.sql.ResultSet regidrs = DB.search("Select idusers from `users` where email= '" + newemail + "' and status='1' ");
+                // New Google user - register them
+                PreparedStatement insUser = DB.prepare(
+                        "INSERT INTO users (email, status, hash, user_type_iduser_type) VALUES (?, '1', ?, '2')");
+                insUser.setString(1, newemail);
+                insUser.setString(2, id);
+                insUser.executeUpdate();
+
+                PreparedStatement findId = DB.prepare(
+                        "SELECT idusers FROM users WHERE email=? AND status='1'");
+                findId.setString(1, newemail);
+                ResultSet regidrs = findId.executeQuery();
                 if (regidrs.next()) {
                     int uid = regidrs.getInt(1);
-                    DB.iud("UPDATE `users` SET `firstname` = '" + nameparts[0] + "', `lastname` = '" + nameparts[1] + "' WHERE `users`.`idusers` = '" + uid + "';");
-                    DB.iud("INSERT INTO `user_profile_pic` (`image`, `users_idusers`) VALUES ('" + profilepic + "?sz=180', '" + uid + "');");
-                    DB.iud("INSERT INTO `app_theme` (`themename`, `users_idusers`) VALUES ('purplelight', '" + uid + "');");
-                    DB.iud("INSERT INTO `app_layout` (`users_idusers`, `layout`) VALUES ('" + uid + "', 1);");
-                    DB.iud("INSERT INTO `uap` (`Preference`, `users_idusers`) VALUES ('1', '" + uid + "');");
-                    DB.iud("INSERT INTO `user_privacy` (`privacy_name`, `users_idusers`) VALUES ('public', '" + uid + "');");
+
+                    PreparedStatement updName = DB.prepare(
+                            "UPDATE users SET firstname=?, lastname=? WHERE idusers=?");
+                    updName.setString(1, nameparts[0]);
+                    updName.setString(2, nameparts.length > 1 ? nameparts[1] : "");
+                    updName.setInt(3, uid);
+                    updName.executeUpdate();
+
+                    PreparedStatement insPic = DB.prepare(
+                            "INSERT INTO user_profile_pic (image, users_idusers) VALUES (?, ?)");
+                    insPic.setString(1, profilepic + "?sz=180");
+                    insPic.setInt(2, uid);
+                    insPic.executeUpdate();
+
+                    PreparedStatement insTheme = DB.prepare(
+                            "INSERT INTO app_theme (themename, users_idusers) VALUES ('purplelight', ?)");
+                    insTheme.setInt(1, uid);
+                    insTheme.executeUpdate();
+
+                    PreparedStatement insLayout = DB.prepare(
+                            "INSERT INTO app_layout (users_idusers, layout) VALUES (?, 1)");
+                    insLayout.setInt(1, uid);
+                    insLayout.executeUpdate();
+
+                    PreparedStatement insUap = DB.prepare(
+                            "INSERT INTO uap (Preference, users_idusers) VALUES ('1', ?)");
+                    insUap.setInt(1, uid);
+                    insUap.executeUpdate();
+
+                    PreparedStatement insPrivacy = DB.prepare(
+                            "INSERT INTO user_privacy (privacy_name, users_idusers) VALUES ('public', ?)");
+                    insPrivacy.setInt(1, uid);
+                    insPrivacy.executeUpdate();
+
                     HttpSession ses = request.getSession();
                     ses.setAttribute("user", uid);
                     out.write("<div class='fixed-action-btn'>");
@@ -62,11 +105,27 @@ public class google extends HttpServlet {
                     out.write("</div>");
                 }
             } else {
-                java.sql.ResultSet regidrs = DB.search("Select idusers from `users` where email= '" + newemail + "' and status='1' ");
+                // Existing Google user - update their info and log in
+                PreparedStatement findId = DB.prepare(
+                        "SELECT idusers FROM users WHERE email=? AND status='1'");
+                findId.setString(1, newemail);
+                ResultSet regidrs = findId.executeQuery();
                 if (regidrs.next()) {
                     int uid = regidrs.getInt(1);
-                    DB.iud("UPDATE `user_profile_pic` SET `image` = '" + profilepic + "?sz=180' WHERE `user_profile_pic`.`users_idusers` = '"+uid+"';");
-                    DB.iud("UPDATE `users` SET `firstname` = '" + nameparts[0] + "', `lastname` = '" + nameparts[1] + "' WHERE `users`.`idusers` = '"+uid+"';");
+
+                    PreparedStatement updPic = DB.prepare(
+                            "UPDATE user_profile_pic SET image=? WHERE users_idusers=?");
+                    updPic.setString(1, profilepic + "?sz=180");
+                    updPic.setInt(2, uid);
+                    updPic.executeUpdate();
+
+                    PreparedStatement updName = DB.prepare(
+                            "UPDATE users SET firstname=?, lastname=? WHERE idusers=?");
+                    updName.setString(1, nameparts[0]);
+                    updName.setString(2, nameparts.length > 1 ? nameparts[1] : "");
+                    updName.setInt(3, uid);
+                    updName.executeUpdate();
+
                     HttpSession ses = request.getSession();
                     ses.setAttribute("user", uid);
                     out.write("<div class='fixed-action-btn'>");
