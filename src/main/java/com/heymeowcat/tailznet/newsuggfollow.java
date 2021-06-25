@@ -7,6 +7,8 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -40,7 +42,9 @@ public class newsuggfollow extends HttpServlet {
             String Ccolor = "";
             String Dcolor = "";
             String Ecolor = "";
-            java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + loggeduid + "' ");
+            PreparedStatement themersPs = DB.prepare("Select themename from app_theme where users_idusers= ?");
+            themersPs.setInt(1, loggeduid);
+            ResultSet themers = themersPs.executeQuery();
             if (themers.next()) {
                 if (themers.getString(1).equals("pinkdark")) {
                     Acolor = "black";
@@ -104,9 +108,16 @@ public class newsuggfollow extends HttpServlet {
                     Ecolor = "grey darken-4";
                 }
             }
-            DB.iud("INSERT INTO `follow` (`sender`, `receiver`) VALUES ('" + loggeduid + "','" + x + "' );");
+            PreparedStatement followIns = DB.prepare("INSERT INTO `follow` (`sender`, `receiver`) VALUES (?, ?)");
+            followIns.setInt(1, loggeduid);
+            followIns.setInt(2, x);
+            followIns.executeUpdate();
 
-            java.sql.ResultSet rs = DB.search("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT `receiver`FROM follow WHERE `sender` = ANY(SELECT `receiver` FROM follow WHERE sender ='" + loggeduid + "') ) AND NOT idusers='" + loggeduid + "' AND NOT idusers =ANY(SELECT `receiver` FROM follow WHERE `sender` = '" + loggeduid + "')");
+            PreparedStatement rsPs = DB.prepare("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT `receiver`FROM follow WHERE `sender` = ANY(SELECT `receiver` FROM follow WHERE sender =?) ) AND NOT idusers=? AND NOT idusers =ANY(SELECT `receiver` FROM follow WHERE `sender` = ?)");
+            rsPs.setInt(1, loggeduid);
+            rsPs.setInt(2, loggeduid);
+            rsPs.setInt(3, loggeduid);
+            ResultSet rs = rsPs.executeQuery();
               while (rs.next()) {
                 out.write("<div class='col s6 m3 l2 animated fadeIn'>");
                 out.write("<div class='"+Acolor+" card-panel hoverable'>");
@@ -118,7 +129,11 @@ public class newsuggfollow extends HttpServlet {
                 out.write("</div>");
                 out.write("</div>");
             }
-            java.sql.ResultSet rsop = DB.search("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT `receiver`FROM follow WHERE `sender` = ANY(SELECT `receiver` FROM follow WHERE sender ='" + loggeduid + "') ) AND NOT idusers='" + loggeduid + "' AND NOT idusers =ANY(SELECT `receiver` FROM follow WHERE `sender` = '" + loggeduid+ "')");
+            PreparedStatement rsopPs = DB.prepare("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT `receiver`FROM follow WHERE `sender` = ANY(SELECT `receiver` FROM follow WHERE sender =?) ) AND NOT idusers=? AND NOT idusers =ANY(SELECT `receiver` FROM follow WHERE `sender` = ?)");
+            rsopPs.setInt(1, loggeduid);
+            rsopPs.setInt(2, loggeduid);
+            rsopPs.setInt(3, loggeduid);
+            ResultSet rsop = rsopPs.executeQuery();
             if (!rsop.isBeforeFirst()) {
                 out.write("<div class='center'><img src='img/friendship.png' class='responsiveimg' ></div>");
             }

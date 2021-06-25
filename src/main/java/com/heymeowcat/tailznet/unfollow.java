@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -33,11 +34,17 @@ public class unfollow extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            String sender = request.getParameter("x");
-            String receiver = request.getParameter("y");
-            DB.iud("DELETE FROM `follow` WHERE `follow`.`sender` = '"+ sender +"' AND `follow`.`receiver` = '"+receiver+"' ");
+            int sender = Integer.parseInt(request.getParameter("x"));
+            int receiver = Integer.parseInt(request.getParameter("y"));
+
+            PreparedStatement del = DB.prepare(
+                    "DELETE FROM follow WHERE sender=? AND receiver=?");
+            del.setInt(1, sender);
+            del.setInt(2, receiver);
+            del.executeUpdate();
+
             out.write("unfollowed");
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

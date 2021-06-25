@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -36,12 +37,26 @@ public class bookmarkprocess extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             int uid = Integer.parseInt(request.getParameter("uid"));
             int x = Integer.parseInt(request.getParameter("x"));
-            ResultSet likechech = DB.search("Select post_idpost from user_bookmarks where users_idusers='" + uid + "'  AND `user_bookmarks`.`post_idpost` ='" + x + "'  ");
+
+            PreparedStatement chk = DB.prepare(
+                    "SELECT post_idpost FROM user_bookmarks WHERE users_idusers=? AND post_idpost=?");
+            chk.setInt(1, uid);
+            chk.setInt(2, x);
+            ResultSet likechech = chk.executeQuery();
+
             if (!likechech.isBeforeFirst()) {
-                DB.iud("INSERT INTO `user_bookmarks` (`notice_time`, `users_idusers`, `post_idpost`) VALUES (CURRENT_TIMESTAMP, '" + uid + "', '" + x + "');");
+                PreparedStatement ins = DB.prepare(
+                        "INSERT INTO user_bookmarks (notice_time, users_idusers, post_idpost) VALUES (CURRENT_TIMESTAMP, ?, ?)");
+                ins.setInt(1, uid);
+                ins.setInt(2, x);
+                ins.executeUpdate();
                 out.write("bookmark");
             } else if (likechech.next()) {
-                DB.iud("DELETE FROM `user_bookmarks` WHERE `user_bookmarks`.`post_idpost` = '" + x + "' and users_idusers='" + uid + "' ");
+                PreparedStatement del = DB.prepare(
+                        "DELETE FROM user_bookmarks WHERE post_idpost=? AND users_idusers=?");
+                del.setInt(1, x);
+                del.setInt(2, uid);
+                del.executeUpdate();
                 out.write("bookmark_border");
             }
 

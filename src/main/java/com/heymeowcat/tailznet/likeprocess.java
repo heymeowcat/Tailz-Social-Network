@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -36,14 +37,27 @@ public class likeprocess extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             int uid = Integer.parseInt(request.getParameter("uid"));
             int x = Integer.parseInt(request.getParameter("x"));
-            ResultSet likechech = DB.search("Select likes from post_rank where likedby='" + uid + "'  AND `post_rank`.`post_idpost` ='" + x + "'  ");
+
+            PreparedStatement chk = DB.prepare(
+                    "SELECT likes FROM post_rank WHERE likedby=? AND post_idpost=?");
+            chk.setInt(1, uid);
+            chk.setInt(2, x);
+            ResultSet likechech = chk.executeQuery();
+
             if (!likechech.isBeforeFirst()) {
-                DB.iud("INSERT INTO `post_rank` ( `likes`, `post_idpost`, `likedby`) VALUES ('1', '" + x + "', '" + uid + "')");
+                PreparedStatement ins = DB.prepare(
+                        "INSERT INTO post_rank (likes, post_idpost, likedby) VALUES ('1', ?, ?)");
+                ins.setInt(1, x);
+                ins.setInt(2, uid);
+                ins.executeUpdate();
             } else if (likechech.next()) {
-                DB.iud("DELETE FROM `post_rank` WHERE `post_rank`.`likedby` ='" + uid + "' AND `post_rank`.`post_idpost` ='" + x + "' ");
+                PreparedStatement del = DB.prepare(
+                        "DELETE FROM post_rank WHERE likedby=? AND post_idpost=?");
+                del.setInt(1, uid);
+                del.setInt(2, x);
+                del.executeUpdate();
             }
-            
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

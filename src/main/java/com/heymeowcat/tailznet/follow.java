@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -33,10 +34,21 @@ public class follow extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            String sender = request.getParameter("x");
-            String receiver = request.getParameter("y");
-            DB.iud("INSERT INTO `follow` (`sender`, `receiver`) VALUES ('" + sender + "', '" + receiver + "');");
-            DB.iud("INSERT INTO `notification` (`notificationfor`, `notificationfrom`,`notification-type`,`status`,`target`) VALUES ('" + receiver + "', '" + sender + "','1','0','0');");
+            int sender = Integer.parseInt(request.getParameter("x"));
+            int receiver = Integer.parseInt(request.getParameter("y"));
+
+            PreparedStatement ins = DB.prepare(
+                    "INSERT INTO follow (sender, receiver) VALUES (?, ?)");
+            ins.setInt(1, sender);
+            ins.setInt(2, receiver);
+            ins.executeUpdate();
+
+            PreparedStatement notif = DB.prepare(
+                    "INSERT INTO notification (notificationfor, notificationfrom, `notification-type`, status, target) VALUES (?, ?, '1', '0', '0')");
+            notif.setInt(1, receiver);
+            notif.setInt(2, sender);
+            notif.executeUpdate();
+
             out.write("followed");
         } catch (Exception e) {
             e.printStackTrace();
