@@ -96,7 +96,7 @@
                 <div class="section">
                     <h5>Admin Accounts</h5>
                     <div class="row">
-                        <% java.sql.ResultSet rsop = DB.search("Select idusers,firstname,lastname,email from `users` WHERE users.user_type_iduser_type ='1' "); %>
+                        <% java.sql.ResultSet rsop; { PreparedStatement ps = DB.prepare("SELECT idusers,firstname,lastname,email FROM users WHERE users.user_type_iduser_type='1'"); rsop = ps.executeQuery(); } %>
 
                         <table class="striped">
                             <tr>
@@ -155,7 +155,7 @@
                     <%
                         boolean login = false;
                         boolean googlelogin = false;
-                        java.sql.ResultSet setrs = DB.search("SELECT id,state FROM `tailzconfig`");
+                        java.sql.ResultSet setrs; { PreparedStatement ps = DB.prepare("SELECT id,state FROM tailzconfig"); setrs = ps.executeQuery(); }
                         if (setrs.next()) {
                             if (setrs.getInt(1) == 1) {
                                 if (setrs.getInt(2) == 1) {

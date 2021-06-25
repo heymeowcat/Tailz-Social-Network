@@ -1,6 +1,8 @@
 <%@page import="com.heymeowcat.tailznet.KEY"%>
 <%@page import="org.apache.commons.codec.digest.DigestUtils"%>
 <%@page import="com.heymeowcat.tailznet.ENCDEC"%>
+<%@page import="java.sql.PreparedStatement"%>
+<%@page import="java.sql.ResultSet"%>
 <!-- 
     Document   : dashboard
     Created on : Aug 26, 2018, 4:24:27 PM
@@ -37,7 +39,10 @@
                 String Ecolor = "";
                 String Fcolor = "";
                 String Lcolor = "";
-                java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + uid + "' ");
+                java.sql.ResultSet themers;
+                PreparedStatement themePs = DB.prepare("SELECT themename FROM app_theme WHERE users_idusers=?");
+                themePs.setInt(1, uid);
+                themers = themePs.executeQuery();
                 if (themers.next()) {
                     if (themers.getString(1).equals("pinkdark")) {
                         Acolor = "black";
@@ -121,7 +126,10 @@
                         Lcolor = "#9c27b0";
                     }
                 }
-                java.sql.ResultSet usp = DB.search("Select image FROM `user_profile_pic` where users_idusers='" + uid + "' ");
+                java.sql.ResultSet usp;
+                PreparedStatement picPs = DB.prepare("SELECT image FROM user_profile_pic WHERE users_idusers=?");
+                picPs.setInt(1, uid);
+                usp = picPs.executeQuery();
                 if (!usp.isBeforeFirst()) {
                     up = "img/Profile_avatar_placeholder_large.png";
                 } else if (usp.next()) {
@@ -313,7 +321,10 @@
         </header>
 
         <%
-            java.sql.ResultSet usertypers = DB.search("Select user_type_iduser_type from users where status=1 and idusers='" + uid + "'");
+            java.sql.ResultSet usertypers;
+            PreparedStatement utPs = DB.prepare("SELECT user_type_iduser_type FROM users WHERE status=1 AND idusers=?");
+            utPs.setInt(1, uid);
+            usertypers = utPs.executeQuery();
             if (usertypers.next()) {
                 if (usertypers.getInt(1) == 2) {
         %>
@@ -376,27 +387,44 @@
                         int adstosubmit = 0;
                         int adstogolive = 0;
                         int pads = 0;
-                        java.sql.ResultSet purchadzrs = DB.search("Select count(status) from purchase_history where status=1 and users_idusers='" + uid + "'");
+                        java.sql.ResultSet purchadzrs;
+                        PreparedStatement phPs = DB.prepare("SELECT count(status) FROM purchase_history WHERE status=1 AND users_idusers=?");
+                        phPs.setInt(1, uid);
+                        purchadzrs = phPs.executeQuery();
                         if (purchadzrs.next()) {
                             pads = Integer.parseInt(purchadzrs.getString(1));
                         }
-                        java.sql.ResultSet liveadsrs = DB.search("Select count(status) from ads where status=4 and users_idusers='" + uid + "'");
+                        java.sql.ResultSet liveadsrs;
+                        PreparedStatement laPs = DB.prepare("SELECT count(status) FROM ads WHERE status=4 AND users_idusers=?");
+                        laPs.setInt(1, uid);
+                        liveadsrs = laPs.executeQuery();
                         if (liveadsrs.next()) {
                             lads = Integer.parseInt(liveadsrs.getString(1));
                         }
-                        java.sql.ResultSet expadsrs = DB.search("Select count(status) from ads where status=6 and users_idusers='" + uid + "'");
+                        java.sql.ResultSet expadsrs;
+                        PreparedStatement eaPs = DB.prepare("SELECT count(status) FROM ads WHERE status=6 AND users_idusers=?");
+                        eaPs.setInt(1, uid);
+                        expadsrs = eaPs.executeQuery();
                         if (expadsrs.next()) {
                             expads = Integer.parseInt(expadsrs.getString(1));
                         }
-                        java.sql.ResultSet rateperhourrs = DB.search("Select idAPPHPI from apphpi");
+                        java.sql.ResultSet rateperhourrs;
+                        PreparedStatement rphPs = DB.prepare("SELECT idAPPHPI FROM apphpi");
+                        rateperhourrs = rphPs.executeQuery();
                         if (rateperhourrs.next()) {
                             rateperhour = Integer.parseInt(rateperhourrs.getString(1));
                         }
-                        java.sql.ResultSet adstosubrs = DB.search("Select count(status) from ads where status=2 and users_idusers='" + uid + "'");
+                        java.sql.ResultSet adstosubrs;
+                        PreparedStatement asPs = DB.prepare("SELECT count(status) FROM ads WHERE status=2 AND users_idusers=?");
+                        asPs.setInt(1, uid);
+                        adstosubrs = asPs.executeQuery();
                         if (adstosubrs.next()) {
                             adstosubmit = Integer.parseInt(adstosubrs.getString(1));
                         }
-                        java.sql.ResultSet adstogolivers = DB.search("Select count(status) from ads where status=3 and users_idusers='" + uid + "'");
+                        java.sql.ResultSet adstogolivers;
+                        PreparedStatement agPs = DB.prepare("SELECT count(status) FROM ads WHERE status=3 AND users_idusers=?");
+                        agPs.setInt(1, uid);
+                        adstogolivers = agPs.executeQuery();
                         if (adstogolivers.next()) {
                             adstogolive = Integer.parseInt(adstogolivers.getString(1));
                         }
@@ -452,9 +480,15 @@
                             <div id="liveads" class="row">
 
                                 <%
-                                    java.sql.ResultSet ss = DB.search("Select Adid from ads where status='4' and users_idusers='" + uid + "' order by (SELECT `adstartedtime` FROM adtiming WHERE Ads_Adid = ads.Adid) DESC   ");
+                                    java.sql.ResultSet ss;
+                                    PreparedStatement ps = DB.prepare("SELECT Adid FROM ads WHERE status='4' AND users_idusers=? ORDER BY (SELECT adstartedtime FROM adtiming WHERE Ads_Adid = ads.Adid) DESC");
+                                    ps.setInt(1, uid);
+                                    ss = ps.executeQuery();
                                     while (ss.next()) {
-                                        java.sql.ResultSet adstolivers = DB.search("Select Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid='" + ss.getString(1) + "' and status='4'");
+                                        java.sql.ResultSet adstolivers;
+                                        PreparedStatement ps2 = DB.prepare("SELECT Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours FROM ads WHERE Adid=? AND status='4'");
+                                        ps2.setString(1, ss.getString(1));
+                                        adstolivers = ps2.executeQuery();
                                         while (adstolivers.next()) {
                                 %>
 
@@ -475,13 +509,21 @@
                                             </div>
                                             <%
                                                 String timeremainingfrad = "";
-                                                java.sql.ResultSet timedifrs = DB.search("SELECT TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP),(SELECT CAST(TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP) AS CHAR) FROM sEXUaFqh92.adtiming WHERE Ads_Adid ='" + ss.getInt(1) + "') FROM adtiming WHERE Ads_Adid ='" + ss.getInt(1) + "' ");
+                                                java.sql.ResultSet timedifrs;
+                                                PreparedStatement ps3 = DB.prepare("SELECT TIMEDIFF(adendtime,CURRENT_TIMESTAMP),(SELECT CAST(TIMEDIFF(adendtime,CURRENT_TIMESTAMP) AS CHAR) FROM adtiming WHERE Ads_Adid=?) FROM adtiming WHERE Ads_Adid=?");
+                                                ps3.setInt(1, ss.getInt(1));
+                                                ps3.setInt(2, ss.getInt(1));
+                                                timedifrs = ps3.executeQuery();
                                                 if (timedifrs.next()) {
                                                     if (timedifrs.getString(2).startsWith("-")) {
-                                                        DB.iud("UPDATE `ads` SET `status` = '6'  WHERE `ads`.`Adid` = '" + ss.getInt(1) + "';");
+                                                        PreparedStatement upd1 = DB.prepare("UPDATE `ads` SET `status` = '6' WHERE `ads`.`Adid` = ?");
+                                                        upd1.setInt(1, ss.getInt(1));
+                                                        upd1.executeUpdate();
                                                         timeremainingfrad = "Expired";
                                                     } else {
-                                                        DB.iud("UPDATE `ads` SET `status` = '4'  WHERE `ads`.`Adid` = '" + ss.getInt(1) + "';");
+                                                        PreparedStatement upd2 = DB.prepare("UPDATE `ads` SET `status` = '4' WHERE `ads`.`Adid` = ?");
+                                                        upd2.setInt(1, ss.getInt(1));
+                                                        upd2.executeUpdate();
                                                         timeremainingfrad = timedifrs.getString(1);
                                                     }
                                                 }
@@ -506,9 +548,15 @@
                         <div class="<%=Ecolor%> collapsible-body " style="border-color: <%=Ccolor%>">
                             <div id="expiredads" class="row">
                                 <%
-                                    java.sql.ResultSet ssexp = DB.search("Select Adid from ads where status='6' and users_idusers='" + uid + "' order by (SELECT `adendtime` FROM adtiming WHERE Ads_Adid = ads.Adid) DESC");
+                                    java.sql.ResultSet ssexp;
+                                    PreparedStatement ps4 = DB.prepare("SELECT Adid FROM ads WHERE status='6' AND users_idusers=? ORDER BY (SELECT adendtime FROM adtiming WHERE Ads_Adid = ads.Adid) DESC");
+                                    ps4.setInt(1, uid);
+                                    ssexp = ps4.executeQuery();
                                     while (ssexp.next()) {
-                                        java.sql.ResultSet adstolivers = DB.search("Select Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid='" + ssexp.getString(1) + "' and status='6'");
+                                        java.sql.ResultSet adstolivers;
+                                        PreparedStatement ps5 = DB.prepare("SELECT Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours FROM ads WHERE Adid=? AND status='6'");
+                                        ps5.setString(1, ssexp.getString(1));
+                                        adstolivers = ps5.executeQuery();
                                         while (adstolivers.next()) {
                                 %>
                                 <div class="col s12 m12 l4">
@@ -527,13 +575,19 @@
                                             </div>
                                             <%
                                                 String timeremainingfrad = "";
-                                                java.sql.ResultSet timedifrs = DB.search("SELECT TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP),(SELECT CAST(TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP) AS CHAR) FROM sEXUaFqh92.adtiming WHERE Ads_Adid ='" + ssexp.getInt(1) + "') FROM adtiming WHERE Ads_Adid ='" + ssexp.getInt(1) + "'  ");
+                                                java.sql.ResultSet timedifrs;
+                                                PreparedStatement ps6 = DB.prepare("SELECT TIMEDIFF(adendtime,CURRENT_TIMESTAMP),(SELECT CAST(TIMEDIFF(adendtime,CURRENT_TIMESTAMP) AS CHAR) FROM adtiming WHERE Ads_Adid=?) FROM adtiming WHERE Ads_Adid=?");
+                                                ps6.setInt(1, ssexp.getInt(1));
+                                                ps6.setInt(2, ssexp.getInt(1));
+                                                timedifrs = ps6.executeQuery();
                                                 if (timedifrs.next()) {
                                                     if (timedifrs.getString(2).startsWith("-")) {
                                                         timeremainingfrad = "Expired";
                                                     } else {
                                                         timeremainingfrad = timedifrs.getString(1);
-                                                        DB.iud("UPDATE `ads` SET `status` = '4'  WHERE `ads`.`Adid` = '" + ssexp.getInt(1) + "';");
+                                                        PreparedStatement upd3 = DB.prepare("UPDATE `ads` SET `status` = '4' WHERE `ads`.`Adid` = ?");
+                                                        upd3.setInt(1, ssexp.getInt(1));
+                                                        upd3.executeUpdate();
                                                     }
                                                 }
                                             %>
@@ -553,9 +607,15 @@
                         <div class="<%=Ecolor%> collapsible-body " style="border-color: <%=Ccolor%>">
                             <div id="purchasedalladsdiv" class="row">
                                 <%
-                                    java.sql.ResultSet tosubortolivers = DB.search("Select Adid from ads where status='2' and users_idusers=" + uid + " ");
+                                    java.sql.ResultSet tosubortolivers;
+                                    PreparedStatement ps7 = DB.prepare("SELECT Adid FROM ads WHERE status='2' AND users_idusers=?");
+                                    ps7.setInt(1, uid);
+                                    tosubortolivers = ps7.executeQuery();
                                     while (tosubortolivers.next()) {
-                                        java.sql.ResultSet adstosubmitrs = DB.search("Select Adid,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid='" + tosubortolivers.getString(1) + "' and status='2'");
+                                        java.sql.ResultSet adstosubmitrs;
+                                        PreparedStatement ps8 = DB.prepare("SELECT Adid,users_idusers,forhowmanyusers,forhowmanyhours FROM ads WHERE Adid=? AND status='2'");
+                                        ps8.setString(1, tosubortolivers.getString(1));
+                                        adstosubmitrs = ps8.executeQuery();
                                         while (adstosubmitrs.next()) {
                                 %>
                                 <div class="col s12 m12 l6">
@@ -565,8 +625,11 @@
                                         <div class="row">
                                             <div class="input-field col s12 m6">
                                                 <select id="cate<%=adstosubmitrs.getString(1)%>">
-                                                    <%java.sql.ResultSet adcaters = DB.search("Select idAd_category,Ad_category_name from ad_categories WHERE Ad_category_name !='All' ");
-                                                        while (adcaters.next()) {%>
+                                                    <%
+                                                    java.sql.ResultSet adcaters;
+                                                    PreparedStatement ps9 = DB.prepare("SELECT idAd_category,Ad_category_name FROM ad_categories WHERE Ad_category_name !='All'");
+                                                    adcaters = ps9.executeQuery();
+                                                    while (adcaters.next()) {%>
                                                     <option value="<%=adcaters.getString(1)%>"><%=adcaters.getString(2)%></option>
                                                     <%}%>
                                                 </select>
@@ -594,7 +657,10 @@
                                 <%
                                         }
                                     }
-                                    java.sql.ResultSet rsno = DB.search("Select * from ads where status='2' and users_idusers=" + uid + "");
+                                    java.sql.ResultSet rsno;
+                                    PreparedStatement ps10 = DB.prepare("SELECT * FROM ads WHERE status='2' AND users_idusers=?");
+                                    ps10.setInt(1, uid);
+                                    rsno = ps10.executeQuery();
                                     if (!rsno.isBeforeFirst()) {
                                 %>
                                 <div class='center'><img src ='img/adsads.png' height="130px" class='animated pulse responsiveimg '></div>
@@ -609,9 +675,15 @@
                         <div class="<%=Ecolor%> collapsible-body " style="border-color: <%=Ccolor%>">
                             <div class="row">
                                 <%try {
-                                        java.sql.ResultSet togolivers = DB.search("Select Adid from ads where status='3' and users_idusers='" + uid + "' ");
+                                        java.sql.ResultSet togolivers;
+                                        PreparedStatement ps11 = DB.prepare("SELECT Adid FROM ads WHERE status='3' AND users_idusers=?");
+                                        ps11.setInt(1, uid);
+                                        togolivers = ps11.executeQuery();
                                         while (togolivers.next()) {
-                                            java.sql.ResultSet adstolivers = DB.search("Select Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid='" + togolivers.getString(1) + "' and status='3'");
+                                            java.sql.ResultSet adstolivers;
+                                            PreparedStatement ps12 = DB.prepare("SELECT Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours FROM ads WHERE Adid=? AND status='3'");
+                                            ps12.setString(1, togolivers.getString(1));
+                                            adstolivers = ps12.executeQuery();
                                             while (adstolivers.next()) {
                                 %>
                                 <div class="col s12 m4">
@@ -639,7 +711,10 @@
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }
-                                    java.sql.ResultSet rs = DB.search("Select * from ads where status='3' and users_idusers=" + uid + "");
+                                    java.sql.ResultSet rs;
+                                    PreparedStatement ps13 = DB.prepare("SELECT * FROM ads WHERE status='3' AND users_idusers=?");
+                                    ps13.setInt(1, uid);
+                                    rs = ps13.executeQuery();
                                     if (!rs.isBeforeFirst()) {
                                 %>
                                 <div class='center'><img src ='img/advertisingww.png' height="130px" class='animated pulse responsiveimg '></div>
@@ -655,7 +730,9 @@
                                 <form action="purchase" method="post">
                                     <%
                                         double rate = 0;
-                                        java.sql.ResultSet raters = DB.search("Select idAPPHPI from apphpi");
+                                        java.sql.ResultSet raters;
+                                        PreparedStatement ps14 = DB.prepare("SELECT idAPPHPI FROM apphpi");
+                                        raters = ps14.executeQuery();
                                         if (raters.next()) {
                                             rate = Double.parseDouble(raters.getString(1));
                                         }
@@ -680,7 +757,10 @@
                         <div class="<%=Ecolor%> collapsible-body " style="border-color: <%=Ccolor%>">
                             <div class="<%=Dcolor%>">
                                 <%try {
-                                        java.sql.ResultSet purchasehistoryrs = DB.search("Select idpurchase_history from purchase_history where status=1 and users_idusers='" + uid + "'");
+                                        java.sql.ResultSet purchasehistoryrs;
+                                        PreparedStatement ps15 = DB.prepare("SELECT idpurchase_history FROM purchase_history WHERE status=1 AND users_idusers=?");
+                                        ps15.setInt(1, uid);
+                                        purchasehistoryrs = ps15.executeQuery();
                                         if (!purchasehistoryrs.isBeforeFirst()) {
                                 %>
                                 <div class='center'><img src ='img/letter.png' height="130px" class='animated pulse responsiveimg '></div>
@@ -697,9 +777,16 @@
                                         <th>Print</th>
                                     </tr>
                                     <%
-                                        java.sql.ResultSet purchasehistoryrs2 = DB.search("Select idpurchase_history from purchase_history where status=1 and users_idusers='" + uid + "'  ORDER BY `purchase_history`.`idpurchase_history` DESC ");
+                                        java.sql.ResultSet purchasehistoryrs2;
+                                        PreparedStatement ps16 = DB.prepare("SELECT idpurchase_history FROM purchase_history WHERE status=1 AND users_idusers=? ORDER BY `purchase_history`.`idpurchase_history` DESC");
+                                        ps16.setInt(1, uid);
+                                        purchasehistoryrs2 = ps16.executeQuery();
                                         while (purchasehistoryrs2.next()) {
-                                            java.sql.ResultSet purchasehistoryrs3 = DB.search("Select idpurchase_history,datetime,rate,hours,total from purchase_history where status=1 and users_idusers='" + uid + "' and idpurchase_history='" + purchasehistoryrs2.getInt(1) + "' ");
+                                            java.sql.ResultSet purchasehistoryrs3;
+                                            PreparedStatement ps17 = DB.prepare("SELECT idpurchase_history,datetime,rate,hours,total FROM purchase_history WHERE status=1 AND users_idusers=? AND idpurchase_history=?");
+                                            ps17.setInt(1, uid);
+                                            ps17.setInt(2, purchasehistoryrs2.getInt(1));
+                                            purchasehistoryrs3 = ps17.executeQuery();
                                             if (purchasehistoryrs3.next()) {
                                     %>
                                     <tr>
@@ -744,9 +831,14 @@
                             <div class="row">
 
                                 <%
-                                    java.sql.ResultSet ss = DB.search("Select Adid from ads where status='4' order by (SELECT `adstartedtime` FROM adtiming WHERE Ads_Adid = ads.Adid) DESC   ");
+                                    java.sql.ResultSet ss;
+                                    PreparedStatement ps18 = DB.prepare("SELECT Adid FROM ads WHERE status='4' ORDER BY (SELECT adstartedtime FROM adtiming WHERE Ads_Adid = ads.Adid) DESC");
+                                    ss = ps18.executeQuery();
                                     while (ss.next()) {
-                                        java.sql.ResultSet adstolivers = DB.search("Select Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid='" + ss.getString(1) + "' and status='4'");
+                                        java.sql.ResultSet adstolivers;
+                                        PreparedStatement ps19 = DB.prepare("SELECT Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours FROM ads WHERE Adid=? AND status='4'");
+                                        ps19.setString(1, ss.getString(1));
+                                        adstolivers = ps19.executeQuery();
                                         while (adstolivers.next()) {
                                 %>
 
@@ -767,7 +859,9 @@
                                 <%
                                         }
                                     }
-                                    java.sql.ResultSet rslivss = DB.search("Select Adid from ads where status='4'");
+                                    java.sql.ResultSet rslivss;
+                                    PreparedStatement ps20 = DB.prepare("SELECT Adid FROM ads WHERE status='4'");
+                                    rslivss = ps20.executeQuery();
                                     if (!rslivss.isBeforeFirst()) {
                                 %>
                                 <div class='center'><img src ='img/livead.png' height="130px" class='animated pulse responsiveimg '></div>
@@ -785,10 +879,16 @@
                         <div class="<%=Acolor%> collapsible-header" style="border-color: <%=Ccolor%>"><b class="<%=Dcolor%>">All Expired Advertisements</b></div>
                         <div class="<%=Ecolor%> collapsible-body " style="border-color: <%=Ccolor%>">
                             <div class="row">
-                                <%
-                                    java.sql.ResultSet ssexp = DB.search("Select Adid from ads where status='6' order by (SELECT `adendtime` FROM adtiming WHERE Ads_Adid = ads.Adid) DESC");
-                                    while (ssexp.next()) {
-                                        java.sql.ResultSet adstolivers = DB.search("Select Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid='" + ssexp.getString(1) + "' and status='6'");
+<%
+                                    java.sql.ResultSet togolivers;
+                                    PreparedStatement ps11 = DB.prepare("SELECT Adid FROM ads WHERE status='3' AND users_idusers=?");
+                                    ps11.setInt(1, uid);
+                                    togolivers = ps11.executeQuery();
+                                    while (togolivers.next()) {
+                                        java.sql.ResultSet adstolivers;
+                                        PreparedStatement ps12 = DB.prepare("SELECT Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours FROM ads WHERE Adid=? AND status='3'");
+                                        ps12.setString(1, togolivers.getString(1));
+                                        adstolivers = ps12.executeQuery();
                                         while (adstolivers.next()) {
                                 %>
                                 <div class="col s12 m12 l4">
@@ -807,7 +907,9 @@
                                         }
                                     }
 
-                                    java.sql.ResultSet rs = DB.search("Select Adid from ads where status='6'");
+                                    java.sql.ResultSet rs;
+                                    PreparedStatement ps21 = DB.prepare("SELECT Adid FROM ads WHERE status='6'");
+                                    rs = ps21.executeQuery();
                                     if (!rs.isBeforeFirst()) {
                                 %>
                                 <div class='center'><img src ='img/email.png' height="130px" class='animated pulse responsiveimg '></div>
@@ -823,9 +925,14 @@
                         <div class="<%=Ecolor%> collapsible-body " style="border-color: <%=Ccolor%>">
                             <div class="row">
                                 <%try {
-                                        java.sql.ResultSet togolivers = DB.search("Select Adid from ads where status='3' ");
+                                        java.sql.ResultSet togolivers;
+                                        PreparedStatement ps22 = DB.prepare("SELECT Adid FROM ads WHERE status='3'");
+                                        togolivers = ps22.executeQuery();
                                         while (togolivers.next()) {
-                                            java.sql.ResultSet adstolivers = DB.search("Select Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid='" + togolivers.getString(1) + "' and status='3'");
+                                            java.sql.ResultSet adstolivers;
+                                            PreparedStatement ps23 = DB.prepare("SELECT Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours FROM ads WHERE Adid=? AND status='3'");
+                                            ps23.setString(1, togolivers.getString(1));
+                                            adstolivers = ps23.executeQuery();
                                             while (adstolivers.next()) {
                                 %>
                                 <div class="col s12 m4">
@@ -846,7 +953,9 @@
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }
-                                    java.sql.ResultSet rsadsmb = DB.search("Select * from ads where status='3'");
+                                    java.sql.ResultSet rsadsmb;
+                                    PreparedStatement ps24 = DB.prepare("SELECT * FROM ads WHERE status='3'");
+                                    rsadsmb = ps24.executeQuery();
                                     if (!rsadsmb.isBeforeFirst()) {
                                 %>
                                 <div class='center'><img src ='img/advertisingww.png' height="130px" class='animated pulse responsiveimg '></div>
@@ -862,7 +971,9 @@
                                 <form action="changerate" method="post">
                                     <%
                                         double rate = 0;
-                                        java.sql.ResultSet raters = DB.search("Select idAPPHPI from apphpi");
+                                        java.sql.ResultSet raters;
+                                        PreparedStatement ps25 = DB.prepare("SELECT idAPPHPI FROM apphpi");
+                                        raters = ps25.executeQuery();
                                         if (raters.next()) {
                                             rate = Double.parseDouble(raters.getString(1));
                                         }
@@ -879,7 +990,9 @@
                         <div class="<%=Ecolor%> collapsible-body " style="border-color: <%=Ccolor%>">
                             <div class="<%=Dcolor%>">
                                 <%try {
-                                        java.sql.ResultSet purchasehistoryrs = DB.search("Select idpurchase_history from purchase_history where status=1");
+                                        java.sql.ResultSet purchasehistoryrs;
+                                        PreparedStatement ps26 = DB.prepare("SELECT idpurchase_history FROM purchase_history WHERE status=1");
+                                        purchasehistoryrs = ps26.executeQuery();
                                         if (!purchasehistoryrs.isBeforeFirst()) {
                                 %>
                                 <div class='center'><img src ='img/letter.png' height="130px" class='animated pulse responsiveimg '></div>
@@ -896,9 +1009,14 @@
                                         <th>Print</th>
                                     </tr>
                                     <%
-                                        java.sql.ResultSet purchasehistoryrs2 = DB.search("Select idpurchase_history from purchase_history where status=1   ORDER BY `purchase_history`.`idpurchase_history` DESC ");
+                                        java.sql.ResultSet purchasehistoryrs2;
+                                        PreparedStatement ps27 = DB.prepare("SELECT idpurchase_history FROM purchase_history WHERE status=1 ORDER BY `purchase_history`.`idpurchase_history` DESC");
+                                        purchasehistoryrs2 = ps27.executeQuery();
                                         while (purchasehistoryrs2.next()) {
-                                            java.sql.ResultSet purchasehistoryrs3 = DB.search("Select idpurchase_history,datetime,rate,hours,total from purchase_history where status=1  and idpurchase_history='" + purchasehistoryrs2.getInt(1) + "' ");
+                                            java.sql.ResultSet purchasehistoryrs3;
+                                            PreparedStatement ps28 = DB.prepare("SELECT idpurchase_history,datetime,rate,hours,total FROM purchase_history WHERE status=1 AND idpurchase_history=?");
+                                            ps28.setInt(1, purchasehistoryrs2.getInt(1));
+                                            purchasehistoryrs3 = ps28.executeQuery();
                                             if (purchasehistoryrs3.next()) {
                                     %>
                                     <tr>
