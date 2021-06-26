@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -35,7 +36,11 @@ public class changedashboardpage extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             int uid = Integer.parseInt(request.getParameter("uid"));
             int x = Integer.parseInt(request.getParameter("x"));
-            DB.iud("UPDATE `users` SET `user_type_iduser_type` = '"+x+"' WHERE `users`.`idusers` = '"+uid+"';");
+            PreparedStatement ps = DB.prepare(
+                    "UPDATE users SET user_type_iduser_type=? WHERE idusers=?");
+            ps.setInt(1, x);
+            ps.setInt(2, uid);
+            ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
         }

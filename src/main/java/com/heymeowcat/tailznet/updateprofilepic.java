@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -33,10 +34,13 @@ public class updateprofilepic extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            int uid = 0;
-            uid = Integer.parseInt(request.getSession().getAttribute("user").toString());
+            int uid = Integer.parseInt(request.getSession().getAttribute("user").toString());
             String fp = request.getParameter("fp");
-            DB.iud("UPDATE `user_profile_pic` SET `image` = '" + fp + "' WHERE users_idusers= '"+uid+"';");
+            PreparedStatement ps = DB.prepare(
+                    "UPDATE user_profile_pic SET image=? WHERE users_idusers=?");
+            ps.setString(1, fp);
+            ps.setInt(2, uid);
+            ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
         }

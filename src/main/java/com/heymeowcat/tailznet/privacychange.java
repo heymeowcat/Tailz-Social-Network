@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -35,12 +36,19 @@ public class privacychange extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             int uid = Integer.parseInt(request.getParameter("uid"));
             String x = request.getParameter("x");
-            DB.iud("UPDATE `user_privacy` SET `privacy_name` = '" + x + "' WHERE users_idusers = '" + uid + "';");
-            if (x.equals("public")) {
-                DB.iud("UPDATE `post` SET `Post_Privacy` = '1' WHERE `users_idusers`='" + uid + "'");
-            } else {
-                DB.iud("UPDATE `post` SET `Post_Privacy` = '2' WHERE `users_idusers`='" + uid + "'");
-            }
+
+            PreparedStatement psPrivacy = DB.prepare(
+                    "UPDATE user_privacy SET privacy_name=? WHERE users_idusers=?");
+            psPrivacy.setString(1, x);
+            psPrivacy.setInt(2, uid);
+            psPrivacy.executeUpdate();
+
+            int privacyCode = x.equals("public") ? 1 : 2;
+            PreparedStatement psPosts = DB.prepare(
+                    "UPDATE post SET Post_Privacy=? WHERE users_idusers=?");
+            psPosts.setInt(1, privacyCode);
+            psPosts.setInt(2, uid);
+            psPosts.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
         }

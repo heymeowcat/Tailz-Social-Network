@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -36,32 +37,35 @@ public class themechange extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             int uid = Integer.parseInt(request.getParameter("uid"));
             String x = request.getParameter("x");
-            ResultSet likechech = DB.search("Select themename from `app_theme`  where users_idusers='" + uid + "' ");
-            if (!likechech.isBeforeFirst()) {
-                DB.iud("INSERT INTO `app_theme` ( `themename`, `users_idusers`) VALUES ('light', '" + uid + "')");
-            } else if (likechech.next()) {
-                if (x.equals("pinklight")) {
-                    DB.iud("Update `app_theme` SET themename='pinklight'  WHERE `users_idusers` ='" + uid + "' ");
-                } else if (x.equals("pinkdark")) {
-                    DB.iud("Update `app_theme` SET themename='pinkdark'  WHERE `users_idusers` ='" + uid + "' ");
-                } else if (x.equals("bluelight")) {
-                    DB.iud("Update `app_theme` SET themename='bluelight'  WHERE `users_idusers` ='" + uid + "' ");
-                } else if (x.equals("bluedark")) {
-                    DB.iud("Update `app_theme` SET themename='bluedark'  WHERE `users_idusers` ='" + uid + "' ");
-                } else if (x.equals("yellowlight")) {
-                    DB.iud("Update `app_theme` SET themename='yellowlight'  WHERE `users_idusers` ='" + uid + "' ");
-                } else if (x.equals("yellowdark")) {
-                    DB.iud("Update `app_theme` SET themename='yellowdark'  WHERE `users_idusers` ='" + uid + "' ");
-                } else if (x.equals("greenlight")) {
-                    DB.iud("Update `app_theme` SET themename='greenlight'  WHERE `users_idusers` ='" + uid + "' ");
-                } else if (x.equals("greendark")) {
-                    DB.iud("Update `app_theme` SET themename='greendark'  WHERE `users_idusers` ='" + uid + "' ");
-                } else if (x.equals("purplelight")) {
-                    DB.iud("Update `app_theme` SET themename='purplelight'  WHERE `users_idusers` ='" + uid + "' ");
-                } else if (x.equals("purpledark")) {
-                    DB.iud("Update `app_theme` SET themename='purpledark'  WHERE `users_idusers` ='" + uid + "' ");
-                }
 
+            PreparedStatement chk = DB.prepare(
+                    "SELECT themename FROM app_theme WHERE users_idusers=?");
+            chk.setInt(1, uid);
+            ResultSet likechech = chk.executeQuery();
+
+            if (!likechech.isBeforeFirst()) {
+                PreparedStatement ins = DB.prepare(
+                        "INSERT INTO app_theme (themename, users_idusers) VALUES ('light', ?)");
+                ins.setInt(1, uid);
+                ins.executeUpdate();
+            } else if (likechech.next()) {
+                // Only allow known theme names to prevent injection
+                String[] validThemes = {"pinklight", "pinkdark", "bluelight", "bluedark",
+                    "yellowlight", "yellowdark", "greenlight", "greendark", "purplelight", "purpledark"};
+                boolean valid = false;
+                for (String t : validThemes) {
+                    if (t.equals(x)) {
+                        valid = true;
+                        break;
+                    }
+                }
+                if (valid) {
+                    PreparedStatement upd = DB.prepare(
+                            "UPDATE app_theme SET themename=? WHERE users_idusers=?");
+                    upd.setString(1, x);
+                    upd.setInt(2, uid);
+                    upd.executeUpdate();
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

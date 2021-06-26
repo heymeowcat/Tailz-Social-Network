@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -35,9 +36,14 @@ public class update extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             try {
                 int uid = Integer.parseInt(request.getParameter("uid"));
-                String fn =request.getParameter("fn");
-                String ln =request.getParameter("ln");
-                DB.iud("UPDATE `users` SET `firstname` = '"+fn+"', `lastname` = '"+ln+"' WHERE `users`.`idusers` = '"+uid+"';");
+                String fn = request.getParameter("fn");
+                String ln = request.getParameter("ln");
+                PreparedStatement ps = DB.prepare(
+                        "UPDATE users SET firstname=?, lastname=? WHERE idusers=?");
+                ps.setString(1, fn);
+                ps.setString(2, ln);
+                ps.setInt(3, uid);
+                ps.executeUpdate();
                 response.sendRedirect("profile.jsp");
             } catch (Exception e) {
                 e.printStackTrace();

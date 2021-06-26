@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -33,12 +34,21 @@ public class uapchange extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            int y = 1;
             int uid = Integer.parseInt(request.getParameter("uid"));
             int x = Integer.parseInt(request.getParameter("x"));
-            y = Integer.parseInt(request.getParameter("y"));
-            DB.iud("UPDATE `uap` SET `Preference` = '" + x + "' WHERE `uap`.`users_idusers` = '" + uid + "';");
-            DB.iud("UPDATE `user_followed_ad_catergories` SET `adcategory` = '" + y + "' WHERE `users_idusers` = '" + uid + "';");
+            int y = Integer.parseInt(request.getParameter("y"));
+
+            PreparedStatement psUap = DB.prepare(
+                    "UPDATE uap SET Preference=? WHERE users_idusers=?");
+            psUap.setInt(1, x);
+            psUap.setInt(2, uid);
+            psUap.executeUpdate();
+
+            PreparedStatement psCat = DB.prepare(
+                    "UPDATE user_followed_ad_catergories SET adcategory=? WHERE users_idusers=?");
+            psCat.setInt(1, y);
+            psCat.setInt(2, uid);
+            psCat.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
         }

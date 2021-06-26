@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -34,17 +35,20 @@ public class updatepassword extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            String uid = request.getParameter("uid");
+            int uid = Integer.parseInt(request.getParameter("uid"));
             String newps = request.getParameter("newpsw");
             String conps = request.getParameter("conpsw");
             if (newps.equals(conps)) {
                 String hashpass = DigestUtils.md5Hex(conps);
-                DB.iud("UPDATE `user_login` SET `password` = '"+hashpass+"' WHERE `user_login`.`users_idusers` ='"+uid+"' ;");
+                PreparedStatement upd = DB.prepare(
+                        "UPDATE user_login SET password=? WHERE users_idusers=?");
+                upd.setString(1, hashpass);
+                upd.setInt(2, uid);
+                upd.executeUpdate();
                 response.sendRedirect("profile.jsp");
             } else {
                 response.sendRedirect("profile.jsp?err=err");
             }
-
         } catch (Exception ex) {
             ex.printStackTrace();
         }

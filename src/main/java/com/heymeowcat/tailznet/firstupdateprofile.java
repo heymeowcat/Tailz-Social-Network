@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -34,16 +35,44 @@ public class firstupdateprofile extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             try {
-                String uid = request.getParameter("uid");
+                int uid = Integer.parseInt(request.getParameter("uid"));
                 String fn = request.getParameter("fn");
                 String ln = request.getParameter("ln");
                 String fp = "img/Profile_avatar_placeholder_large.png";
-                DB.iud("UPDATE `users` SET `firstname` = '" + fn + "', `lastname` = '" + ln + "' WHERE `users`.`idusers` = '" + uid + "';");
-                DB.iud("INSERT INTO `user_profile_pic` (`image`, `users_idusers`) VALUES ('" + fp + "', '" + uid + "');");
-                DB.iud("INSERT INTO `app_theme` (`themename`, `users_idusers`) VALUES ('purplelight', '" + uid + "');");
-                DB.iud("INSERT INTO `app_layout` (`users_idusers`, `layout`) VALUES ('" + uid + "', 1);");
-                DB.iud("INSERT INTO `uap` (`Preference`, `users_idusers`) VALUES ('1', '" + uid + "');");
-                DB.iud("INSERT INTO `user_privacy` (`privacy_name`, `users_idusers`) VALUES ('public', '" + uid + "');");
+
+                PreparedStatement updName = DB.prepare(
+                        "UPDATE users SET firstname=?, lastname=? WHERE idusers=?");
+                updName.setString(1, fn);
+                updName.setString(2, ln);
+                updName.setInt(3, uid);
+                updName.executeUpdate();
+
+                PreparedStatement insPic = DB.prepare(
+                        "INSERT INTO user_profile_pic (image, users_idusers) VALUES (?, ?)");
+                insPic.setString(1, fp);
+                insPic.setInt(2, uid);
+                insPic.executeUpdate();
+
+                PreparedStatement insTheme = DB.prepare(
+                        "INSERT INTO app_theme (themename, users_idusers) VALUES ('purplelight', ?)");
+                insTheme.setInt(1, uid);
+                insTheme.executeUpdate();
+
+                PreparedStatement insLayout = DB.prepare(
+                        "INSERT INTO app_layout (users_idusers, layout) VALUES (?, 1)");
+                insLayout.setInt(1, uid);
+                insLayout.executeUpdate();
+
+                PreparedStatement insUap = DB.prepare(
+                        "INSERT INTO uap (Preference, users_idusers) VALUES ('1', ?)");
+                insUap.setInt(1, uid);
+                insUap.executeUpdate();
+
+                PreparedStatement insPrivacy = DB.prepare(
+                        "INSERT INTO user_privacy (privacy_name, users_idusers) VALUES ('public', ?)");
+                insPrivacy.setInt(1, uid);
+                insPrivacy.executeUpdate();
+
                 response.sendRedirect("login-register.jsp");
             } catch (Exception e) {
                 e.printStackTrace();
