@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -35,7 +36,11 @@ public class leavethisgroup extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             String groupid = request.getParameter("x");
             int memberid = Integer.parseInt(request.getParameter("y"));
-            DB.iud("DELETE FROM `group_members` WHERE `Groups_group_id`='" + groupid + "' and members='"+memberid+"' ");
+            PreparedStatement ps = DB.prepare(
+                    "DELETE FROM group_members WHERE Groups_group_id=? AND members=?");
+            ps.setString(1, groupid);
+            ps.setInt(2, memberid);
+            ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
         }

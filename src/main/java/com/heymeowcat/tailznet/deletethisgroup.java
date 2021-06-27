@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -34,9 +35,20 @@ public class deletethisgroup extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
            String groupid = request.getParameter("x");
-           DB.iud("DELETE FROM `group_chat` WHERE `Groups_group_id`='"+groupid+"'");
-           DB.iud("DELETE FROM `group_members` WHERE `Groups_group_id`='"+groupid+"'");
-           DB.iud("DELETE FROM `groups` WHERE `group_id`='"+groupid+"'");
+           PreparedStatement delChat = DB.prepare(
+                   "DELETE FROM group_chat WHERE Groups_group_id=?");
+           delChat.setString(1, groupid);
+           delChat.executeUpdate();
+
+           PreparedStatement delMembers = DB.prepare(
+                   "DELETE FROM group_members WHERE Groups_group_id=?");
+           delMembers.setString(1, groupid);
+           delMembers.executeUpdate();
+
+           PreparedStatement delGroup = DB.prepare(
+                   "DELETE FROM groups WHERE group_id=?");
+           delGroup.setString(1, groupid);
+           delGroup.executeUpdate();
         }catch(Exception  e){
             e.printStackTrace();
         }

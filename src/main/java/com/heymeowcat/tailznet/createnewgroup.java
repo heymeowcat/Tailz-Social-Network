@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import java.util.UUID;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -39,13 +40,21 @@ public class createnewgroup extends HttpServlet {
             int uid = Integer.parseInt(request.getParameter("uid"));
             String groupid = UUID.randomUUID().toString();
             if (!groupname.isEmpty()) {
-                if (groupimg.equals("undefined")) {
-                    DB.iud("INSERT INTO `groups` (`group_id`, `groupname`, `groupimg`, `groupadmin`) VALUES ('" + groupid + "', '" + groupname + "', 'img/ion-android-people.png', '" + uid + "');");
-                    DB.iud("INSERT INTO `group_members` (`Groups_group_id`, `members`) VALUES ('" + groupid + "', '" + uid + "');");
-                } else {
-                    DB.iud("INSERT INTO `groups` (`group_id`, `groupname`, `groupimg`, `groupadmin`) VALUES ('" + groupid + "', '" + groupname + "', '" + groupimg + "', '" + uid + "');");
-                    DB.iud("INSERT INTO `group_members` (`Groups_group_id`, `members`) VALUES ('" + groupid + "', '" + uid + "');");
-                }
+                String imgToUse = groupimg.equals("undefined") ? "img/ion-android-people.png" : groupimg;
+
+                PreparedStatement insGroup = DB.prepare(
+                        "INSERT INTO groups (group_id, groupname, groupimg, groupadmin) VALUES (?, ?, ?, ?)");
+                insGroup.setString(1, groupid);
+                insGroup.setString(2, groupname);
+                insGroup.setString(3, imgToUse);
+                insGroup.setInt(4, uid);
+                insGroup.executeUpdate();
+
+                PreparedStatement insMember = DB.prepare(
+                        "INSERT INTO group_members (Groups_group_id, members) VALUES (?, ?)");
+                insMember.setString(1, groupid);
+                insMember.setInt(2, uid);
+                insMember.executeUpdate();
             }
         } catch (Exception e) {
             e.printStackTrace();

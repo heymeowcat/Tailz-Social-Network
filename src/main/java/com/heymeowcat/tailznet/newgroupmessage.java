@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -37,13 +38,34 @@ public class newgroupmessage extends HttpServlet {
             String muid = request.getParameter("muid");
             String msg = request.getParameter("msg");
             String src = request.getParameter("src");
-            if (msg.isEmpty() && src.equals("undefined")) {
-            } else if (src.equals("undefined")) {
-                DB.iud("INSERT INTO `group_chat` (Groups_group_id,`chat_text`,`users_idusers`, `chatstatus`) VALUES ('"+muid+"','" + ENCDEC.encrypt(msg, new KEY().secretKey) + "','" + uid + "',0);");
-            } else if (msg.isEmpty()) {
-                DB.iud("INSERT INTO `group_chat` (Groups_group_id,`src`, `users_idusers`, `chatstatus`) VALUES ('"+muid+"','" + ENCDEC.encrypt(src, new KEY().secretKey) + "', '" + uid + "',0);");
+
+            boolean hasMsg = msg != null && !msg.isEmpty();
+            boolean hasSrc = src != null && !src.equals("undefined");
+
+            if (!hasMsg && !hasSrc) {
+                // Nothing to send
+            } else if (hasMsg && !hasSrc) {
+                PreparedStatement ps = DB.prepare(
+                        "INSERT INTO group_chat (Groups_group_id, chat_text, users_idusers, chatstatus) VALUES (?, ?, ?, 0)");
+                ps.setString(1, muid);
+                ps.setString(2, ENCDEC.encrypt(msg, new KEY().secretKey));
+                ps.setInt(3, uid);
+                ps.executeUpdate();
+            } else if (!hasMsg && hasSrc) {
+                PreparedStatement ps = DB.prepare(
+                        "INSERT INTO group_chat (Groups_group_id, src, users_idusers, chatstatus) VALUES (?, ?, ?, 0)");
+                ps.setString(1, muid);
+                ps.setString(2, ENCDEC.encrypt(src, new KEY().secretKey));
+                ps.setInt(3, uid);
+                ps.executeUpdate();
             } else {
-                DB.iud("INSERT INTO `group_chat` (Groups_group_id,`chat_text`, `src`, `users_idusers`, `chatstatus`) VALUES ('"+muid+"','" + ENCDEC.encrypt(msg, new KEY().secretKey) + "','" + ENCDEC.encrypt(src, new KEY().secretKey) + "', '" + uid + "',0);");
+                PreparedStatement ps = DB.prepare(
+                        "INSERT INTO group_chat (Groups_group_id, chat_text, src, users_idusers, chatstatus) VALUES (?, ?, ?, ?, 0)");
+                ps.setString(1, muid);
+                ps.setString(2, ENCDEC.encrypt(msg, new KEY().secretKey));
+                ps.setString(3, ENCDEC.encrypt(src, new KEY().secretKey));
+                ps.setInt(4, uid);
+                ps.executeUpdate();
             }
         } catch (Exception e) {
             e.printStackTrace();

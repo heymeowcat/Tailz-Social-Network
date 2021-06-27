@@ -9,6 +9,8 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -44,7 +46,9 @@ public class groupmessages extends HttpServlet {
             String Dcolor = "";
             String Ecolor = "";
             String Fcolor = "";
-            java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + uid + "' ");
+            PreparedStatement themersPs = DB.prepare("Select themename from app_theme where users_idusers= ?");
+            themersPs.setInt(1, uid);
+            ResultSet themers = themersPs.executeQuery();
             if (themers.next()) {
                 if (themers.getString(1).equals("pinkdark")) {
                     Acolor = "black";
@@ -118,10 +122,17 @@ public class groupmessages extends HttpServlet {
                     Fcolor = "#9c27b0";
                 }
             }
-            java.sql.ResultSet rs = DB.search("SELECT * FROM `group_chat` where Groups_group_id='" + muid + "'  ORDER BY chat_datetime asc ");
+            PreparedStatement rsPs = DB.prepare("SELECT * FROM `group_chat` where Groups_group_id=?  ORDER BY chat_datetime asc ");
+            rsPs.setString(1, muid);
+            ResultSet rs = rsPs.executeQuery();
             while (rs.next()) {
-                java.sql.ResultSet muidprofiles = DB.search("SELECT firstname FROM `users` where idusers='" + rs.getString(6) + "' ");
-                java.sql.ResultSet uidprofiles = DB.search("SELECT chat_text,src,chat_datetime FROM `group_chat` where Groups_group_id='" + muid + "' and users_idusers=" + uid + " ");
+                PreparedStatement muidprofilesPs = DB.prepare("SELECT firstname FROM `users` where idusers=?");
+                muidprofilesPs.setString(1, rs.getString(6));
+                ResultSet muidprofiles = muidprofilesPs.executeQuery();
+                PreparedStatement uidprofilesPs = DB.prepare("SELECT chat_text,src,chat_datetime FROM `group_chat` where Groups_group_id=? and users_idusers=?");
+                uidprofilesPs.setString(1, muid);
+                uidprofilesPs.setInt(2, uid);
+                ResultSet uidprofiles = uidprofilesPs.executeQuery();
                 if (muidprofiles.next() | uidprofiles.next()) {
                     if (!rs.getString(6).equals("" + uid)) {
                         out.write("<div class='message__list'>");

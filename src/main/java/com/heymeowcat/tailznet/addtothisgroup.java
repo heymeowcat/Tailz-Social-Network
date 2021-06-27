@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -33,9 +34,13 @@ public class addtothisgroup extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            String groupid =request.getParameter("x");
-            int member =Integer.parseInt(request.getParameter("y"));
-            DB.iud("INSERT INTO `group_members` (`Groups_group_id`, `members`) VALUES ('" + groupid + "', '" + member + "');");
+            String groupid = request.getParameter("x");
+            int member = Integer.parseInt(request.getParameter("y"));
+            PreparedStatement ps = DB.prepare(
+                    "INSERT INTO group_members (Groups_group_id, members) VALUES (?, ?)");
+            ps.setString(1, groupid);
+            ps.setInt(2, member);
+            ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
         }
