@@ -7,6 +7,8 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -41,7 +43,9 @@ public class notificationslive extends HttpServlet {
             String Dcolor = "";
             String Ecolor = "";
             String Fcolor = "";
-            java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + uid + "' ");
+            PreparedStatement themersPs = DB.prepare("Select themename from app_theme where users_idusers= ?");
+            themersPs.setInt(1, uid);
+            ResultSet themers = themersPs.executeQuery();
             if (themers.next()) {
                 if (themers.getString(1).equals("pinkdark")) {
                     Acolor = "black";
@@ -115,7 +119,9 @@ public class notificationslive extends HttpServlet {
                     Fcolor = "white";
                 }
             }
-            java.sql.ResultSet rsop = DB.search("Select * FROM `notification` where notificationfor = '" + uid + "' ORDER BY time DESC");
+            PreparedStatement rsopPs = DB.prepare("Select * FROM `notification` where notificationfor = ? ORDER BY time DESC");
+            rsopPs.setInt(1, uid);
+            ResultSet rsop = rsopPs.executeQuery();
             if (!rsop.isBeforeFirst()) {
 
                 out.write("\n");
@@ -143,7 +149,9 @@ public class notificationslive extends HttpServlet {
             try {
                 String commenttext = "";
                 String notificationtxt = "";
-                java.sql.ResultSet rs = DB.search("Select * FROM `notification` where notificationfor = '" + uid + "' ORDER BY time DESC");
+                PreparedStatement rsPs = DB.prepare("Select * FROM `notification` where notificationfor = ? ORDER BY time DESC");
+                rsPs.setInt(1, uid);
+                ResultSet rs = rsPs.executeQuery();
                 while (rs.next()) {
                     if (rs.getString(4).equals("1")) {
                         commenttext = "started following you";
@@ -153,15 +161,21 @@ public class notificationslive extends HttpServlet {
                     String imgup = "";
                     String fnamepost = "";
                     String lnamepost = "";
-                    java.sql.ResultSet imgpostuser = DB.search("Select image From user_profile_pic where users_idusers='" + rs.getInt(3) + "' ");
+                    PreparedStatement imgpostuserPs = DB.prepare("Select image From user_profile_pic where users_idusers=?");
+                    imgpostuserPs.setInt(1, rs.getInt(3));
+                    ResultSet imgpostuser = imgpostuserPs.executeQuery();
                     if (imgpostuser.next()) {
                         imgup = imgpostuser.getString(1);
                     }
-                    java.sql.ResultSet firstimguser = DB.search("Select firstname From users where idusers='" + rs.getInt(3) + "' ");
+                    PreparedStatement firstimguserPs = DB.prepare("Select firstname From users where idusers=?");
+                    firstimguserPs.setInt(1, rs.getInt(3));
+                    ResultSet firstimguser = firstimguserPs.executeQuery();
                     if (firstimguser.next()) {
                         fnamepost = firstimguser.getString(1);
                     }
-                    java.sql.ResultSet lastimguser = DB.search("Select lastname From users where idusers='" + rs.getInt(3) + "' ");
+                    PreparedStatement lastimguserPs = DB.prepare("Select lastname From users where idusers=?");
+                    lastimguserPs.setInt(1, rs.getInt(3));
+                    ResultSet lastimguser = lastimguserPs.executeQuery();
                     if (lastimguser.next()) {
                         lnamepost = lastimguser.getString(1);
                     }

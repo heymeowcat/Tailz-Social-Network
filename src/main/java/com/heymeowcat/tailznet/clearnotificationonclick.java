@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -34,7 +35,10 @@ public class clearnotificationonclick extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             int nid = Integer.parseInt(request.getParameter("nid"));
-            DB.iud("UPDATE `notification` SET `status` = '1' WHERE `notification`.`idnotification` =" + nid + "; ");
+            PreparedStatement ps = DB.prepare(
+                    "UPDATE notification SET status='1' WHERE idnotification=?");
+            ps.setInt(1, nid);
+            ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
         }

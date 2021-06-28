@@ -5,9 +5,10 @@ package com.heymeowcat.tailznet;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-import com.heymeowcat.tailznet.DB;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -42,7 +43,10 @@ public class commentlive extends HttpServlet {
                 String Dcolor = "";
                 String Ecolor = "";
                 String Fcolor = "";
-                java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + uid + "' ");
+                PreparedStatement themePs = DB.prepare(
+                        "SELECT themename FROM app_theme WHERE users_idusers=?");
+                themePs.setString(1, uid);
+                java.sql.ResultSet themers = themePs.executeQuery();
                 if (themers.next()) {
                     if (themers.getString(1).equals("pinkdark")) {
                         Acolor = "black";
@@ -117,26 +121,42 @@ public class commentlive extends HttpServlet {
                     }
                 }
 
-            java.sql.ResultSet cmntsrs = DB.search("Select * from `post_comment` where post_idpost='" + pid + "' ORDER BY `post_comment`.`datetime` DESC ");
-            if (!cmntsrs.isBeforeFirst()) {
-                out.write("<div class='center' style='top:40%; position:relative'><img src ='img/commentlive.png' class='animated pulse responsiveimg '></div>");
-            } else {
-                while (cmntsrs.next()) {
-                    String cmpic = "";
-                    String cmfn = "";
-                    String cmln = "";
-                    java.sql.ResultSet imguserincmnt = DB.search("Select image From user_profile_pic where users_idusers='" + cmntsrs.getInt(3) + "' ");
-                    if (imguserincmnt.next()) {
-                        cmpic = imguserincmnt.getString(1);
-                    }
-                    java.sql.ResultSet cmnfirstn = DB.search("Select firstname From users where idusers='" + cmntsrs.getInt(3) + "' ");
-                    if (cmnfirstn.next()) {
-                        cmfn = cmnfirstn.getString(1);
-                    }
-                    java.sql.ResultSet cmnlastn = DB.search("Select lastname From users where idusers='" + cmntsrs.getInt(3) + "' ");
-                    if (cmnlastn.next()) {
-                        cmln = cmnlastn.getString(1);
-                    }
+            java.sql.ResultSet cmntsrs;
+                PreparedStatement cmntsPs = DB.prepare(
+                        "SELECT * FROM post_comment WHERE post_idpost=? ORDER BY post_comment.datetime DESC");
+                cmntsPs.setInt(1, pid);
+                cmntsrs = cmntsPs.executeQuery();
+                if (!cmntsrs.isBeforeFirst()) {
+                    out.write("<div class='center' style='top:40%; position:relative'><img src ='img/commentlive.png' class='animated pulse responsiveimg '></div>");
+                } else {
+                    while (cmntsrs.next()) {
+                        String cmpic = "";
+                        String cmfn = "";
+                        String cmln = "";
+                        java.sql.ResultSet imguserincmnt;
+                        PreparedStatement imgPs = DB.prepare(
+                                "SELECT image FROM user_profile_pic WHERE users_idusers=?");
+                        imgPs.setInt(1, cmntsrs.getInt(3));
+                        imguserincmnt = imgPs.executeQuery();
+                        if (imguserincmnt.next()) {
+                            cmpic = imguserincmnt.getString(1);
+                        }
+                        java.sql.ResultSet cmnfirstn;
+                        PreparedStatement fnPs = DB.prepare(
+                                "SELECT firstname FROM users WHERE idusers=?");
+                        fnPs.setInt(1, cmntsrs.getInt(3));
+                        cmnfirstn = fnPs.executeQuery();
+                        if (cmnfirstn.next()) {
+                            cmfn = cmnfirstn.getString(1);
+                        }
+                        java.sql.ResultSet cmnlastn;
+                        PreparedStatement lnPs = DB.prepare(
+                                "SELECT lastname FROM users WHERE idusers=?");
+                        lnPs.setInt(1, cmntsrs.getInt(3));
+                        cmnlastn = lnPs.executeQuery();
+                        if (cmnlastn.next()) {
+                            cmln = cmnlastn.getString(1);
+                        }
                     out.write("<li class='collection-item avatar "+Acolor+" "+Dcolor+"' style='border-color:"+Ccolor+"'>");
                     out.write("<img src='" + cmpic + "'  class='circle'>");
                     out.write("<span class='title'>" + cmfn + " " + cmln + "</span>");

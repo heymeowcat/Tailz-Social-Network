@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -35,7 +36,11 @@ public class setmessageseen extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             int uid = Integer.parseInt(request.getParameter("uid"));
             int muid = Integer.parseInt(request.getParameter("muid"));
-            DB.iud("UPDATE `chat` SET `chatlinestatus` = '1' WHERE `user_sender` ='"+muid+"' and users_receiver='"+uid+"' and chatlinestatus='0'");
+            PreparedStatement ps = DB.prepare(
+                    "UPDATE chat SET chatlinestatus='1' WHERE user_sender=? AND users_receiver=? AND chatlinestatus='0'");
+            ps.setInt(1, muid);
+            ps.setInt(2, uid);
+            ps.executeUpdate();
         }catch(Exception e){
             e.printStackTrace();
         }

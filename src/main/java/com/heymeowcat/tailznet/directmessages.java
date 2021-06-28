@@ -5,9 +5,10 @@ package com.heymeowcat.tailznet;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-import com.heymeowcat.tailznet.DB;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -43,7 +44,11 @@ public class directmessages extends HttpServlet {
             String Dcolor = "";
             String Ecolor = "";
             String Fcolor = "";
-            java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + uid + "' ");
+            java.sql.ResultSet themers;
+            PreparedStatement themePs = DB.prepare(
+                    "SELECT themename FROM app_theme WHERE users_idusers=?");
+            themePs.setInt(1, uid);
+            themers = themePs.executeQuery();
             if (themers.next()) {
                 if (themers.getString(1).equals("pinkdark")) {
                     Acolor = "black";
@@ -117,10 +122,25 @@ public class directmessages extends HttpServlet {
                     Fcolor = "#9c27b0";
                 }
             }
-            java.sql.ResultSet rs = DB.search("SELECT * FROM `chat` where user_sender=" + muid + " and users_receiver =" + uid + " OR user_sender=" + uid + " AND users_receiver =" + muid + " ORDER BY chat_datetime asc ");
+            java.sql.ResultSet rs;
+            PreparedStatement chatPs = DB.prepare(
+                    "SELECT * FROM chat WHERE (user_sender=? AND users_receiver=?) OR (user_sender=? AND users_receiver=?) ORDER BY chat_datetime ASC");
+            chatPs.setInt(1, muid);
+            chatPs.setInt(2, uid);
+            chatPs.setInt(3, uid);
+            chatPs.setInt(4, muid);
+            rs = chatPs.executeQuery();
             while (rs.next()) {
-                java.sql.ResultSet muidprofiles = DB.search("SELECT firstname FROM `users` where idusers='" + muid + "' ");
-                java.sql.ResultSet uidprofiles = DB.search("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers where idusers =" + uid + " ");
+                java.sql.ResultSet muidprofiles;
+                PreparedStatement muidPs = DB.prepare(
+                        "SELECT firstname FROM users WHERE idusers=?");
+                muidPs.setInt(1, muid);
+                muidprofiles = muidPs.executeQuery();
+                java.sql.ResultSet uidprofiles;
+                PreparedStatement uidPs = DB.prepare(
+                        "SELECT firstname,lastname,image,idusers FROM users JOIN user_profile_pic ON users.idusers = user_profile_pic.users_idusers WHERE idusers=?");
+                uidPs.setInt(1, uid);
+                uidprofiles = uidPs.executeQuery();
                 if (muidprofiles.next() | uidprofiles.next()) {
                     if (rs.getString(5).equals("" + muid)) {
                         out.write("<div class='message__list'>");

@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -37,7 +38,13 @@ public class completethead extends HttpServlet {
             int cate = Integer.parseInt(request.getParameter("cate"));
             String src = request.getParameter("src");
             String link = request.getParameter("url");
-            DB.iud("UPDATE ads SET adcategory = '" + cate + "' , src = '" + src + "', link='" + link + "', status='3' WHERE Adid = '" + adid + "' ");
+            PreparedStatement ps = DB.prepare(
+                    "UPDATE ads SET adcategory=?, src=?, link=?, status='3' WHERE Adid=?");
+            ps.setInt(1, cate);
+            ps.setString(2, src);
+            ps.setString(3, link);
+            ps.setString(4, adid);
+            ps.executeUpdate();
             response.sendRedirect("dashboard.jsp");
         } catch (Exception e) {
             e.printStackTrace();

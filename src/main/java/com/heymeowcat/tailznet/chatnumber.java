@@ -6,9 +6,9 @@ package com.heymeowcat.tailznet;
  * and open the template in the editor.
  */
 
-import com.heymeowcat.tailznet.DB;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -37,7 +37,10 @@ public class chatnumber extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             int uid = Integer.parseInt(request.getParameter("uid"));
-            ResultSet rs = DB.search("Select count(chatlinestatus) from chat where users_receiver='"+uid+"' and chatlinestatus='0' ");
+            PreparedStatement ps = DB.prepare(
+                    "SELECT count(chatlinestatus) FROM chat WHERE users_receiver=? AND chatlinestatus='0'");
+            ps.setInt(1, uid);
+            ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 if(rs.getInt(1)==0){
                     

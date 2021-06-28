@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -35,7 +36,9 @@ public class notificationnumber extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             int uid = Integer.parseInt(request.getParameter("uid"));
-            ResultSet rs = DB.search("Select count(notificationfor) from notification where notificationfor='"+uid+"' and status='0' ");
+            PreparedStatement rsPs = DB.prepare("Select count(notificationfor) from notification where notificationfor=? and status='0' ");
+            rsPs.setInt(1, uid);
+            ResultSet rs = rsPs.executeQuery();
             if (rs.next()) {
                 if(rs.getInt(1)==0){
                     

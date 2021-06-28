@@ -6,9 +6,10 @@ package com.heymeowcat.tailznet;
  * and open the template in the editor.
  */
 
-import com.heymeowcat.tailznet.DB;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -44,7 +45,9 @@ public class commentsload extends HttpServlet {
             String Dcolor = "";
             String Ecolor = "";
             String Fcolor = "";
-            java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + y + "' ");
+            PreparedStatement themersPs = DB.prepare("Select themename from app_theme where users_idusers= ?");
+            themersPs.setInt(1, y);
+            ResultSet themers = themersPs.executeQuery();
             if (themers.next()) {
                 if (themers.getString(1).equals("pinkdark")) {
                     Acolor = "black";
@@ -118,32 +121,50 @@ public class commentsload extends HttpServlet {
                     Fcolor = "#9c27b0";
                 }
             }
-            java.sql.ResultSet piduidrs = DB.search("Select users_idusers from post where idpost= '" + x + "' ");
+            PreparedStatement piduidrsPs = DB.prepare("Select users_idusers from post where idpost= ?");
+            piduidrsPs.setInt(1, x);
+            ResultSet piduidrs = piduidrsPs.executeQuery();
             if (piduidrs.next()) {
                 piduid = piduidrs.getInt(1);
             }
 
             String z = request.getParameter("z");
-            if(z!=""){
-                 DB.iud("INSERT INTO `post_comment` ( `comment`, `users_idusers`, `post_idpost`) VALUES ('" + z + "', '" + y + "', '" + x + "');");
+            if (z != null && !z.isEmpty()) {
+                 PreparedStatement cmntIns = DB.prepare("INSERT INTO `post_comment` ( `comment`, `users_idusers`, `post_idpost`) VALUES (?, ?, ?)");
+                 cmntIns.setString(1, z);
+                 cmntIns.setInt(2, y);
+                 cmntIns.setInt(3, x);
+                 cmntIns.executeUpdate();
             }
             if (piduid != y) {
-                DB.iud("INSERT INTO `notification` (`notificationfor`, `notificationfrom`,`notification-type`,`status`,`target`) VALUES ('" + piduid + "', '" + y + "','2','0','"+x+"');");
+                PreparedStatement notifIns = DB.prepare("INSERT INTO `notification` (`notificationfor`, `notificationfrom`,`notification-type`,`status`,`target`) VALUES (?, ?, '2', '0', ?)");
+                notifIns.setInt(1, piduid);
+                notifIns.setInt(2, y);
+                notifIns.setInt(3, x);
+                notifIns.executeUpdate();
             }
-            java.sql.ResultSet cmntsrs = DB.search("Select * from `post_comment` where post_idpost='" + x + "' ORDER BY `post_comment`.`datetime` DESC ");
+            PreparedStatement cmntsrsPs = DB.prepare("Select * from `post_comment` where post_idpost=? ORDER BY `post_comment`.`datetime` DESC ");
+            cmntsrsPs.setInt(1, x);
+            ResultSet cmntsrs = cmntsrsPs.executeQuery();
             while (cmntsrs.next()) {
                 String cmpic = "";
                 String cmfn = "";
                 String cmln = "";
-                java.sql.ResultSet imguserincmnt = DB.search("Select image From user_profile_pic where users_idusers='" + cmntsrs.getInt(3) + "' ");
+                PreparedStatement imguserincmntPs = DB.prepare("Select image From user_profile_pic where users_idusers=?");
+                imguserincmntPs.setInt(1, cmntsrs.getInt(3));
+                ResultSet imguserincmnt = imguserincmntPs.executeQuery();
                 if (imguserincmnt.next()) {
                     cmpic = imguserincmnt.getString(1);
                 }
-                java.sql.ResultSet cmnfirstn = DB.search("Select firstname From users where idusers='" + cmntsrs.getInt(3) + "' ");
+                PreparedStatement cmnfirstnPs = DB.prepare("Select firstname From users where idusers=?");
+                cmnfirstnPs.setInt(1, cmntsrs.getInt(3));
+                ResultSet cmnfirstn = cmnfirstnPs.executeQuery();
                 if (cmnfirstn.next()) {
                     cmfn = cmnfirstn.getString(1);
                 }
-                java.sql.ResultSet cmnlastn = DB.search("Select lastname From users where idusers='" + cmntsrs.getInt(3) + "' ");
+                PreparedStatement cmnlastnPs = DB.prepare("Select lastname From users where idusers=?");
+                cmnlastnPs.setInt(1, cmntsrs.getInt(3));
+                ResultSet cmnlastn = cmnlastnPs.executeQuery();
                 if (cmnlastn.next()) {
                     cmln = cmnlastn.getString(1);
                 }
