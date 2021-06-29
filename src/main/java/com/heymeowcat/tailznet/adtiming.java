@@ -6,9 +6,10 @@ package com.heymeowcat.tailznet;
  * and open the template in the editor.
  */
 
-import com.heymeowcat.tailznet.DB;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -36,13 +37,25 @@ public class adtiming extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             int adid = Integer.parseInt(request.getParameter("adid"));
-            DB.iud("UPDATE `ads` SET `status` = '4'  WHERE `ads`.`Adid` = '" + adid + "'");
+            PreparedStatement upd = DB.prepare(
+                    "UPDATE ads SET status='4' WHERE Adid=?");
+            upd.setInt(1, adid);
+            upd.executeUpdate();
+
             int forhowmanyhours = 0;
-            java.sql.ResultSet gethoursrs = DB.search("Select forhowmanyhours from ads where Adid="+adid+"  ");
+            PreparedStatement gethoursPs = DB.prepare(
+                    "SELECT forhowmanyhours FROM ads WHERE Adid=?");
+            gethoursPs.setInt(1, adid);
+            ResultSet gethoursrs = gethoursPs.executeQuery();
             if (gethoursrs.next()) {
-                forhowmanyhours=gethoursrs.getInt(1);
+                forhowmanyhours = gethoursrs.getInt(1);
             }
-            DB.iud("INSERT INTO `adtiming`(`Ads_Adid`, `adstartedtime`, `adendtime`) VALUES ("+adid+",CURRENT_TIMESTAMP,ADDTIME(CURRENT_TIMESTAMP, \""+forhowmanyhours+":0:0\"))");
+            String interval = forhowmanyhours + ":0:0";
+            PreparedStatement ins = DB.prepare(
+                    "INSERT INTO adtiming (Ads_Adid, adstartedtime, adendtime) VALUES (?, CURRENT_TIMESTAMP, ADDTIME(CURRENT_TIMESTAMP, ?))");
+            ins.setInt(1, adid);
+            ins.setString(2, interval);
+            ins.executeUpdate();
             response.sendRedirect("dashboard.jsp");
         } catch (Exception e) {
             e.printStackTrace();

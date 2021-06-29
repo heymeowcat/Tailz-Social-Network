@@ -7,6 +7,8 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -39,7 +41,9 @@ public class expiredadsrefresh extends HttpServlet {
             String Ccolor = "";
             String Dcolor = "";
             String Ecolor = "";
-            java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + uid + "' ");
+            PreparedStatement themersPs = DB.prepare("Select themename from app_theme where users_idusers= ?");
+            themersPs.setInt(1, uid);
+            ResultSet themers = themersPs.executeQuery();
             if (themers.next()) {
                 if (themers.getString(1).equals("pinkdark")) {
                     Acolor = "black";
@@ -104,9 +108,13 @@ public class expiredadsrefresh extends HttpServlet {
                 }
             }
 
-            java.sql.ResultSet ssexp = DB.search("Select Adid from ads where status='6' and users_idusers='" + uid + "' order by (SELECT `adendtime` FROM adtiming WHERE Ads_Adid = ads.Adid) DESC");
+            PreparedStatement ssexpPs = DB.prepare("Select Adid from ads where status='6' and users_idusers=? order by (SELECT `adendtime` FROM adtiming WHERE Ads_Adid = ads.Adid) DESC");
+            ssexpPs.setInt(1, uid);
+            ResultSet ssexp = ssexpPs.executeQuery();
             while (ssexp.next()) {
-                java.sql.ResultSet adstolivers = DB.search("Select Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid='" + ssexp.getString(1) + "' and status='6'");
+                PreparedStatement adstoliversPs = DB.prepare("Select Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid=? and status='6'");
+                adstoliversPs.setString(1, ssexp.getString(1));
+                ResultSet adstolivers = adstoliversPs.executeQuery();
                 while (adstolivers.next()) {
 
                     out.write("\n");
@@ -143,13 +151,18 @@ public class expiredadsrefresh extends HttpServlet {
                     out.write("                                            ");
 
                     String timeremainingfrad = "";
-                    java.sql.ResultSet timedifrs = DB.search("SELECT TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP),(SELECT CAST(TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP) AS CHAR) FROM sEXUaFqh92.adtiming WHERE Ads_Adid ='" + ssexp.getInt(1) + "') FROM adtiming WHERE Ads_Adid ='" + ssexp.getInt(1) + "' ");
+                    PreparedStatement timedifrsPs = DB.prepare("SELECT TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP),(SELECT CAST(TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP) AS CHAR) FROM sEXUaFqh92.adtiming WHERE Ads_Adid =?) FROM adtiming WHERE Ads_Adid =?");
+                    timedifrsPs.setInt(1, ssexp.getInt(1));
+                    timedifrsPs.setInt(2, ssexp.getInt(1));
+                    ResultSet timedifrs = timedifrsPs.executeQuery();
                     if (timedifrs.next()) {
                         if (timedifrs.getString(2).startsWith("-")) {
                             timeremainingfrad = "Expired";
                         } else {
                             timeremainingfrad = timedifrs.getString(1);
-                            DB.iud("UPDATE `ads` SET `status` = '4'  WHERE `ads`.`Adid` = '" + ssexp.getInt(1) + "';");
+                            PreparedStatement adsUpd = DB.prepare("UPDATE `ads` SET `status` = '4'  WHERE `ads`.`Adid` = ?");
+                            adsUpd.setInt(1, ssexp.getInt(1));
+                            adsUpd.executeUpdate();
                         }
                     }
 
@@ -168,7 +181,9 @@ public class expiredadsrefresh extends HttpServlet {
 
                 }
             }
-            java.sql.ResultSet rs = DB.search("Select * from ads where status='6' and users_idusers=" + uid + "");
+            PreparedStatement rsPs = DB.prepare("Select * from ads where status='6' and users_idusers=?");
+            rsPs.setInt(1, uid);
+            ResultSet rs = rsPs.executeQuery();
             if (!rs.isBeforeFirst()) {
                 out.write("<div class='center'><img src ='img/email.png' height='130px' class='animated pulse responsiveimg '></div>");
             }

@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -34,7 +35,9 @@ public class changerate extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             double d = Double.parseDouble(request.getParameter("rate"));
-            DB.iud("UPDATE `apphpi` SET `idAPPHPI` = '"+d+"' ");
+            PreparedStatement ps = DB.prepare("UPDATE apphpi SET idAPPHPI=?");
+            ps.setDouble(1, d);
+            ps.executeUpdate();
             response.sendRedirect("dashboard.jsp");
         }catch(Exception e){
             e.printStackTrace();

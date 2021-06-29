@@ -7,6 +7,8 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -40,7 +42,9 @@ public class finaladdsforindexrefresh extends HttpServlet {
             String Ccolor = "";
             String Dcolor = "";
             String Ecolor = "";
-            java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + uid + "' ");
+            PreparedStatement themersPs = DB.prepare("Select themename from app_theme where users_idusers= ?");
+            themersPs.setInt(1, uid);
+            ResultSet themers = themersPs.executeQuery();
             if (themers.next()) {
                 if (themers.getString(1).equals("pinkdark")) {
                     Acolor = "black";
@@ -105,11 +109,14 @@ public class finaladdsforindexrefresh extends HttpServlet {
                 }
             }
             int usap = 1;
-            java.sql.ResultSet raters = DB.search("Select idAPPHPI from apphpi");
+            PreparedStatement ratersPs = DB.prepare("Select idAPPHPI from apphpi");
+            ResultSet raters = ratersPs.executeQuery();
             if (raters.next()) {
                 rate = Double.parseDouble(raters.getString(1));
             }
-            java.sql.ResultSet ssm = DB.search("Select Preference from uap where users_idusers=" + uid + "");
+            PreparedStatement ssmPs = DB.prepare("Select Preference from uap where users_idusers=?");
+            ssmPs.setInt(1, uid);
+            ResultSet ssm = ssmPs.executeQuery();
             if (ssm.next()) {
                 if (ssm.getInt(1) == 0) {
                     out.write("<div class='col s12 m12'>");
@@ -124,13 +131,21 @@ public class finaladdsforindexrefresh extends HttpServlet {
                     out.write("</div>");
                     out.write("</div>");
                 } else {
-                    java.sql.ResultSet usaprs = DB.search("Select adcategory from user_followed_ad_catergories where users_idusers='" + uid + "' ");
+                    PreparedStatement usaprsPs = DB.prepare("Select adcategory from user_followed_ad_catergories where users_idusers=?");
+                    usaprsPs.setInt(1, uid);
+                    ResultSet usaprs = usaprsPs.executeQuery();
                     if (usaprs.next()) {
                         usap = usaprs.getInt(1);
                         if (usap == 1) {
-                            java.sql.ResultSet ss = DB.search("Select Adid from ads where status='4'");
+                            java.sql.ResultSet ss = null;
+                        {
+                            PreparedStatement ssPs = DB.prepare("Select Adid from ads where status='4'");
+                            ss = ssPs.executeQuery();
+                        }
                             while (ss.next()) {
-                                java.sql.ResultSet adstolivers = DB.search("Select Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid='" + ss.getString(1) + "' and status='4'");
+                                PreparedStatement adstoliversPs = DB.prepare("Select Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid=? and status='4'");
+                                adstoliversPs.setString(1, ss.getString(1));
+                                ResultSet adstolivers = adstoliversPs.executeQuery();
                                 while (adstolivers.next()) {
                                     out.write("\n");
                                     out.write("                                <div class=\"col s12 m12\">\n");
@@ -153,12 +168,19 @@ public class finaladdsforindexrefresh extends HttpServlet {
                                     out.write("</div>");
                                     out.write("                                        </div>");
 
-                                    java.sql.ResultSet timedifrs = DB.search("SELECT TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP),(SELECT CAST(TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP) AS CHAR) FROM sEXUaFqh92.adtiming WHERE Ads_Adid ='" + ss.getInt(1) + "') FROM adtiming WHERE Ads_Adid ='" + ss.getInt(1) + "' ");
+                                    PreparedStatement timedifrsPs = DB.prepare("SELECT TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP),(SELECT CAST(TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP) AS CHAR) FROM sEXUaFqh92.adtiming WHERE Ads_Adid =?) FROM adtiming WHERE Ads_Adid =?");
+                                    timedifrsPs.setInt(1, ss.getInt(1));
+                                    timedifrsPs.setInt(2, ss.getInt(1));
+                                    ResultSet timedifrs = timedifrsPs.executeQuery();
                                     if (timedifrs.next()) {
                                         if (timedifrs.getString(2).startsWith("-")) {
-                                            DB.iud("UPDATE `ads` SET `status` = '6'  WHERE `ads`.`Adid` = '" + ss.getInt(1) + "';");
+                                            PreparedStatement adsUpd6 = DB.prepare("UPDATE `ads` SET `status` = '6'  WHERE `ads`.`Adid` = ?");
+                                            adsUpd6.setInt(1, ss.getInt(1));
+                                            adsUpd6.executeUpdate();
                                         } else {
-                                            DB.iud("UPDATE `ads` SET `status` = '4'  WHERE `ads`.`Adid` = '" + ss.getInt(1) + "';");
+                                            PreparedStatement adsUpd4 = DB.prepare("UPDATE `ads` SET `status` = '4'  WHERE `ads`.`Adid` = ?");
+                                            adsUpd4.setInt(1, ss.getInt(1));
+                                            adsUpd4.executeUpdate();
                                         }
                                     }
                                 }
@@ -168,9 +190,16 @@ public class finaladdsforindexrefresh extends HttpServlet {
                             }
 
                         } else {
-                            java.sql.ResultSet ss = DB.search("Select Adid from ads where status='4' and adcategory='" + usap + "' ");
+                            java.sql.ResultSet ss = null;
+                            {
+                                PreparedStatement ssPs = DB.prepare("Select Adid from ads where status='4' and adcategory=?");
+                                ssPs.setInt(1, usap);
+                                ss = ssPs.executeQuery();
+                            }
                             while (ss.next()) {
-                                java.sql.ResultSet adstolivers = DB.search("Select Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid='" + ss.getString(1) + "' and status='4'");
+                                PreparedStatement adstoliversPs = DB.prepare("Select Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid=? and status='4'");
+                                adstoliversPs.setString(1, ss.getString(1));
+                                ResultSet adstolivers = adstoliversPs.executeQuery();
                                 while (adstolivers.next()) {
                                     out.write("\n");
                                     out.write("                                <div class=\"col s12 m12\">\n");
@@ -193,12 +222,19 @@ public class finaladdsforindexrefresh extends HttpServlet {
                                     out.write("</div>");
                                     out.write("                                        </div>");
 
-                                    java.sql.ResultSet timedifrs = DB.search("SELECT TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP),(SELECT CAST(TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP) AS CHAR) FROM sEXUaFqh92.adtiming WHERE Ads_Adid ='" + ss.getInt(1) + "') FROM adtiming WHERE Ads_Adid ='" + ss.getInt(1) + "' ");
+                                    PreparedStatement timedifrsPs = DB.prepare("SELECT TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP),(SELECT CAST(TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP) AS CHAR) FROM sEXUaFqh92.adtiming WHERE Ads_Adid =?) FROM adtiming WHERE Ads_Adid =?");
+                                    timedifrsPs.setInt(1, ss.getInt(1));
+                                    timedifrsPs.setInt(2, ss.getInt(1));
+                                    ResultSet timedifrs = timedifrsPs.executeQuery();
                                     if (timedifrs.next()) {
                                         if (timedifrs.getString(2).startsWith("-")) {
-                                            DB.iud("UPDATE `ads` SET `status` = '6'  WHERE `ads`.`Adid` = '" + ss.getInt(1) + "';");
+                                            PreparedStatement adsUpd6 = DB.prepare("UPDATE `ads` SET `status` = '6'  WHERE `ads`.`Adid` = ?");
+                                            adsUpd6.setInt(1, ss.getInt(1));
+                                            adsUpd6.executeUpdate();
                                         } else {
-                                            DB.iud("UPDATE `ads` SET `status` = '4'  WHERE `ads`.`Adid` = '" + ss.getInt(1) + "';");
+                                            PreparedStatement adsUpd4 = DB.prepare("UPDATE `ads` SET `status` = '4'  WHERE `ads`.`Adid` = ?");
+                                            adsUpd4.setInt(1, ss.getInt(1));
+                                            adsUpd4.executeUpdate();
                                         }
                                     }
                                 }
@@ -207,7 +243,8 @@ public class finaladdsforindexrefresh extends HttpServlet {
 
                     }
 
-                    java.sql.ResultSet rs = DB.search("Select * from ads where status='4' ");
+                    PreparedStatement rsPs = DB.prepare("Select * from ads where status='4' ");
+                    ResultSet rs = rsPs.executeQuery();
                     if (!rs.isBeforeFirst()) {
                         out.write("<div class='col s12 m12'>");
                         out.write("<div class='card " + Acolor + "'>");

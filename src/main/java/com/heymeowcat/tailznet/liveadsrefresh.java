@@ -7,6 +7,8 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -39,7 +41,9 @@ public class liveadsrefresh extends HttpServlet {
             String Ccolor = "";
             String Dcolor = "";
             String Ecolor = "";
-            java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + uid + "' ");
+            PreparedStatement themersPs = DB.prepare("Select themename from app_theme where users_idusers= ?");
+            themersPs.setInt(1, uid);
+            ResultSet themers = themersPs.executeQuery();
             if (themers.next()) {
                 if (themers.getString(1).equals("pinkdark")) {
                     Acolor = "black";
@@ -103,9 +107,13 @@ public class liveadsrefresh extends HttpServlet {
                     Ecolor = "grey darken-4";
                 }
             }
-            java.sql.ResultSet ss = DB.search("Select Adid from ads where status='4' and users_idusers='" + uid + "' order by (SELECT `adstartedtime` FROM adtiming WHERE Ads_Adid = ads.Adid) DESC  ");
+            PreparedStatement ssPs = DB.prepare("Select Adid from ads where status='4' and users_idusers=? order by (SELECT `adstartedtime` FROM adtiming WHERE Ads_Adid = ads.Adid) DESC  ");
+            ssPs.setInt(1, uid);
+            ResultSet ss = ssPs.executeQuery();
             while (ss.next()) {
-                java.sql.ResultSet adstolivers = DB.search("Select Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid='" + ss.getString(1) + "' and status='4'");
+                PreparedStatement adstoliversPs = DB.prepare("Select Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid=? and status='4'");
+                adstoliversPs.setString(1, ss.getString(1));
+                ResultSet adstolivers = adstoliversPs.executeQuery();
                 while (adstolivers.next()) {
 
                     out.write("\n");
@@ -142,13 +150,20 @@ public class liveadsrefresh extends HttpServlet {
                     out.write("                                            ");
 
                     String timeremainingfrad = "";
-                    java.sql.ResultSet timedifrs = DB.search("SELECT TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP),(SELECT CAST(TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP) AS CHAR) FROM sEXUaFqh92.adtiming WHERE Ads_Adid ='" + ss.getInt(1) + "') FROM adtiming WHERE Ads_Adid ='" + ss.getInt(1) + "' ");
+                    PreparedStatement timedifrsPs = DB.prepare("SELECT TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP),(SELECT CAST(TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP) AS CHAR) FROM sEXUaFqh92.adtiming WHERE Ads_Adid =?) FROM adtiming WHERE Ads_Adid =?");
+                    timedifrsPs.setInt(1, ss.getInt(1));
+                    timedifrsPs.setInt(2, ss.getInt(1));
+                    ResultSet timedifrs = timedifrsPs.executeQuery();
                     if (timedifrs.next()) {
                         if (timedifrs.getString(2).startsWith("-")) {
-                            DB.iud("UPDATE `ads` SET `status` = '6'  WHERE `ads`.`Adid` = '" + ss.getInt(1) + "';");
+                            PreparedStatement adsUpd6 = DB.prepare("UPDATE `ads` SET `status` = '6'  WHERE `ads`.`Adid` = ?");
+                            adsUpd6.setInt(1, ss.getInt(1));
+                            adsUpd6.executeUpdate();
                             timeremainingfrad = "Expired";
                         } else {
-                            DB.iud("UPDATE `ads` SET `status` = '4'  WHERE `ads`.`Adid` = '" + ss.getInt(1) + "';");
+                            PreparedStatement adsUpd4 = DB.prepare("UPDATE `ads` SET `status` = '4'  WHERE `ads`.`Adid` = ?");
+                            adsUpd4.setInt(1, ss.getInt(1));
+                            adsUpd4.executeUpdate();
                             timeremainingfrad = timedifrs.getString(1);
                         }
                     }
@@ -168,7 +183,9 @@ public class liveadsrefresh extends HttpServlet {
 
                 }
             }
-            java.sql.ResultSet rs = DB.search("Select * from ads where status='4' and users_idusers=" + uid + "");
+            PreparedStatement rsPs = DB.prepare("Select * from ads where status='4' and users_idusers=?");
+            rsPs.setInt(1, uid);
+            ResultSet rs = rsPs.executeQuery();
             if (!rs.isBeforeFirst()) {
                 out.write("<div class='center'><img src ='img/livead.png'  class='animated pulse responsiveimg '></div>");
             }

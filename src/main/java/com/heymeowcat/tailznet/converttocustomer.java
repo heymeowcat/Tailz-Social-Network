@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -33,8 +34,11 @@ public class converttocustomer extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            int uid =Integer.parseInt(request.getParameter("uid"));
-            DB.iud("UPDATE `users` SET `user_type_iduser_type` = '3' WHERE `users`.`idusers` = '"+uid+"';");
+            int uid = Integer.parseInt(request.getParameter("uid"));
+            PreparedStatement ps = DB.prepare(
+                    "UPDATE users SET user_type_iduser_type='3' WHERE idusers=?");
+            ps.setInt(1, uid);
+            ps.executeUpdate();
             response.sendRedirect("dashboard.jsp");
         }catch(Exception e){
             e.printStackTrace();
