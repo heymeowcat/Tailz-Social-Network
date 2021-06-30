@@ -7,6 +7,8 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -41,7 +43,9 @@ public class peekcomments extends HttpServlet {
                 String Ccolor = "";
                 String Dcolor = "";
                 String Ecolor = "";
-                java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + uid + "' ");
+                PreparedStatement themersPs = DB.prepare("Select themename from app_theme where users_idusers= ?");
+                themersPs.setInt(1, uid);
+                ResultSet themers = themersPs.executeQuery();
                 if (themers.next()) {
                     if (themers.getString(1).equals("pinkdark")) {
                         Acolor = "black";
@@ -105,7 +109,9 @@ public class peekcomments extends HttpServlet {
                         Ecolor = "grey darken-4";
                     }
                 }
-            java.sql.ResultSet rs = DB.search("Select * FROM `post` where idpost=" + pid);
+            PreparedStatement rsPs = DB.prepare("Select * FROM `post` where idpost=?");
+            rsPs.setInt(1, pid);
+            ResultSet rs = rsPs.executeQuery();
             if (rs.next()) {
                 out.write("<i class='material-icons right waves-effect modal-close " + Dcolor + " '>close</i>");
                 out.write("<div class='" + Acolor + " card-panel' >");
@@ -125,27 +131,39 @@ public class peekcomments extends HttpServlet {
                 String postdate = "";
                 String posttime = "";
                 String likecount = " ";
-                java.sql.ResultSet imgpostuser = DB.search("Select image From user_profile_pic where users_idusers='" + rs.getInt(6) + "' ");
+                PreparedStatement imgpostuserPs = DB.prepare("Select image From user_profile_pic where users_idusers=?");
+                imgpostuserPs.setInt(1, rs.getInt(6));
+                ResultSet imgpostuser = imgpostuserPs.executeQuery();
                 if (imgpostuser.next()) {
                     imgup = imgpostuser.getString(1);
                 }
-                java.sql.ResultSet firstimguser = DB.search("Select firstname From users where idusers='" + rs.getInt(6) + "' ");
+                PreparedStatement firstimguserPs = DB.prepare("Select firstname From users where idusers=?");
+                firstimguserPs.setInt(1, rs.getInt(6));
+                ResultSet firstimguser = firstimguserPs.executeQuery();
                 if (firstimguser.next()) {
                     fnamepost = firstimguser.getString(1);
                 }
-                java.sql.ResultSet lastimguser = DB.search("Select lastname From users where idusers='" + rs.getInt(6) + "' ");
+                PreparedStatement lastimguserPs = DB.prepare("Select lastname From users where idusers=?");
+                lastimguserPs.setInt(1, rs.getInt(6));
+                ResultSet lastimguser = lastimguserPs.executeQuery();
                 if (lastimguser.next()) {
                     lnamepost = lastimguser.getString(1);
                 }
-                java.sql.ResultSet imgdate = DB.search("Select cast(post_time as date) From post where idpost='" + rs.getInt(1) + "' ");
+                PreparedStatement imgdatePs = DB.prepare("Select cast(post_time as date) From post where idpost=?");
+                imgdatePs.setInt(1, rs.getInt(1));
+                ResultSet imgdate = imgdatePs.executeQuery();
                 if (imgdate.next()) {
                     postdate = imgdate.getString(1);
                 }
-                java.sql.ResultSet imgtime = DB.search("Select cast(post_time as time) From post where idpost='" + rs.getInt(1) + "' ");
+                PreparedStatement imgtimePs = DB.prepare("Select cast(post_time as time) From post where idpost=?");
+                imgtimePs.setInt(1, rs.getInt(1));
+                ResultSet imgtime = imgtimePs.executeQuery();
                 if (imgtime.next()) {
                     posttime = imgtime.getString(1);
                 }
-                java.sql.ResultSet likecountrs = DB.search("Select count(likes) From post_rank where post_idpost='" + rs.getInt(1) + "' ");
+                PreparedStatement likecountrsPs = DB.prepare("Select count(likes) From post_rank where post_idpost=?");
+                likecountrsPs.setInt(1, rs.getInt(1));
+                ResultSet likecountrs = likecountrsPs.executeQuery();
                 if (likecountrs.next()) {
                     likecount = likecountrs.getString(1);
                 }
@@ -159,7 +177,9 @@ public class peekcomments extends HttpServlet {
                 out.write("<ul id='commentsection' class='" + Acolor + " collection' style='width: 100%;height: 55vh;overflow: scroll; border-color:"+Ccolor+"' >");
             }
 
-            java.sql.ResultSet cmntsrs = DB.search("Select * from `post_comment` where post_idpost='" + pid + "' ORDER BY `post_comment`.`datetime` DESC ");
+            PreparedStatement cmntsrsPs = DB.prepare("Select * from `post_comment` where post_idpost=? ORDER BY `post_comment`.`datetime` DESC ");
+            cmntsrsPs.setInt(1, pid);
+            ResultSet cmntsrs = cmntsrsPs.executeQuery();
             if (!cmntsrs.isBeforeFirst()) {
                 out.write("<div class='center' style='top:40%; position:relative'><img src ='img/commentlive.png' class='animated pulse responsiveimg '></div>");
             } else {
@@ -167,15 +187,21 @@ public class peekcomments extends HttpServlet {
                     String cmpic = "";
                     String cmfn = "";
                     String cmln = "";
-                    java.sql.ResultSet imguserincmnt = DB.search("Select image From user_profile_pic where users_idusers='" + cmntsrs.getInt(3) + "' ");
+                    PreparedStatement imguserincmntPs = DB.prepare("Select image From user_profile_pic where users_idusers=?");
+                    imguserincmntPs.setInt(1, cmntsrs.getInt(3));
+                    ResultSet imguserincmnt = imguserincmntPs.executeQuery();
                     if (imguserincmnt.next()) {
                         cmpic = imguserincmnt.getString(1);
                     }
-                    java.sql.ResultSet cmnfirstn = DB.search("Select firstname From users where idusers='" + cmntsrs.getInt(3) + "' ");
+                    PreparedStatement cmnfirstnPs = DB.prepare("Select firstname From users where idusers=?");
+                    cmnfirstnPs.setInt(1, cmntsrs.getInt(3));
+                    ResultSet cmnfirstn = cmnfirstnPs.executeQuery();
                     if (cmnfirstn.next()) {
                         cmfn = cmnfirstn.getString(1);
                     }
-                    java.sql.ResultSet cmnlastn = DB.search("Select lastname From users where idusers='" + cmntsrs.getInt(3) + "' ");
+                    PreparedStatement cmnlastnPs = DB.prepare("Select lastname From users where idusers=?");
+                    cmnlastnPs.setInt(1, cmntsrs.getInt(3));
+                    ResultSet cmnlastn = cmnlastnPs.executeQuery();
                     if (cmnlastn.next()) {
                         cmln = cmnlastn.getString(1);
                     }

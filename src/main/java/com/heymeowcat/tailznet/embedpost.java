@@ -7,6 +7,8 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -41,7 +43,9 @@ public class embedpost extends HttpServlet {
             String fp = request.getParameter("link");
 
             int privacy = 1;
-            java.sql.ResultSet privacyrs = DB.search("SELECT `privacy_name` FROM user_privacy WHERE users_idusers='" + uid + "' ");
+            PreparedStatement privacyrsPs = DB.prepare("SELECT `privacy_name` FROM user_privacy WHERE users_idusers=?");
+            privacyrsPs.setInt(1, uid);
+            ResultSet privacyrs = privacyrsPs.executeQuery();
             if (privacyrs.next()) {
                 if (privacyrs.getString(1).equals("private")) {
                     privacy = 2;
@@ -49,7 +53,13 @@ public class embedpost extends HttpServlet {
             }
 
             if (fp != null) {
-                DB.iud("INSERT INTO `post` ( `post_heading`, `post_img_area`, `post_detial`, `post_time`, `users_idusers`, `post_type_idpost_type`,Post_Privacy) VALUES ( '" + ENCDEC.encrypt(title, new KEY().secretKey) + "', '" + ENCDEC.encrypt(fp, new KEY().secretKey) + "','" + ENCDEC.encrypt(description, new KEY().secretKey) + "', CURRENT_TIMESTAMP, '" + uid + "', '2','"+privacy+"');");
+                PreparedStatement postIns = DB.prepare("INSERT INTO `post` ( `post_heading`, `post_img_area`, `post_detial`, `post_time`, `users_idusers`, `post_type_idpost_type`,Post_Privacy) VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, '2', ?)");
+                postIns.setString(1, ENCDEC.encrypt(title, new KEY().secretKey));
+                postIns.setString(2, ENCDEC.encrypt(fp, new KEY().secretKey));
+                postIns.setString(3, ENCDEC.encrypt(description, new KEY().secretKey));
+                postIns.setInt(4, uid);
+                postIns.setInt(5, privacy);
+                postIns.executeUpdate();
                 response.sendRedirect("index.jsp");
             } else {
                 response.sendRedirect("index.jsp");

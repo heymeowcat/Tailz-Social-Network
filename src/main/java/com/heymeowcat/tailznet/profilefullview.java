@@ -7,6 +7,8 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -40,7 +42,9 @@ public class profilefullview extends HttpServlet {
             String Ccolor = "";
             String Dcolor = "";
             String Ecolor = "";
-            java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + loggeduid + "' ");
+            PreparedStatement themersPs = DB.prepare("Select themename from app_theme where users_idusers= ?");
+            themersPs.setInt(1, loggeduid);
+            ResultSet themers = themersPs.executeQuery();
             if (themers.next()) {
                 if (themers.getString(1).equals("pinkdark")) {
                     Acolor = "black";
@@ -107,7 +111,9 @@ public class profilefullview extends HttpServlet {
             String up = "";
             String fn = "";
             String ln = "";
-            java.sql.ResultSet ufl = DB.search("Select firstname,lastname FROM `users` where idusers='" + uid + "' ");
+            PreparedStatement uflPs = DB.prepare("Select firstname,lastname FROM `users` where idusers=?");
+            uflPs.setInt(1, uid);
+            ResultSet ufl = uflPs.executeQuery();
             if (ufl.next()) {
                 fn = ufl.getString(1);
                 ln = ufl.getString(2);
@@ -116,7 +122,9 @@ public class profilefullview extends HttpServlet {
             String usrpostcount = "";
             String followercount = "";
             String followingcount = "";
-            java.sql.ResultSet usp = DB.search("Select image FROM `user_profile_pic` where users_idusers=" + uid + " ");
+            PreparedStatement uspPs = DB.prepare("Select image FROM `user_profile_pic` where users_idusers=?");
+            uspPs.setInt(1, uid);
+            ResultSet usp = uspPs.executeQuery();
             if (!usp.isBeforeFirst()) {
                 up = "img/Profile_avatar_placeholder_large.png";
             } else if (usp.next()) {
@@ -138,7 +146,10 @@ public class profilefullview extends HttpServlet {
                 if (loggeduid == uid) {
 
                 } else {
-                    java.sql.ResultSet iffillow = DB.search("SELECT receiver FROM `follow` WHERE `sender`='" + loggeduid + "' AND receiver='" + uid + "' ");
+                    PreparedStatement iffillowPs = DB.prepare("SELECT receiver FROM `follow` WHERE `sender`=? AND receiver=?");
+                    iffillowPs.setInt(1, loggeduid);
+                    iffillowPs.setInt(2, uid);
+                    ResultSet iffillow = iffillowPs.executeQuery();
                     if (iffillow.next()) {
                         out.write("<a onclick='unfollow(" + loggeduid + "," + uid + "); refreshhhh()' class='" + Dcolor + " " + Bcolor + " btn-small' >Unfollow</a>");
                     } else {
@@ -154,7 +165,9 @@ public class profilefullview extends HttpServlet {
             out.write("<br>");
             out.write("<div class='row center'>");
             try {
-                java.sql.ResultSet postcount = DB.search("SELECT COUNT(`users_idusers`) FROM `post` WHERE `users_idusers`='" + uid + "' ");
+                PreparedStatement postcountPs = DB.prepare("SELECT COUNT(`users_idusers`) FROM `post` WHERE `users_idusers`=?");
+                postcountPs.setInt(1, uid);
+                ResultSet postcount = postcountPs.executeQuery();
                 if (postcount.next()) {
                     usrpostcount = postcount.getString(1);
                 }
@@ -163,7 +176,9 @@ public class profilefullview extends HttpServlet {
             }
             out.write("<div class='col s4 waves-effect'> <span class='transparent '>Posts</span><br><b>" + usrpostcount + "</b></div>");
             try {
-                java.sql.ResultSet postcount = DB.search("SELECT DISTINCT COUNT(`sender`) FROM `follow` WHERE `receiver`='" + uid + "' ");
+                PreparedStatement postcountPs = DB.prepare("SELECT DISTINCT COUNT(`sender`) FROM `follow` WHERE `receiver`=?");
+                postcountPs.setInt(1, uid);
+                ResultSet postcount = postcountPs.executeQuery();
                 if (postcount.next()) {
                     followercount = postcount.getString(1);
                 }
@@ -172,7 +187,9 @@ public class profilefullview extends HttpServlet {
             }
             out.write("<div class='col s4 waves-effect'> <span class='transparent '>Followers</span><br><b>" + followercount + "</b></div>");
             try {
-                java.sql.ResultSet postcount = DB.search("SELECT DISTINCT COUNT(`receiver`) FROM `follow` WHERE `sender`='" + uid + "' ");
+                PreparedStatement postcountPs = DB.prepare("SELECT DISTINCT COUNT(`receiver`) FROM `follow` WHERE `sender`=?");
+                postcountPs.setInt(1, uid);
+                ResultSet postcount = postcountPs.executeQuery();
                 if (postcount.next()) {
                     followingcount = postcount.getString(1);
                 }
@@ -187,7 +204,9 @@ public class profilefullview extends HttpServlet {
             out.write("<div class='" + Acolor + " " + Dcolor + " collapsible-header' style='border-color: " + Ccolor + "'><b>Posts</b></div>");
             out.write("<div class='" + Ecolor + " collapsible-body' style='border-color: " + Ccolor + "' >");
 
-            java.sql.ResultSet privacyrs = DB.search("SELECT privacy_name FROM `user_privacy` WHERE `users_idusers`='" + uid + "' ");
+            PreparedStatement privacyrsPs = DB.prepare("SELECT privacy_name FROM `user_privacy` WHERE `users_idusers`=?");
+            privacyrsPs.setInt(1, uid);
+            ResultSet privacyrs = privacyrsPs.executeQuery();
             if (privacyrs.next()) {
                 if (privacyrs.getString(1).equals("private")) {
                     out.write("<div class='row'>");
@@ -195,7 +214,9 @@ public class profilefullview extends HttpServlet {
                     out.write("</div>");
                 } else {
                     out.write("<div class='row'>");
-                    java.sql.ResultSet rs = DB.search("Select * FROM `post` where users_idusers = '" + uid + "' ORDER BY `post_time` DESC");
+                    PreparedStatement rsPs = DB.prepare("Select * FROM `post` where users_idusers = ? ORDER BY `post_time` DESC");
+                    rsPs.setInt(1, uid);
+                    ResultSet rs = rsPs.executeQuery();
                     while (rs.next()) {
                         if (rs.getString(7).equals("1")) {
                             out.write("<div class='col s12 m6 l4'>");
@@ -217,23 +238,33 @@ public class profilefullview extends HttpServlet {
                             String lnamepost = "";
                             String postdate = "";
                             String posttime = "";
-                            java.sql.ResultSet imgpostuser = DB.search("Select image From user_profile_pic where users_idusers='" + rs.getInt(6) + "' ");
+                            PreparedStatement imgpostuserPs = DB.prepare("Select image From user_profile_pic where users_idusers=?");
+                            imgpostuserPs.setInt(1, rs.getInt(6));
+                            ResultSet imgpostuser = imgpostuserPs.executeQuery();
                             if (imgpostuser.next()) {
                                 imgup = imgpostuser.getString(1);
                             }
-                            java.sql.ResultSet firstimguser = DB.search("Select firstname From users where idusers='" + rs.getInt(6) + "' ");
+                            PreparedStatement firstimguserPs = DB.prepare("Select firstname From users where idusers=?");
+                            firstimguserPs.setInt(1, rs.getInt(6));
+                            ResultSet firstimguser = firstimguserPs.executeQuery();
                             if (firstimguser.next()) {
                                 fnamepost = firstimguser.getString(1);
                             }
-                            java.sql.ResultSet lastimguser = DB.search("Select lastname From users where idusers='" + rs.getInt(6) + "' ");
+                            PreparedStatement lastimguserPs = DB.prepare("Select lastname From users where idusers=?");
+                            lastimguserPs.setInt(1, rs.getInt(6));
+                            ResultSet lastimguser = lastimguserPs.executeQuery();
                             if (lastimguser.next()) {
                                 lnamepost = lastimguser.getString(1);
                             }
-                            java.sql.ResultSet imgdate = DB.search("Select cast(post_time as date) From post where idpost='" + rs.getInt(1) + "' ");
+                            PreparedStatement imgdatePs = DB.prepare("Select cast(post_time as date) From post where idpost=?");
+                            imgdatePs.setInt(1, rs.getInt(1));
+                            ResultSet imgdate = imgdatePs.executeQuery();
                             if (imgdate.next()) {
                                 postdate = imgdate.getString(1);
                             }
-                            java.sql.ResultSet imgtime = DB.search("Select cast(post_time as time) From post where idpost='" + rs.getInt(1) + "' ");
+                            PreparedStatement imgtimePs = DB.prepare("Select cast(post_time as time) From post where idpost=?");
+                            imgtimePs.setInt(1, rs.getInt(1));
+                            ResultSet imgtime = imgtimePs.executeQuery();
                             if (imgtime.next()) {
                                 posttime = imgtime.getString(1);
                             }
@@ -249,7 +280,10 @@ public class profilefullview extends HttpServlet {
                             out.write("</div>");
                             out.write("<div class='card-action'>");
 
-                            java.sql.ResultSet likechech = DB.search("Select likes from post_rank where likedby='" + uid + "' AND `post_rank`.`post_idpost` ='" + rs.getString(1) + "' ");
+                            PreparedStatement likechechPs = DB.prepare("Select likes from post_rank where likedby=? AND `post_rank`.`post_idpost` =?");
+                            likechechPs.setInt(1, uid);
+                            likechechPs.setString(2, rs.getString(1));
+                            ResultSet likechech = likechechPs.executeQuery();
                             if (!likechech.isBeforeFirst()) {
                                 out.write("<label class='toggle seedling-flower'>");
                                 out.write("<input type='checkbox' class='toggle-checkbox' onchange='like('" + rs.getString(1) + "', '" + uid + "')'>");
@@ -291,23 +325,33 @@ public class profilefullview extends HttpServlet {
                             String lnamepost = "";
                             String postdate = "";
                             String posttime = "";
-                            java.sql.ResultSet imgpostuser = DB.search("Select image From user_profile_pic where users_idusers='" + rs.getInt(6) + "' ");
+                            PreparedStatement imgpostuserPs = DB.prepare("Select image From user_profile_pic where users_idusers=?");
+                            imgpostuserPs.setInt(1, rs.getInt(6));
+                            ResultSet imgpostuser = imgpostuserPs.executeQuery();
                             if (imgpostuser.next()) {
                                 imgup = imgpostuser.getString(1);
                             }
-                            java.sql.ResultSet firstimguser = DB.search("Select firstname From users where idusers='" + rs.getInt(6) + "' ");
+                            PreparedStatement firstimguserPs = DB.prepare("Select firstname From users where idusers=?");
+                            firstimguserPs.setInt(1, rs.getInt(6));
+                            ResultSet firstimguser = firstimguserPs.executeQuery();
                             if (firstimguser.next()) {
                                 fnamepost = firstimguser.getString(1);
                             }
-                            java.sql.ResultSet lastimguser = DB.search("Select lastname From users where idusers='" + rs.getInt(6) + "' ");
+                            PreparedStatement lastimguserPs = DB.prepare("Select lastname From users where idusers=?");
+                            lastimguserPs.setInt(1, rs.getInt(6));
+                            ResultSet lastimguser = lastimguserPs.executeQuery();
                             if (lastimguser.next()) {
                                 lnamepost = lastimguser.getString(1);
                             }
-                            java.sql.ResultSet imgdate = DB.search("Select cast(post_time as date) From post where idpost='" + rs.getInt(1) + "' ");
+                            PreparedStatement imgdatePs = DB.prepare("Select cast(post_time as date) From post where idpost=?");
+                            imgdatePs.setInt(1, rs.getInt(1));
+                            ResultSet imgdate = imgdatePs.executeQuery();
                             if (imgdate.next()) {
                                 postdate = imgdate.getString(1);
                             }
-                            java.sql.ResultSet imgtime = DB.search("Select cast(post_time as time) From post where idpost='" + rs.getInt(1) + "' ");
+                            PreparedStatement imgtimePs = DB.prepare("Select cast(post_time as time) From post where idpost=?");
+                            imgtimePs.setInt(1, rs.getInt(1));
+                            ResultSet imgtime = imgtimePs.executeQuery();
                             if (imgtime.next()) {
                                 posttime = imgtime.getString(1);
                             }
@@ -323,7 +367,10 @@ public class profilefullview extends HttpServlet {
                             out.write("</div>");
                             out.write("<div class='card-action'>");
 
-                            java.sql.ResultSet likechech = DB.search("Select likes from post_rank where likedby='" + uid + "' AND `post_rank`.`post_idpost` ='" + rs.getString(1) + "' ");
+                            PreparedStatement likechechPs = DB.prepare("Select likes from post_rank where likedby=? AND `post_rank`.`post_idpost` =?");
+                            likechechPs.setInt(1, uid);
+                            likechechPs.setString(2, rs.getString(1));
+                            ResultSet likechech = likechechPs.executeQuery();
                             if (!likechech.isBeforeFirst()) {
                                 out.write("<label class='toggle seedling-flower'>");
                                 out.write("<input type='checkbox' class='toggle-checkbox' onchange='like('" + rs.getString(1) + "', '" + uid + "')'>");
@@ -345,7 +392,9 @@ public class profilefullview extends HttpServlet {
                         }
                     }
 
-                    java.sql.ResultSet noptrs = DB.search("Select * FROM `post` where users_idusers = '" + uid + "' ORDER BY `post_time` DESC");
+                    PreparedStatement noptrsPs = DB.prepare("Select * FROM `post` where users_idusers = ? ORDER BY `post_time` DESC");
+                    noptrsPs.setInt(1, uid);
+                    ResultSet noptrs = noptrsPs.executeQuery();
                     if (!noptrs.isBeforeFirst()) {
                         out.write("<div class='center'><img src='img/no-feeds.png' class='responsiveimg' ></div>");
                     }
@@ -359,7 +408,9 @@ public class profilefullview extends HttpServlet {
             out.write("<div class='collapsible-header " + Acolor + " " + Dcolor + "' style='border-color: " + Ccolor + "'><b>Followers</b></div>");
             out.write("<div class='collapsible-body " + Ecolor + " " + Dcolor + "' style='border-color: " + Ccolor + "'>");
 
-            java.sql.ResultSet privacyrs2 = DB.search("SELECT privacy_name FROM `user_privacy` WHERE `users_idusers`='" + uid + "' ");
+            PreparedStatement privacyrs2Ps = DB.prepare("SELECT privacy_name FROM `user_privacy` WHERE `users_idusers`=?");
+            privacyrs2Ps.setInt(1, uid);
+            ResultSet privacyrs2 = privacyrs2Ps.executeQuery();
             if (privacyrs2.next()) {
                 if (privacyrs2.getString(1).equals("private")) {
                     out.write("<div class='row'>");
@@ -367,11 +418,17 @@ public class profilefullview extends HttpServlet {
                     out.write("</div>");
                 } else {
                     out.write("<table class='highlight " + Acolor + "'>");
-                    java.sql.ResultSet senderids = DB.search("SELECT DISTINCT `sender` FROM `follow` WHERE `receiver`='" + uid + "' ");
+                    PreparedStatement senderidsPs = DB.prepare("SELECT DISTINCT `sender` FROM `follow` WHERE `receiver`=?");
+                    senderidsPs.setInt(1, uid);
+                    ResultSet senderids = senderidsPs.executeQuery();
                     while (senderids.next()) {
-                        java.sql.ResultSet senderss = DB.search("SELECT `firstname`,`lastname`,`idusers` FROM `users` WHERE `idusers`='" + senderids.getString(1) + "'");
+                        PreparedStatement senderssPs = DB.prepare("SELECT `firstname`,`lastname`,`idusers` FROM `users` WHERE `idusers`=?");
+                        senderssPs.setString(1, senderids.getString(1));
+                        ResultSet senderss = senderssPs.executeQuery();
                         while (senderss.next()) {
-                            java.sql.ResultSet senderimg = DB.search("SELECT `image` FROM `user_profile_pic` WHERE `users_idusers`='" + senderss.getString(3) + "'");
+                            PreparedStatement senderimgPs = DB.prepare("SELECT `image` FROM `user_profile_pic` WHERE `users_idusers`=?");
+                            senderimgPs.setString(1, senderss.getString(3));
+                            ResultSet senderimg = senderimgPs.executeQuery();
                             while (senderimg.next()) {
                                 out.write("\n");
                                 out.write("                                <tr><td  valign=\"middle\" class=\"left\"><img src=\"");
@@ -391,7 +448,9 @@ public class profilefullview extends HttpServlet {
                     }
 
                     out.write("</table>");
-                    java.sql.ResultSet meowrs = DB.search("SELECT DISTINCT `sender` FROM `follow` WHERE `receiver`='" + uid + "' ");
+                    PreparedStatement meowrsPs = DB.prepare("SELECT DISTINCT `sender` FROM `follow` WHERE `receiver`=?");
+                    meowrsPs.setInt(1, uid);
+                    ResultSet meowrs = meowrsPs.executeQuery();
                     if (!meowrs.isBeforeFirst()) {
                         out.write("<div class='center'><img src='img/friendship.png' class='responsiveimg ' ></div>");
                     }
@@ -403,7 +462,9 @@ public class profilefullview extends HttpServlet {
             out.write("<li>");
             out.write("<div class='collapsible-header " + Acolor + " " + Dcolor + "' style='border-color: " + Ccolor + "'><b>Following</b></div>");
             out.write("<div class='collapsible-body " + Ecolor + " " + Dcolor + "' style='border-color: " + Ccolor + "'>");
-            java.sql.ResultSet privacyrs3 = DB.search("SELECT privacy_name FROM `user_privacy` WHERE `users_idusers`='" + uid + "' ");
+            PreparedStatement privacyrs3Ps = DB.prepare("SELECT privacy_name FROM `user_privacy` WHERE `users_idusers`=?");
+            privacyrs3Ps.setInt(1, uid);
+            ResultSet privacyrs3 = privacyrs3Ps.executeQuery();
             if (privacyrs3.next()) {
                 if (privacyrs3.getString(1).equals("private")) {
                     out.write("<div class='row'>");
@@ -412,11 +473,17 @@ public class profilefullview extends HttpServlet {
                 } else {
                     out.write("<table class='highlight " + Acolor + "'>");
 
-                    java.sql.ResultSet senderidss = DB.search("SELECT DISTINCT `receiver` FROM `follow` WHERE `sender`='" + uid + "' ");
+                    PreparedStatement senderidssPs = DB.prepare("SELECT DISTINCT `receiver` FROM `follow` WHERE `sender`=?");
+                    senderidssPs.setInt(1, uid);
+                    ResultSet senderidss = senderidssPs.executeQuery();
                     while (senderidss.next()) {
-                        java.sql.ResultSet senderss = DB.search("SELECT `firstname`,`lastname`,`idusers` FROM `users` WHERE `idusers`='" + senderidss.getString(1) + "'");
+                        PreparedStatement senderssPs = DB.prepare("SELECT `firstname`,`lastname`,`idusers` FROM `users` WHERE `idusers`=?");
+                        senderssPs.setString(1, senderidss.getString(1));
+                        ResultSet senderss = senderssPs.executeQuery();
                         while (senderss.next()) {
-                            java.sql.ResultSet senderimg = DB.search("SELECT `image` FROM `user_profile_pic` WHERE `users_idusers`='" + senderss.getString(3) + "'");
+                            PreparedStatement senderimgPs = DB.prepare("SELECT `image` FROM `user_profile_pic` WHERE `users_idusers`=?");
+                            senderimgPs.setString(1, senderss.getString(3));
+                            ResultSet senderimg = senderimgPs.executeQuery();
                             while (senderimg.next()) {
                                 out.write("<tr><td  valign='middle' class='left'><img src='" + senderimg.getString(1) + "' width='40px' height='40px' style='padding: 0; margin: 0' class='circle responsive-img  animated fadeIn'></td><td valign='middle' ><h6 >" + senderss.getString(1) + " " + senderss.getString(2) + "</h6></td><td valign=\"middle\" class=\"right valign-wrapper\"><h6><a onclick=\"showprofile('" + senderidss.getString(1) + "', '" + loggeduid + "');$('#peekprofile').modal('open');\" class=\"" + Dcolor + "\"><i class=\"material-icons waves-effect\">open_in_new</i></a></h6></td></tr>");
                             }
@@ -424,7 +491,9 @@ public class profilefullview extends HttpServlet {
                     }
 
                     out.write("</table>");
-                    java.sql.ResultSet coolrs = DB.search("SELECT DISTINCT `receiver` FROM `follow` WHERE `sender`='" + uid + "' ");
+                    PreparedStatement coolrsPs = DB.prepare("SELECT DISTINCT `receiver` FROM `follow` WHERE `sender`=?");
+                    coolrsPs.setInt(1, uid);
+                    ResultSet coolrs = coolrsPs.executeQuery();
                     if (!coolrs.isBeforeFirst()) {
                         out.write("<div class='center'><img src='img/friendship.png' class='responsiveimg ' ></div>");
                     }

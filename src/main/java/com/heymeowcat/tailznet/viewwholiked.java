@@ -7,6 +7,8 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -40,7 +42,9 @@ public class viewwholiked extends HttpServlet {
             String Ccolor = "";
             String Dcolor = "";
             String Ecolor = "";
-            java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + loggeduid + "' ");
+            PreparedStatement themersPs = DB.prepare("Select themename from app_theme where users_idusers= ?");
+            themersPs.setInt(1, loggeduid);
+            ResultSet themers = themersPs.executeQuery();
             if (themers.next()) {
                 if (themers.getString(1).equals("pinkdark")) {
                     Acolor = "black";
@@ -111,11 +115,17 @@ public class viewwholiked extends HttpServlet {
             out.write("<div class='collapsible-body " + Ecolor + " " + Dcolor + "' style='border-color: " + Ccolor + "'>");
 
             out.write("<table class='highlight " + Acolor + "'>");
-            java.sql.ResultSet senderids = DB.search("SELECT likedby FROM `post_rank` where post_idpost ='" + postid + "'");
+            PreparedStatement senderidsPs = DB.prepare("SELECT likedby FROM `post_rank` where post_idpost =?");
+            senderidsPs.setInt(1, postid);
+            ResultSet senderids = senderidsPs.executeQuery();
             while (senderids.next()) {
-                java.sql.ResultSet senderss = DB.search("SELECT `firstname`,`lastname`,`idusers` FROM `users` WHERE `idusers`='" + senderids.getString(1) + "'");
+                PreparedStatement senderssPs = DB.prepare("SELECT `firstname`,`lastname`,`idusers` FROM `users` WHERE `idusers`=?");
+                senderssPs.setString(1, senderids.getString(1));
+                ResultSet senderss = senderssPs.executeQuery();
                 while (senderss.next()) {
-                    java.sql.ResultSet senderimg = DB.search("SELECT `image` FROM `user_profile_pic` WHERE `users_idusers`='" + senderss.getString(3) + "'");
+                    PreparedStatement senderimgPs = DB.prepare("SELECT `image` FROM `user_profile_pic` WHERE `users_idusers`=?");
+                    senderimgPs.setString(1, senderss.getString(3));
+                    ResultSet senderimg = senderimgPs.executeQuery();
                     while (senderimg.next()) {
                         out.write("\n");
                         out.write("                                <tr><td  valign=\"middle\" class=\"left\"><img src=\"");
@@ -134,7 +144,9 @@ public class viewwholiked extends HttpServlet {
                 }
             }
             out.write("</table>");
-            java.sql.ResultSet meowrs = DB.search("SELECT likedby FROM `post_rank` where post_idpost ='" + postid + "'");
+            PreparedStatement meowrsPs = DB.prepare("SELECT likedby FROM `post_rank` where post_idpost =?");
+            meowrsPs.setInt(1, postid);
+            ResultSet meowrs = meowrsPs.executeQuery();
             if (!meowrs.isBeforeFirst()) {
                 out.write("<div class='center'><img src='img/friendship.png' class='responsiveimg ' ></div>");
             }

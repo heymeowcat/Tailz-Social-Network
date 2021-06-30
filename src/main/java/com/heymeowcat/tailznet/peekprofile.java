@@ -7,6 +7,8 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -40,7 +42,9 @@ public class peekprofile extends HttpServlet {
             String Ccolor = "";
             String Dcolor = "";
             String Ecolor = "";
-            java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + loggeduid + "' ");
+            PreparedStatement themersPs = DB.prepare("Select themename from app_theme where users_idusers= ?");
+            themersPs.setInt(1, loggeduid);
+            ResultSet themers = themersPs.executeQuery();
             if (themers.next()) {
                 if (themers.getString(1).equals("pinkdark")) {
                     Acolor = "black";
@@ -108,7 +112,9 @@ public class peekprofile extends HttpServlet {
             String up = "";
             String fn = "";
             String ln = "";
-            java.sql.ResultSet ufl = DB.search("Select firstname,lastname FROM `users` where idusers='" + uid + "' ");
+            PreparedStatement uflPs = DB.prepare("Select firstname,lastname FROM `users` where idusers=?");
+            uflPs.setInt(1, uid);
+            ResultSet ufl = uflPs.executeQuery();
             if (ufl.next()) {
                 fn = ufl.getString(1);
                 ln = ufl.getString(2);
@@ -117,7 +123,9 @@ public class peekprofile extends HttpServlet {
             String usrpostcount = "";
             String followercount = "";
             String followingcount = "";
-            java.sql.ResultSet usp = DB.search("Select image FROM `user_profile_pic` where users_idusers=" + uid + " ");
+            PreparedStatement uspPs = DB.prepare("Select image FROM `user_profile_pic` where users_idusers=?");
+            uspPs.setInt(1, uid);
+            ResultSet usp = uspPs.executeQuery();
             if (!usp.isBeforeFirst()) {
                 up = "img/Profile_avatar_placeholder_large.png";
             } else if (usp.next()) {
@@ -137,7 +145,9 @@ public class peekprofile extends HttpServlet {
             out.write("<br>");
             out.write("<div class='row center'>");
             try {
-                java.sql.ResultSet postcount = DB.search("SELECT COUNT(`users_idusers`) FROM `post` WHERE `users_idusers`='" + uid + "' ");
+                PreparedStatement postcountPs = DB.prepare("SELECT COUNT(`users_idusers`) FROM `post` WHERE `users_idusers`=?");
+                postcountPs.setInt(1, uid);
+                ResultSet postcount = postcountPs.executeQuery();
                 if (postcount.next()) {
                     usrpostcount = postcount.getString(1);
                 }
@@ -146,7 +156,9 @@ public class peekprofile extends HttpServlet {
             }
             out.write("<div class='col s4 waves-effect'> <span class='transparent '>Posts</span><br><b>" + usrpostcount + "</b></div>");
             try {
-                java.sql.ResultSet postcount = DB.search("SELECT DISTINCT COUNT(`sender`) FROM `follow` WHERE `receiver`='" + uid + "' ");
+                PreparedStatement postcountPs = DB.prepare("SELECT DISTINCT COUNT(`sender`) FROM `follow` WHERE `receiver`=?");
+                postcountPs.setInt(1, uid);
+                ResultSet postcount = postcountPs.executeQuery();
                 if (postcount.next()) {
                     followercount = postcount.getString(1);
                 }
@@ -155,7 +167,9 @@ public class peekprofile extends HttpServlet {
             }
             out.write("<div class='col s4 waves-effect'> <span class='transparent '>Followers</span><br><b>" + followercount + "</b></div>");
             try {
-                java.sql.ResultSet postcount = DB.search("SELECT DISTINCT COUNT(`receiver`) FROM `follow` WHERE `sender`='" + uid + "' ");
+                PreparedStatement postcountPs = DB.prepare("SELECT DISTINCT COUNT(`receiver`) FROM `follow` WHERE `sender`=?");
+                postcountPs.setInt(1, uid);
+                ResultSet postcount = postcountPs.executeQuery();
                 if (postcount.next()) {
                     followingcount = postcount.getString(1);
                 }

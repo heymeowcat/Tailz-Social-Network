@@ -6,9 +6,10 @@ package com.heymeowcat.tailznet;
  * and open the template in the editor.
  */
 
-import com.heymeowcat.tailznet.DB;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -44,7 +45,10 @@ public class deletepost extends HttpServlet {
             String Dcolor = "";
             String Ecolor = "";
             String Fcolor = "";
-            java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + uid + "' ");
+            PreparedStatement themePs = DB.prepare(
+                    "SELECT themename FROM app_theme WHERE users_idusers=?");
+            themePs.setInt(1, uid);
+            java.sql.ResultSet themers = themePs.executeQuery();
             if (themers.next()) {
                 if (themers.getString(1).equals("pinkdark")) {
                     Acolor = "black";

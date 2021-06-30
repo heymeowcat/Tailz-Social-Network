@@ -7,6 +7,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -35,10 +36,22 @@ public class deletethispost extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             int uid = Integer.parseInt(request.getParameter("x"));
             int pid = Integer.parseInt(request.getParameter("y"));
-            DB.iud("DELETE FROM `post_rank` WHERE `post_rank`.`post_idpost` =" + pid);
-            DB.iud("DELETE FROM `post_comment` WHERE `post_idpost` =" + pid);
-            DB.iud("DELETE FROM `user_bookmarks` WHERE `post_idpost` =" + pid);
-            DB.iud("DELETE FROM `post` WHERE `post`.`idpost` =" + pid);
+
+            PreparedStatement delRank = DB.prepare("DELETE FROM post_rank WHERE post_idpost=?");
+            delRank.setInt(1, pid);
+            delRank.executeUpdate();
+
+            PreparedStatement delComment = DB.prepare("DELETE FROM post_comment WHERE post_idpost=?");
+            delComment.setInt(1, pid);
+            delComment.executeUpdate();
+
+            PreparedStatement delBookmark = DB.prepare("DELETE FROM user_bookmarks WHERE post_idpost=?");
+            delBookmark.setInt(1, pid);
+            delBookmark.executeUpdate();
+
+            PreparedStatement delPost = DB.prepare("DELETE FROM post WHERE idpost=?");
+            delPost.setInt(1, pid);
+            delPost.executeUpdate();
 
         } catch (Exception e) {
             e.printStackTrace();
