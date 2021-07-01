@@ -31,7 +31,7 @@
                     String Dcolor = "";
                     String Ecolor = "";
                     String Fcolor = "";
-                    java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + uid + "' ");
+                    java.sql.ResultSet themers; { PreparedStatement ps = DB.prepare("SELECT themename FROM app_theme WHERE users_idusers=?"); ps.setInt(1, uid); themers = ps.executeQuery(); }
                     if (themers.next()) {
                         if (themers.getString(1).equals("pinkdark")) {
                             Acolor = "black";
@@ -211,7 +211,7 @@
                     <div class="row ">
                         <a href="messege.jsp" onclick="seen();"><i class="material-icons left modal-close  <%=Dcolor%> waves-effect  waves-circle " id="back">arrow_back</i></a>
                         <div onclick="$('#opncreategroup').modal('open');" class="<%=Bcolor%> <%=Dcolor%> truncate chip waves-effect waves-light center">
-                            <% java.sql.ResultSet groupheaderrs = DB.search("SELECT `groupname`, `groupimg` FROM `groups` WHERE `group_id` ='"+groupid+"'");
+                            <% java.sql.ResultSet groupheaderrs; { PreparedStatement ps = DB.prepare("SELECT groupname,groupimg FROM groups WHERE group_id=?"); ps.setString(1, groupid); groupheaderrs = ps.executeQuery(); }
                                 if (groupheaderrs.next()) {
                                     out.write("<img src='" + groupheaderrs.getString(2) + "'>");
                                     out.write(groupheaderrs.getString(1));
@@ -228,7 +228,7 @@
                 <i class="material-icons right waves-effect modal-close <%=Dcolor%>">close</i>
                 <div class="<%=Acolor%> center card-panel">
                     <div class="row">
-                        <% java.sql.ResultSet openedgroup = DB.search("SELECT `groupname`, `groupimg`,`groupadmin` FROM `groups` WHERE `group_id` ='"+groupid+"'");
+                        <% java.sql.ResultSet openedgroup; { PreparedStatement ps = DB.prepare("SELECT groupname,groupimg,groupadmin FROM groups WHERE group_id=?"); ps.setString(1, groupid); openedgroup = ps.executeQuery(); }
                             if (openedgroup.next()) {%>
                         <img style='height: 150px; width: 150px' src='<%=openedgroup.getString(2)%>'  class='circle responsive-img hide-on-small-and-down animated fadeIn'>
                         <img style='height: 100px; width: 100px' src='<%=openedgroup.getString(2)%>'  class='circle responsive-img hide-on-med-and-up animated fadeIn'>
@@ -237,12 +237,12 @@
 
                         <table class="<%=Acolor%> highlight" style="margin: 0px;padding: 0px" >
                             <%
-                                java.sql.ResultSet rs2 = DB.search("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers ='" + openedgroup.getString(3) + "' ");
+                                java.sql.ResultSet rs2; { PreparedStatement ps = DB.prepare("SELECT firstname,lastname,image,idusers FROM users JOIN user_profile_pic ON users.idusers = user_profile_pic.users_idusers WHERE users.idusers=?"); ps.setString(1, openedgroup.getString(3)); rs2 = ps.executeQuery(); }
                                 if (rs2.next()) {
                             %>
                             <tr style="cursor: pointer" ><td  valign="middle" class="left" onclick="showprofile('<%=rs2.getString(4)%>', '<%=uid%>');$('#peekprofile').modal('open');"><img src="<%=rs2.getString(3)%>" width="40px" height="40px" style="padding: 0; margin: 0" class="circle responsive-img  animated fadeIn"></td><td onclick="showprofile('<%=rs2.getString(4)%>', '<%=uid%>');$('#peekprofile').modal('open');" valign="middle " ><div class="<%=Dcolor%>"><%=rs2.getString(1)%> <%=rs2.getString(2)%> (Admin)</div></td><td valign="middle" class="right valign-wrapper"></td></tr>                                    
                                     <%
-                                        java.sql.ResultSet rs22 = DB.search("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers !='" + rs2.getString(4) + "' and users.idusers = ANY(SELECT members from group_members where Groups_group_id ='" + groupid + "')");
+                                        java.sql.ResultSet rs22; { PreparedStatement ps = DB.prepare("SELECT firstname,lastname,image,idusers FROM users JOIN user_profile_pic ON users.idusers = user_profile_pic.users_idusers WHERE users.idusers != ? AND users.idusers = ANY(SELECT members FROM group_members WHERE Groups_group_id=?)"); ps.setString(1, rs2.getString(4)); ps.setString(2, groupid); rs22 = ps.executeQuery(); }
                                         while (rs22.next()) {
                                     %>
                             <tr style="cursor: pointer" ><td  valign="middle" class="left" onclick="showprofile('<%=rs22.getString(4)%>', '<%=uid%>');$('#peekprofile').modal('open');"><img src="<%=rs22.getString(3)%>" width="40px" height="40px" style="padding: 0; margin: 0" class="circle responsive-img  animated fadeIn"></td><td onclick="showprofile('<%=rs22.getString(4)%>', '<%=uid%>');$('#peekprofile').modal('open');" valign="middle " ><div class="<%=Dcolor%>"><%=rs22.getString(1)%> <%=rs22.getString(2)%></div></td><td valign="middle" class="right valign-wrapper"></td></tr>
@@ -251,7 +251,7 @@
                                         if (uid == rs2.getInt(4)) {%>
                             <button onclick="deletethisgroup('<%=groupid%>');" class="red btn-small white-text">DELETE GROUP</button><br> <br>       
                             <%
-                                java.sql.ResultSet rs222 = DB.search("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers NOT IN (SELECT `members` FROM `group_members` WHERE `Groups_group_id`='" + groupid + "') and users.idusers = ANY(SELECT idusers from users WHERE idusers = ANY(SELECT receiver FROM follow WHERE sender='" + uid + "') AND idusers= ANY(SELECT sender FROM follow WHERE receiver='" + uid + "')) ");
+                                java.sql.ResultSet rs222; { PreparedStatement ps = DB.prepare("SELECT firstname,lastname,image,idusers FROM users JOIN user_profile_pic ON users.idusers = user_profile_pic.users_idusers WHERE users.idusers NOT IN (SELECT members FROM group_members WHERE Groups_group_id=?) AND users.idusers = ANY(SELECT idusers FROM users WHERE idusers = ANY(SELECT receiver FROM follow WHERE sender=?) AND idusers= ANY(SELECT sender FROM follow WHERE receiver=?))"); ps.setString(1, groupid); ps.setInt(2, uid); ps.setInt(3, uid); rs222 = ps.executeQuery(); }
                                 while (rs222.next()) {
                             %>
                             <tr style="cursor: pointer" ><td  valign="middle" class="left" onclick="showprofile('<%=rs222.getString(4)%>', '<%=uid%>');$('#peekprofile').modal('open');"><img src="<%=rs222.getString(3)%>" width="40px" height="40px" style="padding: 0; margin: 0" class="circle responsive-img  animated fadeIn"></td><td onclick="showprofile('<%=rs222.getString(4)%>', '<%=uid%>');$('#peekprofile').modal('open');" valign="middle " ><div class="<%=Dcolor%>"><%=rs222.getString(1)%> <%=rs222.getString(2)%></div></td><td valign="middle" class="right valign-wrapper"><h6><a class=" btn <%=Bcolor%> <%=Dcolor%> waves-effect" onclick="addthistogroup('<%=groupid%>', '<%=rs222.getString(4)%>')"><i class="material-icons">group_add</i></a></h6></td></tr>

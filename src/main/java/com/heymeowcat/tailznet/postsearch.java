@@ -7,6 +7,8 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -40,7 +42,9 @@ public class postsearch extends HttpServlet {
             String Ccolor = "";
             String Dcolor = "";
             String Ecolor = "";
-            java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + uid + "' ");
+            PreparedStatement themersPs = DB.prepare("Select themename from app_theme where users_idusers= ?");
+            themersPs.setInt(1, uid);
+            ResultSet themers = themersPs.executeQuery();
             if (themers.next()) {
                 if (themers.getString(1).equals("pinkdark")) {
                     Acolor = "black";
@@ -106,7 +110,9 @@ public class postsearch extends HttpServlet {
             }
 
             int privacy = 1;
-            java.sql.ResultSet privacyrs = DB.search("SELECT `privacy_name` FROM user_privacy WHERE users_idusers='" + uid + "' ");
+            PreparedStatement privacyrsPs = DB.prepare("SELECT `privacy_name` FROM user_privacy WHERE users_idusers=?");
+            privacyrsPs.setInt(1, uid);
+            ResultSet privacyrs = privacyrsPs.executeQuery();
             if (privacyrs.next()) {
                 if (privacyrs.getString(1).equals("private")) {
                     privacy = 2;
@@ -120,7 +126,14 @@ public class postsearch extends HttpServlet {
             }
             
            
-            java.sql.ResultSet rs = DB.search("SELECT * FROM post where Post_Privacy=1 and idpost =ANY(Select DISTINCT `idpost` from post where post_heading = '"+ss+"' OR post_detial ='"+ss+"' OR users_idusers= ANY(SELECT `idusers` FROM users WHERE firstname LIKE '" + s + "' OR lastname LIKE '" + s + "' OR  concat(firstname,' ',lastname) LIKE '" + s + "' OR  concat(firstname,lastname) LIKE '" + s + "' ))");
+            PreparedStatement rsPs = DB.prepare("SELECT * FROM post where Post_Privacy=1 and idpost =ANY(Select DISTINCT `idpost` from post where post_heading = ? OR post_detial =? OR users_idusers= ANY(SELECT `idusers` FROM users WHERE firstname LIKE ? OR lastname LIKE ? OR  concat(firstname,' ',lastname) LIKE ? OR  concat(firstname,lastname) LIKE ? ))");
+            rsPs.setString(1, ss);
+            rsPs.setString(2, ss);
+            rsPs.setString(3, s);
+            rsPs.setString(4, s);
+            rsPs.setString(5, s);
+            rsPs.setString(6, s);
+            ResultSet rs = rsPs.executeQuery();
             while (rs.next()) {
                 if (rs.getString(7).equals("1")) {
                     out.write("\n");
@@ -179,23 +192,33 @@ public class postsearch extends HttpServlet {
                     String lnamepost = "";
                     String postdate = "";
                     String posttime = "";
-                    java.sql.ResultSet imgpostuser = DB.search("Select image From user_profile_pic where users_idusers='" + rs.getInt(6) + "' ");
+                    PreparedStatement imgpostuserPs = DB.prepare("Select image From user_profile_pic where users_idusers=?");
+                    imgpostuserPs.setInt(1, rs.getInt(6));
+                    ResultSet imgpostuser = imgpostuserPs.executeQuery();
                     if (imgpostuser.next()) {
                         imgup = imgpostuser.getString(1);
                     }
-                    java.sql.ResultSet firstimguser = DB.search("Select firstname From users where idusers='" + rs.getInt(6) + "' ");
+                    PreparedStatement firstimguserPs = DB.prepare("Select firstname From users where idusers=?");
+                    firstimguserPs.setInt(1, rs.getInt(6));
+                    ResultSet firstimguser = firstimguserPs.executeQuery();
                     if (firstimguser.next()) {
                         fnamepost = firstimguser.getString(1);
                     }
-                    java.sql.ResultSet lastimguser = DB.search("Select lastname From users where idusers='" + rs.getInt(6) + "' ");
+                    PreparedStatement lastimguserPs = DB.prepare("Select lastname From users where idusers=?");
+                    lastimguserPs.setInt(1, rs.getInt(6));
+                    ResultSet lastimguser = lastimguserPs.executeQuery();
                     if (lastimguser.next()) {
                         lnamepost = lastimguser.getString(1);
                     }
-                    java.sql.ResultSet imgdate = DB.search("Select cast(post_time as date) From post where idpost='" + rs.getInt(1) + "' ");
+                    PreparedStatement imgdatePs = DB.prepare("Select cast(post_time as date) From post where idpost=?");
+                    imgdatePs.setInt(1, rs.getInt(1));
+                    ResultSet imgdate = imgdatePs.executeQuery();
                     if (imgdate.next()) {
                         postdate = imgdate.getString(1);
                     }
-                    java.sql.ResultSet imgtime = DB.search("Select cast(post_time as time) From post where idpost='" + rs.getInt(1) + "' ");
+                    PreparedStatement imgtimePs = DB.prepare("Select cast(post_time as time) From post where idpost=?");
+                    imgtimePs.setInt(1, rs.getInt(1));
+                    ResultSet imgtime = imgtimePs.executeQuery();
                     if (imgtime.next()) {
                         posttime = imgtime.getString(1);
                     }
@@ -233,7 +256,10 @@ public class postsearch extends HttpServlet {
                     out.write("                                            ");
 
                     try {
-                        java.sql.ResultSet likechech = DB.search("Select likes from post_rank where likedby='" + uid + "' AND `post_rank`.`post_idpost` ='" + rs.getString(1) + "' ");
+                        PreparedStatement likechechPs = DB.prepare("Select likes from post_rank where likedby=? AND `post_rank`.`post_idpost` =?");
+                        likechechPs.setInt(1, uid);
+                        likechechPs.setString(2, rs.getString(1));
+                        ResultSet likechech = likechechPs.executeQuery();
                         if (!likechech.isBeforeFirst()) {
 
                             out.write("\n");
@@ -330,23 +356,33 @@ public class postsearch extends HttpServlet {
                     String lnamepost = "";
                     String postdate = "";
                     String posttime = "";
-                    java.sql.ResultSet imgpostuser = DB.search("Select image From user_profile_pic where users_idusers='" + rs.getInt(6) + "' ");
+                    PreparedStatement imgpostuserPs = DB.prepare("Select image From user_profile_pic where users_idusers=?");
+                    imgpostuserPs.setInt(1, rs.getInt(6));
+                    ResultSet imgpostuser = imgpostuserPs.executeQuery();
                     if (imgpostuser.next()) {
                         imgup = imgpostuser.getString(1);
                     }
-                    java.sql.ResultSet firstimguser = DB.search("Select firstname From users where idusers='" + rs.getInt(6) + "' ");
+                    PreparedStatement firstimguserPs = DB.prepare("Select firstname From users where idusers=?");
+                    firstimguserPs.setInt(1, rs.getInt(6));
+                    ResultSet firstimguser = firstimguserPs.executeQuery();
                     if (firstimguser.next()) {
                         fnamepost = firstimguser.getString(1);
                     }
-                    java.sql.ResultSet lastimguser = DB.search("Select lastname From users where idusers='" + rs.getInt(6) + "' ");
+                    PreparedStatement lastimguserPs = DB.prepare("Select lastname From users where idusers=?");
+                    lastimguserPs.setInt(1, rs.getInt(6));
+                    ResultSet lastimguser = lastimguserPs.executeQuery();
                     if (lastimguser.next()) {
                         lnamepost = lastimguser.getString(1);
                     }
-                    java.sql.ResultSet imgdate = DB.search("Select cast(post_time as date) From post where idpost='" + rs.getInt(1) + "' ");
+                    PreparedStatement imgdatePs = DB.prepare("Select cast(post_time as date) From post where idpost=?");
+                    imgdatePs.setInt(1, rs.getInt(1));
+                    ResultSet imgdate = imgdatePs.executeQuery();
                     if (imgdate.next()) {
                         postdate = imgdate.getString(1);
                     }
-                    java.sql.ResultSet imgtime = DB.search("Select cast(post_time as time) From post where idpost='" + rs.getInt(1) + "' ");
+                    PreparedStatement imgtimePs = DB.prepare("Select cast(post_time as time) From post where idpost=?");
+                    imgtimePs.setInt(1, rs.getInt(1));
+                    ResultSet imgtime = imgtimePs.executeQuery();
                     if (imgtime.next()) {
                         posttime = imgtime.getString(1);
                     }
@@ -383,7 +419,13 @@ public class postsearch extends HttpServlet {
                     out.write("                                        <div class=\"card-action\">\n");
                     out.write("                                            ");
 
-                    java.sql.ResultSet likechech = DB.search("Select likes from post_rank where likedby='" + uid + "' AND `post_rank`.`post_idpost` ='" + rs.getString(1) + "' ");
+                    java.sql.ResultSet likechech = null;
+                    {
+                        PreparedStatement likechechPs = DB.prepare("Select likes from post_rank where likedby=? AND `post_rank`.`post_idpost` =?");
+                        likechechPs.setInt(1, uid);
+                        likechechPs.setString(2, rs.getString(1));
+                        likechech = likechechPs.executeQuery();
+                    }
                     if (!likechech.isBeforeFirst()) {
 
                         out.write("\n");

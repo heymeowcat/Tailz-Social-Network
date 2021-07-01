@@ -8,6 +8,8 @@
 <%@page import="org.apache.commons.codec.digest.DigestUtils"%>
 <%@page import="com.heymeowcat.tailznet.ENCDEC"%>
 <%@page import="com.heymeowcat.tailznet.DB"%>
+<%@page import="java.sql.PreparedStatement"%>
+<%@page import="java.sql.ResultSet"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="en">
@@ -38,7 +40,7 @@
                 String Ecolor = "";
                 String Fcolor = "";
                 String Lcolor = "";
-                java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + uid + "' ");
+                java.sql.ResultSet themers; { PreparedStatement ps = DB.prepare("SELECT themename FROM app_theme WHERE users_idusers=?"); ps.setInt(1, uid); themers = ps.executeQuery(); }
                 if (themers.next()) {
                     if (themers.getString(1).equals("pinkdark")) {
                         Acolor = "black";
@@ -311,18 +313,18 @@
                 <div  id="frontmsgui" class="row">
                     <%
                         int muiddd = 0;
-                        java.sql.ResultSet rsop = DB.search("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT idusers from users WHERE idusers = ANY(SELECT receiver FROM follow WHERE sender='" + uid + "') AND idusers= ANY(SELECT sender FROM follow WHERE receiver='" + uid + "'))  ORDER BY (Select count(chatlinestatus) from chat where chatlinestatus='0' and user_sender=idusers and users_receiver='" + uid + "' ) DESC,(Select count(chatlinestatus) from chat where chatlinestatus='0' and users_receiver=idusers and user_sender='" + uid + "' ) DESC,(Select count(chatlinestatus) from chat where chatlinestatus='1' and users_receiver=idusers and user_sender='" + uid + "' ) DESC");
+                        java.sql.ResultSet rsop; { PreparedStatement ps = DB.prepare("SELECT firstname,lastname,image,idusers FROM users JOIN user_profile_pic ON users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT idusers FROM users WHERE idusers = ANY(SELECT receiver FROM follow WHERE sender=?) AND idusers = ANY(SELECT sender FROM follow WHERE receiver=?)) ORDER BY (SELECT count(chatlinestatus) FROM chat WHERE chatlinestatus='0' AND user_sender=idusers AND users_receiver=?) DESC, (SELECT count(chatlinestatus) FROM chat WHERE chatlinestatus='0' AND users_receiver=idusers AND user_sender=?) DESC, (SELECT count(chatlinestatus) FROM chat WHERE chatlinestatus='1' AND users_receiver=idusers AND user_sender=?) DESC"); ps.setInt(1, uid); ps.setInt(2, uid); ps.setInt(3, uid); ps.setInt(4, uid); ps.setInt(5, uid); rsop = ps.executeQuery(); }
                         if (!rsop.isBeforeFirst()) {%>
                     <div class='center'><img src='img/conversation.png' class='responsiveimg' style="margin-top: 100px"></div>
                     <div class="grey-text center">Icons made by <a href="https://www.freepik.com/" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
                     <%
                         }
-                        java.sql.ResultSet rs = DB.search("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT idusers from users WHERE idusers = ANY(SELECT receiver FROM follow WHERE sender='" + uid + "') AND idusers= ANY(SELECT sender FROM follow WHERE receiver='" + uid + "'))  ORDER BY (Select count(chatlinestatus) from chat where chatlinestatus='0' and user_sender=idusers and users_receiver='" + uid + "' ) DESC,(Select count(chatlinestatus) from chat where chatlinestatus='0' and users_receiver=idusers and user_sender='" + uid + "' ) DESC,(Select count(chatlinestatus) from chat where chatlinestatus='1' and users_receiver=idusers and user_sender='" + uid + "' ) DESC");
+                        java.sql.ResultSet rs; { PreparedStatement ps = DB.prepare("SELECT firstname,lastname,image,idusers FROM users JOIN user_profile_pic ON users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT idusers FROM users WHERE idusers = ANY(SELECT receiver FROM follow WHERE sender=?) AND idusers = ANY(SELECT sender FROM follow WHERE receiver=?)) ORDER BY (SELECT count(chatlinestatus) FROM chat WHERE chatlinestatus='0' AND user_sender=idusers AND users_receiver=?) DESC, (SELECT count(chatlinestatus) FROM chat WHERE chatlinestatus='0' AND users_receiver=idusers AND user_sender=?) DESC, (SELECT count(chatlinestatus) FROM chat WHERE chatlinestatus='1' AND users_receiver=idusers AND user_sender=?) DESC"); ps.setInt(1, uid); ps.setInt(2, uid); ps.setInt(3, uid); ps.setInt(4, uid); ps.setInt(5, uid); rs = ps.executeQuery(); }
                         while (rs.next()) {
                             muiddd = Integer.parseInt(rs.getString(4));
                             int unseenno = 0;
                             String outString = "";
-                            java.sql.ResultSet unseencount = DB.search("Select count(chatlinestatus) from chat where chatlinestatus='0' and user_sender='" + rs.getString(4) + "' and users_receiver='" + uid + "' ");
+                            java.sql.ResultSet unseencount; { PreparedStatement ps = DB.prepare("SELECT count(chatlinestatus) FROM chat WHERE chatlinestatus='0' AND user_sender=? AND users_receiver=?"); ps.setString(1, rs.getString(4)); ps.setInt(2, uid); unseencount = ps.executeQuery(); }
                             if (unseencount.next()) {
                                 unseenno = unseencount.getInt(1);
                                 if (unseenno > 9) {
@@ -346,7 +348,7 @@
 
                     <%
                         }
-                        java.sql.ResultSet rsgroup = DB.search("SELECT * FROM `groups` where group_id= ANY(SELECT Groups_group_id from group_members where members='" + uid + "') ORDER BY (Select count(chatstatus) from group_chat where chatstatus='0' and users_idusers!='" + uid + "' ) DESC,(Select count(chatstatus) from group_chat where chatstatus='0' and  users_idusers='" + uid + "' ) DESC,(Select count(chatstatus) from group_chat where chatstatus='1' and  users_idusers!='" + uid + "' ) DESC");
+                        java.sql.ResultSet rsgroup; { PreparedStatement ps = DB.prepare("SELECT * FROM `groups` WHERE group_id = ANY(SELECT Groups_group_id FROM group_members WHERE members=?) ORDER BY (SELECT count(chatstatus) FROM group_chat WHERE chatstatus='0' AND users_idusers!=?) DESC, (SELECT count(chatstatus) FROM group_chat WHERE chatstatus='0' AND users_idusers=?) DESC, (SELECT count(chatstatus) FROM group_chat WHERE chatstatus='1' AND users_idusers!=?) DESC"); ps.setInt(1, uid); ps.setInt(2, uid); ps.setInt(3, uid); ps.setInt(4, uid); rsgroup = ps.executeQuery(); }
                         String outString = "<i class='material-icons " + Dcolor + " '>add</i>";
                         while (rsgroup.next()) {
                     %>
@@ -366,7 +368,7 @@
             </div>
         </main>
         <%
-            java.sql.ResultSet rsgroupfeature = DB.search("Select COUNT(idusers) FROM users WHERE users.idusers = ANY(SELECT idusers from users WHERE idusers = ANY(SELECT receiver FROM follow WHERE sender='" + uid + "') AND idusers= ANY(SELECT sender FROM follow WHERE receiver='" + uid + "'))");
+            java.sql.ResultSet rsgroupfeature; { PreparedStatement ps = DB.prepare("SELECT COUNT(idusers) FROM users WHERE users.idusers = ANY(SELECT idusers FROM users WHERE idusers = ANY(SELECT receiver FROM follow WHERE sender=?) AND idusers = ANY(SELECT sender FROM follow WHERE receiver=?))"); ps.setInt(1, uid); ps.setInt(2, uid); rsgroupfeature = ps.executeQuery(); }
             if (rsgroupfeature.next()) {
                 if (rsgroupfeature.getInt(1) > 1) {
         %>

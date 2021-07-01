@@ -9,6 +9,8 @@
 <%@page import="com.heymeowcat.tailznet.DB"%>
 <%@page import="java.text.SimpleDateFormat"%>
 <%@page import="java.util.List"%>
+<%@page import="java.sql.PreparedStatement"%>
+<%@page import="java.sql.ResultSet"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="en">
@@ -39,7 +41,7 @@
                 String Ecolor = "";
                 String Fcolor = "";
                 String Lcolor = "";
-                java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + uid + "' ");
+                java.sql.ResultSet themers; { PreparedStatement ps = DB.prepare("SELECT themename FROM app_theme WHERE users_idusers=?"); ps.setInt(1, uid); themers = ps.executeQuery(); }
                 if (themers.next()) {
                     if (themers.getString(1).equals("pinkdark")) {
                         Acolor = "black";
@@ -235,65 +237,65 @@
                         <div class="row" id="postrow">
                             <%
                                 try {
-                                    java.sql.ResultSet rs = DB.search("Select * FROM `post` where  users_idusers = ANY (SELECT `receiver` FROM follow WHERE sender ='" + uid + "' and Post_Privacy='1') OR users_idusers = '" + uid + "' and Post_Privacy='1'  ORDER BY `post_time` DESC");
+                                    java.sql.ResultSet rs; { PreparedStatement ps = DB.prepare("SELECT * FROM `post` WHERE users_idusers = ANY (SELECT `receiver` FROM follow WHERE sender =? AND Post_Privacy='1') OR users_idusers = ? AND Post_Privacy='1' ORDER BY `post_time` DESC"); ps.setInt(1, uid); ps.setInt(2, uid); rs = ps.executeQuery(); }
                                     while (rs.next()) {
                                         if (rs.getString(7).equals("1")) {%>
                             <div class="col s12 m12 l6 ">
                                 <div class=" <%=Acolor%> <%=Dcolor%> card small hoverable" >
-                                    <div class="card-image">
-                                        <img class="responsive-img" src="<%=ENCDEC.decrypt(rs.getString(3), new KEY().secretKey)%>">
-                                    </div>
-                                    <div class="card-content" >
-                                        <span class="card-title <%=Dcolor%>"><b class="truncate<%=Dcolor%>"><%=ENCDEC.decrypt(rs.getString(2), new KEY().secretKey)%></b><i class="material-icons right activator waves-effect  <%=Dcolor%>">more_vert</i></span>    
-                                        <p class="truncate"><%=ENCDEC.decrypt(rs.getString(4), new KEY().secretKey)%></p>
-                                    </div>
-                                    <div class=" <%=Dcolor%> <%=Acolor%>  card-reveal" >
-                                        <span class="card-title <%=Dcolor%> text-darken-4 truncate "><%=ENCDEC.decrypt(rs.getString(2), new KEY().secretKey)%><i class="material-icons right waves-effect">close</i></span>
-                                        <div class="card-content ">
-                                            <a onclick="showprofile('<%=rs.getString(6)%>', '<%=uid%>');$('#peekprofile').modal('open');">
-                                                <div class="<%=Bcolor%>  <%=Dcolor%> chip waves-effect waves-light ">
-                                                    <%
-                                                        String imgup = "";
-                                                        String fnamepost = "";
-                                                        String lnamepost = "";
-                                                        String postdate = "";
-                                                        String posttime = "";
-                                                        java.sql.ResultSet imgpostuser = DB.search("Select image From user_profile_pic where users_idusers='" + rs.getInt(6) + "' ");
-                                                        if (imgpostuser.next()) {
-                                                            imgup = imgpostuser.getString(1);
-                                                        }
-                                                        java.sql.ResultSet firstimguser = DB.search("Select firstname From users where idusers='" + rs.getInt(6) + "' ");
-                                                        if (firstimguser.next()) {
-                                                            fnamepost = firstimguser.getString(1);
-                                                        }
-                                                        java.sql.ResultSet lastimguser = DB.search("Select lastname From users where idusers='" + rs.getInt(6) + "' ");
-                                                        if (lastimguser.next()) {
-                                                            lnamepost = lastimguser.getString(1);
-                                                        }
-                                                        java.sql.ResultSet imgdate = DB.search("Select cast(post_time as date) From post where idpost='" + rs.getInt(1) + "' ");
-                                                        if (imgdate.next()) {
-                                                            postdate = imgdate.getString(1);
-                                                        }
-                                                        java.sql.ResultSet imgtime = DB.search("Select cast(post_time as time) From post where idpost='" + rs.getInt(1) + "' ");
-                                                        if (imgtime.next()) {
-                                                            posttime = imgtime.getString(1);
-                                                        }
-                                                    %>
-                                                    <img src="<%=imgup%>">
-                                                    <%= fnamepost + " " + lnamepost%>
-                                                </div></a>
-                                            <div class="<%=Bcolor%>  <%=Dcolor%> chip waves-effect waves-light ">
-                                                Date: <%=postdate%>
-                                            </div>
-                                            <div class="<%=Bcolor%>  <%=Dcolor%> chip waves-effect waves-light ">
-                                                Time:  <%=posttime%>
-                                            </div>
-                                        </div>
-                                        <div class="card-action">
-                                            <%
-                                                try {
-                                                    java.sql.ResultSet likechech = DB.search("Select likes from post_rank where likedby='" + uid + "' AND `post_rank`.`post_idpost` ='" + rs.getString(1) + "' ");
-                                                    if (!likechech.isBeforeFirst()) {
+<div class="card-image">
+                                         <img class="responsive-img" src="<%=ENCDEC.decrypt(rs.getString(3), new KEY().secretKey)%>">
+                                     </div>
+                                     <div class="card-content" >
+                                         <span class="card-title <%=Dcolor%>"><b class="truncate<%=Dcolor%>"><%=ENCDEC.decrypt(rs.getString(2), new KEY().secretKey)%></b><i class="material-icons right activator waves-effect  <%=Dcolor%>">more_vert</i></span>    
+                                         <p class="truncate"><%=ENCDEC.decrypt(rs.getString(4), new KEY().secretKey)%></p>
+                                     </div>
+                                     <div class=" <%=Dcolor%> <%=Acolor%>  card-reveal" >
+                                         <span class="card-title <%=Dcolor%> text-darken-4 truncate "><%=ENCDEC.decrypt(rs.getString(2), new KEY().secretKey)%><i class="material-icons right waves-effect">close</i></span>
+                                         <div class="card-content ">
+                                             <a onclick="showprofile('<%=rs.getString(6)%>', '<%=uid%>');$('#peekprofile').modal('open');">
+                                                 <div class="<%=Bcolor%>  <%=Dcolor%> chip waves-effect waves-light ">
+                                                     <%
+                                                         String imgup = "";
+                                                         String fnamepost = "";
+                                                         String lnamepost = "";
+                                                         String postdate = "";
+                                                         String posttime = "";
+                                                         java.sql.ResultSet imgpostuser; { PreparedStatement ps = DB.prepare("SELECT image FROM user_profile_pic WHERE users_idusers=?"); ps.setInt(1, rs.getInt(6)); imgpostuser = ps.executeQuery(); }
+                                                         if (imgpostuser.next()) {
+                                                             imgup = imgpostuser.getString(1);
+                                                         }
+                                                         java.sql.ResultSet firstimguser; { PreparedStatement ps = DB.prepare("SELECT firstname FROM users WHERE idusers=?"); ps.setInt(1, rs.getInt(6)); firstimguser = ps.executeQuery(); }
+                                                         if (firstimguser.next()) {
+                                                             fnamepost = firstimguser.getString(1);
+                                                         }
+                                                         java.sql.ResultSet lastimguser; { PreparedStatement ps = DB.prepare("SELECT lastname FROM users WHERE idusers=?"); ps.setInt(1, rs.getInt(6)); lastimguser = ps.executeQuery(); }
+                                                         if (lastimguser.next()) {
+                                                             lnamepost = lastimguser.getString(1);
+                                                         }
+                                                         java.sql.ResultSet imgdate; { PreparedStatement ps = DB.prepare("SELECT CAST(post_time AS DATE) FROM post WHERE idpost=?"); ps.setInt(1, rs.getInt(1)); imgdate = ps.executeQuery(); }
+                                                         if (imgdate.next()) {
+                                                             postdate = imgdate.getString(1);
+                                                         }
+                                                         java.sql.ResultSet imgtime; { PreparedStatement ps = DB.prepare("SELECT CAST(post_time AS TIME) FROM post WHERE idpost=?"); ps.setInt(1, rs.getInt(1)); imgtime = ps.executeQuery(); }
+                                                         if (imgtime.next()) {
+                                                             posttime = imgtime.getString(1);
+                                                         }
+                                                     %>
+                                                     <img src="<%=imgup%>">
+<%= fnamepost + " " + lnamepost%>
+                                                  </div></a>
+                                             <div class="<%=Bcolor%>  <%=Dcolor%> chip waves-effect waves-light ">
+                                                 Date: <%=postdate%>
+                                             </div>
+                                             <div class="<%=Bcolor%>  <%=Dcolor%> chip waves-effect waves-light ">
+                                                 Time:  <%=posttime%>
+                                             </div>
+                                         </div>
+                                         <div class="card-action">
+                                             <%
+                                                 try {
+                                                     java.sql.ResultSet likechech; { PreparedStatement ps = DB.prepare("SELECT likes FROM post_rank WHERE likedby=? AND `post_rank`.`post_idpost` =?"); ps.setInt(1, uid); ps.setString(2, rs.getString(1)); likechech = ps.executeQuery(); }
+                                                     if (!likechech.isBeforeFirst()) {
                                             %>
                                             <label class="toggle seedling-flower" oncontextmenu="showwholiked('<%=rs.getString(1)%>', '<%=uid%>');$('#peekwholikesthis').modal('open');return false;">
                                                 <input type="checkbox" class="toggle-checkbox" onchange="like('<%=rs.getString(1)%>', '<%=uid%>')">
@@ -314,7 +316,7 @@
                                             <i class=" material-icons right waves-effect waves-circle waves-light" onclick="$('#opncmnts').modal('open'); showpostcmnts('<%=uid%>', '<%=rs.getString(1)%>')">open_in_new</i>
                                             <%
                                                 try {
-                                                    java.sql.ResultSet bookmarkrs = DB.search("Select post_idpost from user_bookmarks where users_idusers='" + uid + "'  AND `user_bookmarks`.`post_idpost` ='" + rs.getString(1) + "'  ");
+                                                    java.sql.ResultSet bookmarkrs; { PreparedStatement ps = DB.prepare("SELECT post_idpost FROM user_bookmarks WHERE users_idusers=? AND `user_bookmarks`.`post_idpost` =?"); ps.setInt(1, uid); ps.setString(2, rs.getString(1)); bookmarkrs = ps.executeQuery(); }
                                                     if (!bookmarkrs.isBeforeFirst()) {
                                             %>
                                             <i id="bookmark<%=rs.getString(1)%>" class=" material-icons right waves-effect waves-circle waves-light" onclick="bookmarkthis('<%=uid%>', '<%=rs.getString(1)%>')">bookmark_border</i>
@@ -354,23 +356,23 @@
                                                         String lnamepost = "";
                                                         String postdate = "";
                                                         String posttime = "";
-                                                        java.sql.ResultSet imgpostuser = DB.search("Select image From user_profile_pic where users_idusers='" + rs.getInt(6) + "' ");
+                                                         java.sql.ResultSet imgpostuser; { PreparedStatement ps = DB.prepare("SELECT image FROM user_profile_pic WHERE users_idusers=?"); ps.setInt(1, rs.getInt(6)); imgpostuser = ps.executeQuery(); }
                                                         if (imgpostuser.next()) {
                                                             imgup = imgpostuser.getString(1);
                                                         }
-                                                        java.sql.ResultSet firstimguser = DB.search("Select firstname From users where idusers='" + rs.getInt(6) + "' ");
+                                                         java.sql.ResultSet firstimguser; { PreparedStatement ps = DB.prepare("SELECT firstname FROM users WHERE idusers=?"); ps.setInt(1, rs.getInt(6)); firstimguser = ps.executeQuery(); }
                                                         if (firstimguser.next()) {
                                                             fnamepost = firstimguser.getString(1);
                                                         }
-                                                        java.sql.ResultSet lastimguser = DB.search("Select lastname From users where idusers='" + rs.getInt(6) + "' ");
+                                                         java.sql.ResultSet lastimguser; { PreparedStatement ps = DB.prepare("SELECT lastname FROM users WHERE idusers=?"); ps.setInt(1, rs.getInt(6)); lastimguser = ps.executeQuery(); }
                                                         if (lastimguser.next()) {
                                                             lnamepost = lastimguser.getString(1);
                                                         }
-                                                        java.sql.ResultSet imgdate = DB.search("Select cast(post_time as date) From post where idpost='" + rs.getInt(1) + "' ");
+                                                         java.sql.ResultSet imgdate; { PreparedStatement ps = DB.prepare("SELECT CAST(post_time AS DATE) FROM post WHERE idpost=?"); ps.setInt(1, rs.getInt(1)); imgdate = ps.executeQuery(); }
                                                         if (imgdate.next()) {
                                                             postdate = imgdate.getString(1);
                                                         }
-                                                        java.sql.ResultSet imgtime = DB.search("Select cast(post_time as time) From post where idpost='" + rs.getInt(1) + "' ");
+                                                         java.sql.ResultSet imgtime; { PreparedStatement ps = DB.prepare("SELECT CAST(post_time AS TIME) FROM post WHERE idpost=?"); ps.setInt(1, rs.getInt(1)); imgtime = ps.executeQuery(); }
                                                         if (imgtime.next()) {
                                                             posttime = imgtime.getString(1);
                                                         }
@@ -388,7 +390,7 @@
                                         <div class="card-action">
                                             <%
                                                 try {
-                                                    java.sql.ResultSet likechech = DB.search("Select likes from post_rank where likedby='" + uid + "' AND `post_rank`.`post_idpost` ='" + rs.getString(1) + "' ");
+                                                    java.sql.ResultSet likechech; { PreparedStatement ps = DB.prepare("SELECT likes FROM post_rank WHERE likedby=? AND `post_rank`.`post_idpost` =?"); ps.setInt(1, uid); ps.setString(2, rs.getString(1)); likechech = ps.executeQuery(); }
                                                     if (!likechech.isBeforeFirst()) {
                                             %>
                                             <label class="toggle seedling-flower" oncontextmenu="showwholiked('<%=rs.getString(1)%>', '<%=uid%>');$('#peekwholikesthis').modal('open');return false;">
@@ -410,7 +412,7 @@
                                             <i class=" material-icons right waves-effect waves-circle waves-light" onclick="$('#opncmnts').modal('open'); showpostcmnts('<%=uid%>', '<%=rs.getString(1)%>')">open_in_new</i>
                                             <%
                                                 try {
-                                                    java.sql.ResultSet bookmarkrs = DB.search("Select post_idpost from user_bookmarks where users_idusers='" + uid + "'  AND `user_bookmarks`.`post_idpost` ='" + rs.getString(1) + "'  ");
+                                                    java.sql.ResultSet bookmarkrs; { PreparedStatement ps = DB.prepare("SELECT post_idpost FROM user_bookmarks WHERE users_idusers=? AND `user_bookmarks`.`post_idpost` =?"); ps.setInt(1, uid); ps.setString(2, rs.getString(1)); bookmarkrs = ps.executeQuery(); }
                                                     if (!bookmarkrs.isBeforeFirst()) {
                                             %>
                                             <i id="bookmark<%=rs.getString(1)%>" class=" material-icons right waves-effect waves-circle waves-light" onclick="bookmarkthis('<%=uid%>', '<%=rs.getString(1)%>')">bookmark_border</i>
@@ -434,7 +436,7 @@
                                 }
 
                             %>
-                            <% java.sql.ResultSet noptrs = DB.search("Select * FROM `post` where  users_idusers = ANY (SELECT `receiver` FROM follow WHERE sender ='" + uid + "' and Post_Privacy='1') OR users_idusers = '" + uid + "' and Post_Privacy='1'  ORDER BY `post_time` DESC");
+                            <% java.sql.ResultSet noptrs; { PreparedStatement ps = DB.prepare("SELECT * FROM `post` WHERE users_idusers = ANY (SELECT `receiver` FROM follow WHERE sender =? AND Post_Privacy='1') OR users_idusers = ? AND Post_Privacy='1' ORDER BY `post_time` DESC"); ps.setInt(1, uid); ps.setInt(2, uid); noptrs = ps.executeQuery(); }
                                 if (!noptrs.isBeforeFirst()) {
                             %>
                             <div class='center'><img src='img/no-feeds.png' style="margin-top: 100px" class='responsiveimg ' ></div>
@@ -455,7 +457,7 @@
                                 <table id="followsuggestionsid" >
                                     <%
                                         boolean m = false;
-                                        java.sql.ResultSet rs = DB.search("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT `receiver`FROM follow WHERE `sender` = ANY(SELECT `receiver` FROM follow WHERE sender ='" + uid + "') ) AND NOT idusers='" + uid + "' AND NOT idusers =ANY(SELECT `receiver` FROM follow WHERE `sender` = '" + uid + "') limit 5");
+                                        java.sql.ResultSet rs; { PreparedStatement ps = DB.prepare("SELECT firstname,lastname,image,idusers FROM users JOIN user_profile_pic ON users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT `receiver` FROM follow WHERE `sender` = ANY(SELECT `receiver` FROM follow WHERE sender =?)) AND NOT idusers=? AND NOT idusers = ANY(SELECT `receiver` FROM follow WHERE `sender` = ?) LIMIT 5"); ps.setInt(1, uid); ps.setInt(2, uid); ps.setInt(3, uid); rs = ps.executeQuery(); }
                                         while (rs.next()) {
                                             m = true;
                                     %>
@@ -468,7 +470,7 @@
                                     <%}%>
 
                                 </table>
-                                <% java.sql.ResultSet rsop = DB.search("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT `receiver`FROM follow WHERE `sender` = ANY(SELECT `receiver` FROM follow WHERE sender ='" + uid + "') ) AND NOT idusers='" + uid + "' AND NOT idusers =ANY(SELECT `receiver` FROM follow WHERE `sender` = '" + uid + "')");
+                                <% java.sql.ResultSet rsop; { PreparedStatement ps = DB.prepare("SELECT firstname,lastname,image,idusers FROM users JOIN user_profile_pic ON users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT `receiver` FROM follow WHERE `sender` = ANY(SELECT `receiver` FROM follow WHERE sender =?)) AND NOT idusers=? AND NOT idusers = ANY(SELECT `receiver` FROM follow WHERE `sender` = ?)"); ps.setInt(1, uid); ps.setInt(2, uid); ps.setInt(3, uid); rsop = ps.executeQuery(); }
                                     if (!rsop.isBeforeFirst()) {
                                 %>
                                 <div class='center'><img src='img/friendship.png' class='responsiveimg' ></div>

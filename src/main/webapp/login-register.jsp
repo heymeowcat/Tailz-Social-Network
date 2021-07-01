@@ -5,6 +5,8 @@
 --%>
 
 <%@page import="com.heymeowcat.tailznet.DB"%>
+<%@page import="java.sql.PreparedStatement"%>
+<%@page import="java.sql.ResultSet"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="en">
@@ -107,10 +109,18 @@
     </head>
 
     <%
-        java.sql.ResultSet configrs = DB.search("Select state from tailzconfig where id= '1' ");
+        java.sql.ResultSet configrs;
+        {
+            PreparedStatement ps = DB.prepare("Select state from tailzconfig where id= '1' ");
+            configrs = ps.executeQuery();
+        }
         if (configrs.next()) {
             if (configrs.getInt(1) == 1) {
-                java.sql.ResultSet googlers = DB.search("Select state from tailzconfig where id= '2' ");
+                java.sql.ResultSet googlers;
+                {
+                    PreparedStatement ps = DB.prepare("Select state from tailzconfig where id= '2' ");
+                    googlers = ps.executeQuery();
+                }
                 if (googlers.next()) {
                     if (googlers.getInt(1) == 1) {
     %>

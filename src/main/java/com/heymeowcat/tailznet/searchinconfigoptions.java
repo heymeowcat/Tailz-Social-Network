@@ -7,6 +7,8 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -40,7 +42,9 @@ public class searchinconfigoptions extends HttpServlet {
             String Bcolor = "";
             String Ccolor = "";
             String Dcolor = "";
-            java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + loggeduid + "' ");
+            PreparedStatement themersPs = DB.prepare("Select themename from app_theme where users_idusers= ?");
+            themersPs.setInt(1, loggeduid);
+            ResultSet themers = themersPs.executeQuery();
             if (themers.next()) {
                 if (themers.getString(1).equals("dark")) {
                     Acolor = "black";
@@ -54,7 +58,12 @@ public class searchinconfigoptions extends HttpServlet {
                     Dcolor = "black-text";
                 }
             }
-            java.sql.ResultSet rs = DB.search("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT `idusers` FROM users WHERE firstname LIKE '" + s + "' OR lastname LIKE '" + s + "' OR  concat(firstname,' ',lastname) LIKE '"+s+"' OR  concat(firstname,lastname) LIKE '"+s+"' )");
+            PreparedStatement rsPs = DB.prepare("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT `idusers` FROM users WHERE firstname LIKE ? OR lastname LIKE ? OR  concat(firstname,' ',lastname) LIKE ? OR  concat(firstname,lastname) LIKE ? )");
+            rsPs.setString(1, s);
+            rsPs.setString(2, s);
+            rsPs.setString(3, s);
+            rsPs.setString(4, s);
+            ResultSet rs = rsPs.executeQuery();
             String text = "";
             while (rs.next()) {
                 text += "<tr style='background-color:"+Ccolor+"' class=animated fadeIn>";

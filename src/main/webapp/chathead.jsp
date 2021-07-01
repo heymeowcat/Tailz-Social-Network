@@ -7,6 +7,8 @@
 <%@page import="com.heymeowcat.tailznet.KEY"%>
 <%@page import="com.heymeowcat.tailznet.ENCDEC"%>
 <%@page import="com.heymeowcat.tailznet.DB"%>
+<%@page import="java.sql.PreparedStatement"%>
+<%@page import="java.sql.ResultSet"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="en">
@@ -31,7 +33,7 @@
                     String Dcolor = "";
                     String Ecolor = "";
                     String Fcolor = "";
-                    java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + uid + "' ");
+                    java.sql.ResultSet themers; { PreparedStatement ps = DB.prepare("SELECT themename FROM app_theme WHERE users_idusers=?"); ps.setInt(1, uid); themers = ps.executeQuery(); }
                     if (themers.next()) {
                         if (themers.getString(1).equals("pinkdark")) {
                             Acolor = "black";
@@ -211,11 +213,11 @@
                         <div onclick="showprofile('<%=muid%>', '<%=uid%>');$('#peekprofile').modal('open');"class="<%=Bcolor%> <%=Dcolor%> truncate chip waves-effect waves-light center">
                             <% String name = "";
                                 String url = "";
-                                java.sql.ResultSet rs = DB.search("Select image from user_profile_pic where users_idusers='" + muid + "' ");
+                                java.sql.ResultSet rs; { PreparedStatement ps = DB.prepare("SELECT image FROM user_profile_pic WHERE users_idusers=?"); ps.setInt(1, muid); rs = ps.executeQuery(); }
                                 if (rs.next()) {
                                     url = rs.getString(1);
                                 }
-                                java.sql.ResultSet rs1 = DB.search("SELECT CONCAT(`firstname`,' ',`lastname`) FROM users WHERE idusers ='" + muid + "'");
+                                java.sql.ResultSet rs1; { PreparedStatement ps = DB.prepare("SELECT CONCAT(firstname,' ',lastname) FROM users WHERE idusers=?"); ps.setInt(1, muid); rs1 = ps.executeQuery(); }
                                 if (rs1.next()) {
                                     name = rs1.getString(1);
                                 }

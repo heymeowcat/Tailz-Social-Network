@@ -8,6 +8,8 @@
 <%@page import="org.apache.commons.codec.digest.DigestUtils"%>
 <%@page import="com.heymeowcat.tailznet.ENCDEC"%>
 <%@page import="com.heymeowcat.tailznet.DB"%>
+<%@page import="java.sql.PreparedStatement"%>
+<%@page import="java.sql.ResultSet"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="en">
@@ -37,7 +39,7 @@
                 String Ecolor = "";
                 String Fcolor = "";
                 String Lcolor = "";
-                java.sql.ResultSet themers = DB.search("Select themename from app_theme where users_idusers= '" + uid + "' ");
+                java.sql.ResultSet themers; { PreparedStatement ps = DB.prepare("SELECT themename FROM app_theme WHERE users_idusers=?"); ps.setInt(1, uid); themers = ps.executeQuery(); }
                 if (themers.next()) {
                     if (themers.getString(1).equals("pinkdark")) {
                         Acolor = "black";
@@ -223,7 +225,7 @@
             <div class="container animated fadeIn">
                 <br>
                 <div id="notificationbox">
-                    <% java.sql.ResultSet rsop = DB.search("Select * FROM `notification` where notificationfor = '" + uid + "' ORDER BY time DESC");
+                    <% java.sql.ResultSet rsop; { PreparedStatement ps = DB.prepare("SELECT * FROM `notification` WHERE notificationfor = ? ORDER BY time DESC"); ps.setInt(1, uid); rsop = ps.executeQuery(); }
                         if (!rsop.isBeforeFirst()) {
                     %>
                     <div class='center'><img style="margin-top: 100px" src='img/notifications-silenced.png' class='responsiveimg' ></div>
@@ -237,7 +239,7 @@
                         <%try {
                                 String commenttext = "";
                                 String notificationtxt = "";
-                                java.sql.ResultSet rs = DB.search("Select * FROM `notification` where notificationfor = '" + uid + "' ORDER BY time DESC");
+                                java.sql.ResultSet rs; { PreparedStatement ps = DB.prepare("SELECT * FROM `notification` WHERE notificationfor = ? ORDER BY time DESC"); ps.setInt(1, uid); rs = ps.executeQuery(); }
                                 while (rs.next()) {
                                     if (rs.getString(4).equals("1")) {
                                         commenttext = "started following you";
@@ -247,15 +249,15 @@
                                     String imgup = "";
                                     String fnamepost = "";
                                     String lnamepost = "";
-                                    java.sql.ResultSet imgpostuser = DB.search("Select image From user_profile_pic where users_idusers='" + rs.getInt(3) + "' ");
+                                    java.sql.ResultSet imgpostuser; { PreparedStatement ps = DB.prepare("SELECT image FROM user_profile_pic WHERE users_idusers=?"); ps.setInt(1, rs.getInt(3)); imgpostuser = ps.executeQuery(); }
                                     if (imgpostuser.next()) {
                                         imgup = imgpostuser.getString(1);
                                     }
-                                    java.sql.ResultSet firstimguser = DB.search("Select firstname From users where idusers='" + rs.getInt(3) + "' ");
+                                    java.sql.ResultSet firstimguser; { PreparedStatement ps = DB.prepare("SELECT firstname FROM users WHERE idusers=?"); ps.setInt(1, rs.getInt(3)); firstimguser = ps.executeQuery(); }
                                     if (firstimguser.next()) {
                                         fnamepost = firstimguser.getString(1);
                                     }
-                                    java.sql.ResultSet lastimguser = DB.search("Select lastname From users where idusers='" + rs.getInt(3) + "' ");
+                                    java.sql.ResultSet lastimguser; { PreparedStatement ps = DB.prepare("SELECT lastname FROM users WHERE idusers=?"); ps.setInt(1, rs.getInt(3)); lastimguser = ps.executeQuery(); }
                                     if (lastimguser.next()) {
                                         lnamepost = lastimguser.getString(1);
                                     }
