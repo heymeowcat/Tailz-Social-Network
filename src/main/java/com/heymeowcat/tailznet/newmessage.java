@@ -7,7 +7,6 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -34,10 +33,25 @@ public class newmessage extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            int uid = Integer.parseInt(request.getParameter("uid"));
-            int muid = Integer.parseInt(request.getParameter("muid"));
+            int uid = 0;
+            int muid = 0;
+            try {
+                uid = Integer.parseInt(request.getParameter("uid"));
+                muid = Integer.parseInt(request.getParameter("muid"));
+            } catch (NumberFormatException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid uid/muid");
+                return;
+            }
             String msg = request.getParameter("msg");
             String src = request.getParameter("src");
+
+            String[] themeColors = ThemeHelper.getThemeColors(uid);
+            String Acolor = themeColors[0];
+            String Bcolor = themeColors[1];
+            String Ccolor = themeColors[2];
+            String Dcolor = themeColors[3];
+            String Ecolor = themeColors[4];
+            String Fcolor = themeColors[5];
 
             boolean hasMsg = msg != null && !msg.isEmpty();
             boolean hasSrc = src != null && !src.equals("undefined");
@@ -47,28 +61,32 @@ public class newmessage extends HttpServlet {
             } else if (hasMsg && !hasSrc) {
                 PreparedStatement ps = DB.prepare(
                         "INSERT INTO chat (chat_text, user_sender, users_receiver, chattype_idchattype, chatlinestatus) VALUES (?, ?, ?, 1, 0)");
-                ps.setString(1, ENCDEC.encrypt(msg, new KEY().secretKey));
-                ps.setInt(2, uid);
-                ps.setInt(3, muid);
+                ps.setInt(1, uid);
+                ps.setInt(2, muid);
                 ps.executeUpdate();
             } else if (!hasMsg && hasSrc) {
                 PreparedStatement ps = DB.prepare(
                         "INSERT INTO chat (src, user_sender, users_receiver, chattype_idchattype, chatlinestatus) VALUES (?, ?, ?, 1, 0)");
-                ps.setString(1, ENCDEC.encrypt(src, new KEY().secretKey));
+                ps.setString(1, src);
                 ps.setInt(2, uid);
                 ps.setInt(3, muid);
                 ps.executeUpdate();
             } else {
                 PreparedStatement ps = DB.prepare(
                         "INSERT INTO chat (chat_text, src, user_sender, users_receiver, chattype_idchattype, chatlinestatus) VALUES (?, ?, ?, ?, 1, 0)");
-                ps.setString(1, ENCDEC.encrypt(msg, new KEY().secretKey));
-                ps.setString(2, ENCDEC.encrypt(src, new KEY().secretKey));
+                ps.setString(1, msg);
+                ps.setString(2, src);
                 ps.setInt(3, uid);
                 ps.setInt(4, muid);
                 ps.executeUpdate();
             }
         } catch (Exception e) {
             e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error processing message");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
