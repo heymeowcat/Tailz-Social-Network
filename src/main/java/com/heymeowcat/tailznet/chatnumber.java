@@ -1,3 +1,8 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package com.heymeowcat.tailznet;
 
 /*
@@ -36,7 +41,13 @@ public class chatnumber extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            int uid = Integer.parseInt(request.getParameter("uid"));
+            int uid = 0;
+            try {
+                uid = Integer.parseInt(request.getParameter("uid"));
+            } catch (NumberFormatException | NullPointerException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid uid parameter");
+                return;
+            }
             PreparedStatement ps = DB.prepare(
                     "SELECT count(chatlinestatus) FROM chat WHERE users_receiver=? AND chatlinestatus='0'");
             ps.setInt(1, uid);
@@ -52,10 +63,15 @@ public class chatnumber extends HttpServlet {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error counting unread messages");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    // <editor-fold defaultstate="desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
      *
@@ -93,5 +109,4 @@ public class chatnumber extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
-
 }
