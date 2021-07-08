@@ -1,3 +1,8 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package com.heymeowcat.tailznet;
 
 /*
@@ -5,6 +10,7 @@ package com.heymeowcat.tailznet;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.PreparedStatement;
@@ -35,145 +41,68 @@ public class commentlive extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            int pid = Integer.parseInt(request.getParameter("pid"));
+            int pid = 0;
+            try {
+                pid = Integer.parseInt(request.getParameter("pid"));
+            } catch (NumberFormatException | NullPointerException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid pid parameter");
+                return;
+            }
             String uid = request.getParameter("uid");
- String Acolor = "";
-                String Bcolor = "";
-                String Ccolor = "";
-                String Dcolor = "";
-                String Ecolor = "";
-                String Fcolor = "";
-                PreparedStatement themePs = DB.prepare(
-                        "SELECT themename FROM app_theme WHERE users_idusers=?");
-                themePs.setString(1, uid);
-                java.sql.ResultSet themers = themePs.executeQuery();
-                if (themers.next()) {
-                    if (themers.getString(1).equals("pinkdark")) {
-                        Acolor = "black";
-                        Bcolor = "pink";
-                        Ccolor = "#1c1c1c";
-                        Dcolor = "white-text";
-                        Ecolor = "grey darken-4";
-                        Fcolor = "#e91e63";
-                    } else if (themers.getString(1).equals("pinklight")) {
-                        Acolor = "white";
-                        Bcolor = "pink lighten-4";
-                        Ccolor = "#f7f4f4";
-                        Dcolor = "black-text";
-                        Ecolor = "red lighten-5";
-                        Fcolor = "#f8bbd0";
-                    } else if (themers.getString(1).equals("bluelight")) {
-                        Acolor = "white";
-                        Bcolor = "light-blue lighten-2";
-                        Ccolor = "#f7f4f4";
-                        Dcolor = "black-text";
-                        Ecolor = "light-blue lighten-5";
-                        Fcolor = "#4fc3f7";
-                    } else if (themers.getString(1).equals("bluedark")) {
-                        Acolor = "black";
-                        Bcolor = "blue";
-                        Ccolor = "#1c1c1c";
-                        Dcolor = "white-text";
-                        Ecolor = "grey darken-4";
-                        Fcolor = "#2196F3";
-                    } else if (themers.getString(1).equals("yellowlight")) {
-                        Acolor = "white";
-                        Bcolor = "yellow lighten-2";
-                        Ccolor = "#f7f4f4";
-                        Dcolor = "black-text";
-                        Ecolor = "yellow lighten-4";
-                        Fcolor = "#fff176";
-                    } else if (themers.getString(1).equals("yellowdark")) {
-                        Acolor = "black";
-                        Bcolor = "yellow darken-4";
-                        Ccolor = "#1c1c1c";
-                        Dcolor = "white-text";
-                        Ecolor = "grey darken-4";
-                        Fcolor = "#f57f17";
-                    } else if (themers.getString(1).equals("greenlight")) {
-                        Acolor = "white";
-                        Bcolor = "light-green lighten-2";
-                        Ccolor = "#f7f4f4";
-                        Dcolor = "black-text";
-                        Ecolor = "light-green lighten-4";
-                        Fcolor = "#aed581";
-                    } else if (themers.getString(1).equals("greendark")) {
-                        Acolor = "black";
-                        Bcolor = "green";
-                        Ccolor = "#1c1c1c";
-                        Dcolor = "white-text";
-                        Ecolor = "grey darken-4";
-                        Fcolor = "#4CAF50";
-                    } else if (themers.getString(1).equals("purplelight")) {
-                        Acolor = "white";
-                        Bcolor = "purple lighten-3";
-                        Ccolor = "#f7f4f4";
-                        Dcolor = "black-text";
-                        Ecolor = "purple lighten-5";
-                        Fcolor = "#ce93d8";
-                    } else if (themers.getString(1).equals("purpledark")) {
-                        Acolor = "black";
-                        Bcolor = "purple";
-                        Ccolor = "#1c1c1c";
-                        Dcolor = "white-text";
-                        Ecolor = "grey darken-4";
-                        Fcolor = "#9c27b0";
-                    }
-                }
+            String[] themeColors = ThemeHelper.getThemeColors(uid != null ? Integer.parseInt(uid) : 0);
+            String Acolor = themeColors[0];
+            String Bcolor = themeColors[1];
+            String Ccolor = themeColors[2];
+            String Dcolor = themeColors[3];
+            String Ecolor = themeColors[4];
+            String Fcolor = themeColors[5];
 
-            java.sql.ResultSet cmntsrs;
-                PreparedStatement cmntsPs = DB.prepare(
-                        "SELECT * FROM post_comment WHERE post_idpost=? ORDER BY post_comment.datetime DESC");
-                cmntsPs.setInt(1, pid);
-                cmntsrs = cmntsPs.executeQuery();
-                if (!cmntsrs.isBeforeFirst()) {
-                    out.write("<div class='center' style='top:40%; position:relative'><img src ='img/commentlive.png' class='animated pulse responsiveimg '></div>");
-                } else {
-                    while (cmntsrs.next()) {
-                        String cmpic = "";
-                        String cmfn = "";
-                        String cmln = "";
-                        java.sql.ResultSet imguserincmnt;
-                        PreparedStatement imgPs = DB.prepare(
-                                "SELECT image FROM user_profile_pic WHERE users_idusers=?");
-                        imgPs.setInt(1, cmntsrs.getInt(3));
-                        imguserincmnt = imgPs.executeQuery();
-                        if (imguserincmnt.next()) {
-                            cmpic = imguserincmnt.getString(1);
-                        }
-                        java.sql.ResultSet cmnfirstn;
-                        PreparedStatement fnPs = DB.prepare(
-                                "SELECT firstname FROM users WHERE idusers=?");
-                        fnPs.setInt(1, cmntsrs.getInt(3));
-                        cmnfirstn = fnPs.executeQuery();
-                        if (cmnfirstn.next()) {
-                            cmfn = cmnfirstn.getString(1);
-                        }
-                        java.sql.ResultSet cmnlastn;
-                        PreparedStatement lnPs = DB.prepare(
-                                "SELECT lastname FROM users WHERE idusers=?");
-                        lnPs.setInt(1, cmntsrs.getInt(3));
-                        cmnlastn = lnPs.executeQuery();
-                        if (cmnlastn.next()) {
-                            cmln = cmnlastn.getString(1);
-                        }
+            PreparedStatement cmntsPs = DB.prepare(
+                    "SELECT pc.idpost_comment, pc.post_idpost, pc.users_idusers, u.firstname, u.lastname, u.image, pc.datetime, pc.likes FROM post_comment pc JOIN users u ON pc.users_idusers = u.idusers WHERE pc.post_idpost=? ORDER BY pc.datetime DESC");
+            cmntsPs.setInt(1, pid);
+            ResultSet cmntsrs = cmntsPs.executeQuery();
+            if (!cmntsrs.isBeforeFirst()) {
+                out.write("<div class='center' style='top:40%; position:relative'><img src ='img/commentlive.png' class='animated pulse responsiveimg '></div>");
+            } else {
+                out.write("<ul class='collection' style='width: 100%;height: 55vh;overflow: scroll; border-color:"+Ccolor+"' >");
+                while (cmntsrs.next()) {
+                    String cmpic = "";
+                    String cmfn = cmntsrs.getString(4);
+                    String cmln = cmntsrs.getString(5);
+                    java.sql.ResultSet imguserincmnt;
+                    PreparedStatement imgPs = DB.prepare(
+                            "SELECT image FROM user_profile_pic WHERE users_idusers=?");
+                    imgPs.setInt(1, cmntsrs.getInt(6));
+                    imguserincmnt = imgPs.executeQuery();
+                    if (imguserincmnt.next()) {
+                        cmpic = imguserincmnt.getString(1);
+                    }
                     out.write("<li class='collection-item avatar "+Acolor+" "+Dcolor+"' style='border-color:"+Ccolor+"'>");
                     out.write("<img src='" + cmpic + "'  class='circle'>");
                     out.write("<span class='title'>" + cmfn + " " + cmln + "</span>");
-                    out.write("<p>" + cmntsrs.getString(5) + "<br>");
-                    out.write("" + cmntsrs.getString(2) + " ");
+                    out.write("<p>" + esc(cmntsrs.getString(1)) + "<br>");
+                    out.write("" + esc(cmntsrs.getString(2)) + " ");
                     out.write("</p>");
                     out.write("</li>");
                 }
+                out.write("</ul>");
             }
-
         } catch (Exception e) {
             e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error loading comments");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
-
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    private String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&").replace("<", "<").replace(">", ">").replace("\"", """);
+    }
+
+    // <editor-fold defaultstate="desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
      *
@@ -211,5 +140,4 @@ public class commentlive extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
-
 }
