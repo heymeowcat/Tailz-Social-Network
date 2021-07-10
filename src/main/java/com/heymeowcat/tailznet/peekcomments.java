@@ -5,6 +5,12 @@
  */
 package com.heymeowcat.tailznet;
 
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.PreparedStatement;
@@ -35,80 +41,23 @@ public class peekcomments extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            int uid = Integer.parseInt(request.getParameter("uid"));
-            int pid = Integer.parseInt(request.getParameter("pid"));
-            String up = "";
-            String Acolor = "";
-                String Bcolor = "";
-                String Ccolor = "";
-                String Dcolor = "";
-                String Ecolor = "";
-                PreparedStatement themersPs = DB.prepare("Select themename from app_theme where users_idusers= ?");
-                themersPs.setInt(1, uid);
-                ResultSet themers = themersPs.executeQuery();
-                if (themers.next()) {
-                    if (themers.getString(1).equals("pinkdark")) {
-                        Acolor = "black";
-                        Bcolor = "pink";
-                        Ccolor = "#1c1c1c";
-                        Dcolor = "white-text";
-                        Ecolor = "grey darken-4";
-                    } else if (themers.getString(1).equals("pinklight")) {
-                        Acolor = "white";
-                        Bcolor = "pink lighten-4";
-                        Ccolor = "#f7f4f4";
-                        Dcolor = "black-text";
-                        Ecolor = "red lighten-5";
-                    } else if (themers.getString(1).equals("bluelight")) {
-                        Acolor = "white";
-                        Bcolor = "light-blue lighten-2";
-                        Ccolor = "#f7f4f4";
-                        Dcolor = "black-text";
-                        Ecolor = "light-blue lighten-5";
-                    } else if (themers.getString(1).equals("bluedark")) {
-                        Acolor = "black";
-                        Bcolor = "blue";
-                        Ccolor = "#1c1c1c";
-                        Dcolor = "white-text";
-                        Ecolor = "grey darken-4";
-                    } else if (themers.getString(1).equals("yellowlight")) {
-                        Acolor = "white";
-                        Bcolor = "yellow lighten-2";
-                        Ccolor = "#f7f4f4";
-                        Dcolor = "black-text";
-                        Ecolor = "yellow lighten-4";
-                    } else if (themers.getString(1).equals("yellowdark")) {
-                        Acolor = "black";
-                        Bcolor = "yellow darken-4";
-                        Ccolor = "#1c1c1c";
-                        Dcolor = "white-text";
-                        Ecolor = "grey darken-4";
-                    } else if (themers.getString(1).equals("greenlight")) {
-                        Acolor = "white";
-                        Bcolor = "light-green lighten-2";
-                        Ccolor = "#f7f4f4";
-                        Dcolor = "black-text";
-                        Ecolor = "light-green lighten-4";
-                    } else if (themers.getString(1).equals("greendark")) {
-                        Acolor = "black";
-                        Bcolor = "green";
-                        Ccolor = "#1c1c1c";
-                        Dcolor = "white-text";
-                        Ecolor = "grey darken-4";
-                    } else if (themers.getString(1).equals("purplelight")) {
-                        Acolor = "white";
-                        Bcolor = "purple lighten-3";
-                        Ccolor = "#f7f4f4";
-                        Dcolor = "black-text";
-                        Ecolor = "purple lighten-5";
-                    } else if (themers.getString(1).equals("purpledark")) {
-                        Acolor = "black";
-                        Bcolor = "purple";
-                        Ccolor = "#1c1c1c";
-                        Dcolor = "white-text";
-                        Ecolor = "grey darken-4";
-                    }
-                }
+            int uid = 0;
+            int pid = 0;
+            try {
+                uid = Integer.parseInt(request.getParameter("uid"));
+                pid = Integer.parseInt(request.getParameter("pid"));
+            } catch (NumberFormatException | NullPointerException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid uid/pid parameter");
+                return;
+            }
+            String[] themeColors = ThemeHelper.getThemeColors(uid);
+            String Acolor = themeColors[0];
+            String Bcolor = themeColors[1];
+            String Ccolor = themeColors[2];
+            String Dcolor = themeColors[3];
+            String Ecolor = themeColors[4];
+            String Fcolor = themeColors[5];
+
             PreparedStatement rsPs = DB.prepare("Select * FROM `post` where idpost=?");
             rsPs.setInt(1, pid);
             ResultSet rs = rsPs.executeQuery();
@@ -118,12 +67,12 @@ public class peekcomments extends HttpServlet {
                 out.write("<div class='row'>");
                 out.write("<div class='col s12 m6' style='max-height:100% ;overflow: scroll' > ");
                 if (rs.getString(7).equals("1")) {
-                    out.write("<img class='responsive-img materialboxed' src='" + ENCDEC.decrypt(rs.getString(3), new KEY().secretKey) + "' ");
+                    out.write("<img class='responsive-img materialboxed' src='" + ENCDEC.decrypt(rs.getString(3), "default-key") + "' ");
                 } else if (rs.getString(7).equals("2")) {
-                    out.write(ENCDEC.decrypt(rs.getString(3), new KEY().secretKey));
+                    out.write(ENCDEC.decrypt(rs.getString(3), "default-key"));
                 }
-                out.write("<span><h5>" + ENCDEC.decrypt(rs.getString(2), new KEY().secretKey) + "</h5></span>");
-                out.write("<p>" + ENCDEC.decrypt(rs.getString(4), new KEY().secretKey) + "</p>");
+                out.write("<span><h5>" + ENCDEC.decrypt(rs.getString(2), "default-key") + "</h5></span>");
+                out.write("<p>" + ENCDEC.decrypt(rs.getString(4), "default-key") + "</p>");
                 out.write("<br>");
                 String imgup = "";
                 String fnamepost = "";
@@ -177,39 +126,28 @@ public class peekcomments extends HttpServlet {
                 out.write("<ul id='commentsection' class='" + Acolor + " collection' style='width: 100%;height: 55vh;overflow: scroll; border-color:"+Ccolor+"' >");
             }
 
-            PreparedStatement cmntsrsPs = DB.prepare("Select * from `post_comment` where post_idpost=? ORDER BY `post_comment`.`datetime` DESC ");
-            cmntsrsPs.setInt(1, pid);
-            ResultSet cmntsrs = cmntsrsPs.executeQuery();
+            PreparedStatement cmntsrsPs = DB.prepare("Select pc.idpost_comment, pc.post_idpost, pc.users_idusers, u.firstname, u.lastname, u.image, pc.datetime, pc.likes FROM post_comment pc JOIN users u ON pc.users_idusers = u.idusers WHERE pc.post_idpost=? ORDER BY pc.datetime DESC");
+            cmntsRsPs.setInt(1, pid);
+            ResultSet cmntsrs = cmntsRsPs.executeQuery();
             if (!cmntsrs.isBeforeFirst()) {
                 out.write("<div class='center' style='top:40%; position:relative'><img src ='img/commentlive.png' class='animated pulse responsiveimg '></div>");
             } else {
                 while (cmntsrs.next()) {
                     String cmpic = "";
-                    String cmfn = "";
-                    String cmln = "";
-                    PreparedStatement imguserincmntPs = DB.prepare("Select image From user_profile_pic where users_idusers=?");
-                    imguserincmntPs.setInt(1, cmntsrs.getInt(3));
-                    ResultSet imguserincmnt = imguserincmntPs.executeQuery();
+                    String cmfn = cmntsrs.getString(4);
+                    String cmln = cmntsrs.getString(5);
+                    java.sql.ResultSet imguserincmnt;
+                    PreparedStatement imgPs = DB.prepare("Select image From user_profile_pic where users_idusers=?");
+                    imgPs.setInt(1, cmntsrs.getInt(6));
+                    imguserincmnt = imgPs.executeQuery();
                     if (imguserincmnt.next()) {
                         cmpic = imguserincmnt.getString(1);
-                    }
-                    PreparedStatement cmnfirstnPs = DB.prepare("Select firstname From users where idusers=?");
-                    cmnfirstnPs.setInt(1, cmntsrs.getInt(3));
-                    ResultSet cmnfirstn = cmnfirstnPs.executeQuery();
-                    if (cmnfirstn.next()) {
-                        cmfn = cmnfirstn.getString(1);
-                    }
-                    PreparedStatement cmnlastnPs = DB.prepare("Select lastname From users where idusers=?");
-                    cmnlastnPs.setInt(1, cmntsrs.getInt(3));
-                    ResultSet cmnlastn = cmnlastnPs.executeQuery();
-                    if (cmnlastn.next()) {
-                        cmln = cmnlastn.getString(1);
                     }
                     out.write("<li class='collection-item avatar  " + Acolor + " " + Dcolor + "' style='border-color:"+Ccolor+"'>");
                     out.write("<img src='" + cmpic + "'  class='circle'>");
                     out.write("<span class='title'>" + cmfn + " " + cmln + "</span>");
-                    out.write("<p>" + cmntsrs.getString(5) + "<br>");
-                    out.write("" + cmntsrs.getString(2) + " ");
+                    out.write("<p>" + commentEscape(cmntsrs.getString(1)) + "<br>");
+                    out.write("" + commentEscape(cmntsrs.getString(2)) + " ");
                     out.write("</p>");
                     out.write("</li>");
                 }
@@ -225,10 +163,20 @@ public class peekcomments extends HttpServlet {
 
         } catch (Exception e) {
             e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error loading post");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    private String commentEscape(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&").replace("<", "<").replace(">", ">").replace("\"", """);
+    }
+
+    // <editor-fold defaultstate="desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
      *
@@ -266,5 +214,4 @@ public class peekcomments extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
-
 }
