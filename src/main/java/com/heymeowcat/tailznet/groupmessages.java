@@ -1,3 +1,8 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package com.heymeowcat.tailznet;
 
 /*
@@ -6,13 +11,12 @@ package com.heymeowcat.tailznet;
  * and open the template in the editor.
  */
 
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
+import javax.servlet.annotation.Servlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -21,7 +25,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author heymeowcat
  */
-@WebServlet(urlPatterns = {"/groupmessages"})
+@Servlet(urlPatterns = {"/groupmessages"})
 public class groupmessages extends HttpServlet {
 
     /**
@@ -37,148 +41,90 @@ public class groupmessages extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            int uid = Integer.parseInt(request.getParameter("uid"));
-            String muid = request.getParameter("muid");
-            String up = "";
-            String Acolor = "";
-            String Bcolor = "";
-            String Ccolor = "";
-            String Dcolor = "";
-            String Ecolor = "";
-            String Fcolor = "";
-            PreparedStatement themersPs = DB.prepare("Select themename from app_theme where users_idusers= ?");
-            themersPs.setInt(1, uid);
-            ResultSet themers = themersPs.executeQuery();
-            if (themers.next()) {
-                if (themers.getString(1).equals("pinkdark")) {
-                    Acolor = "black";
-                    Bcolor = "pink";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                    Fcolor = "#e91e63";
-                } else if (themers.getString(1).equals("pinklight")) {
-                    Acolor = "white";
-                    Bcolor = "pink lighten-4";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "red lighten-5";
-                    Fcolor = "#f8bbd0";
-                } else if (themers.getString(1).equals("bluelight")) {
-                    Acolor = "white";
-                    Bcolor = "light-blue lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "light-blue lighten-5";
-                    Fcolor = "#4fc3f7";
-                } else if (themers.getString(1).equals("bluedark")) {
-                    Acolor = "black";
-                    Bcolor = "blue";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                    Fcolor = "#2196F3";
-                } else if (themers.getString(1).equals("yellowlight")) {
-                    Acolor = "white";
-                    Bcolor = "yellow lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "yellow lighten-4";
-                    Fcolor = "#fff176";
-                } else if (themers.getString(1).equals("yellowdark")) {
-                    Acolor = "black";
-                    Bcolor = "yellow darken-4";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                    Fcolor = "#f57f17";
-                } else if (themers.getString(1).equals("greenlight")) {
-                    Acolor = "white";
-                    Bcolor = "light-green lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "light-green lighten-4";
-                    Fcolor = "#aed581";
-                } else if (themers.getString(1).equals("greendark")) {
-                    Acolor = "black";
-                    Bcolor = "green";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                    Fcolor = "#4CAF50";
-                } else if (themers.getString(1).equals("purplelight")) {
-                    Acolor = "white";
-                    Bcolor = "purple lighten-3";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "purple lighten-5";
-                    Fcolor = "#ce93d8";
-                } else if (themers.getString(1).equals("purpledark")) {
-                    Acolor = "black";
-                    Bcolor = "purple";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                    Fcolor = "#9c27b0";
-                }
+            int uid = 0;
+            try {
+                uid = Integer.parseInt(request.getParameter("uid"));
+            } catch (NumberFormatException | NullPointerException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid uid parameter");
+                return;
             }
-            PreparedStatement rsPs = DB.prepare("SELECT * FROM `group_chat` where Groups_group_id=?  ORDER BY chat_datetime asc ");
+            String muid = request.getParameter("muid");
+            String[] themeColors = ThemeHelper.getThemeColors(uid);
+            String Acolor = themeColors[0];
+            String Bcolor = themeColors[1];
+            String Ccolor = themeColors[2];
+            String Dcolor = themeColors[3];
+            String Ecolor = themeColors[4];
+            String Fcolor = themeColors[5];
+
+            String esc(String s) {
+                if (s == null) return "";
+                return s.replace("&", "&").replace("<", "<").replace(">", ">").replace("\"", """);
+            }
+
+            PreparedStatement rsPs = DB.prepare("SELECT gc.idgroup_chat, gc.Groups_group_id, gc.users_idusers, u.firstname, u.lastname, u.image, gc.chat_text, gc.src, gc.chat_datetime FROM group_chat gc JOIN users u ON gc.users_idusers = u.idusers WHERE gc.Groups_group_id=? ORDER BY gc.chat_datetime ASC");
             rsPs.setString(1, muid);
             ResultSet rs = rsPs.executeQuery();
             while (rs.next()) {
-                PreparedStatement muidprofilesPs = DB.prepare("SELECT firstname FROM `users` where idusers=?");
-                muidprofilesPs.setString(1, rs.getString(6));
-                ResultSet muidprofiles = muidprofilesPs.executeQuery();
-                PreparedStatement uidprofilesPs = DB.prepare("SELECT chat_text,src,chat_datetime FROM `group_chat` where Groups_group_id=? and users_idusers=?");
-                uidprofilesPs.setString(1, muid);
-                uidprofilesPs.setInt(2, uid);
-                ResultSet uidprofiles = uidprofilesPs.executeQuery();
-                if (muidprofiles.next() | uidprofiles.next()) {
-                    if (!rs.getString(6).equals("" + uid)) {
-                        out.write("<div class='message__list'>");
-                        out.write("<div class='message__item message__item--bot'>");
-                        out.write("<span class='message message--bot " + Dcolor + "'  data-balloon='" + rs.getString(4) + "' data-balloon-pos='right' >");
-                        out.write("<b>"+muidprofiles.getString(1)+"</b><br>");
-                        if (rs.getString(2) != null) {
-                            out.write(ENCDEC.decrypt(rs.getString(2), new KEY().secretKey));
-                        }
-                        if (rs.getString(3) != null) {
-                            if (rs.getString(2) == null) {
-                                out.write("<img class='responsive-img' src='" + ENCDEC.decrypt(rs.getString(3), new KEY().secretKey) + "' width='300px' style='border-radius: 15px'>");
-                            } else {
-                                out.write("<br><img class='responsive-img' src='" + ENCDEC.decrypt(rs.getString(3), new KEY().secretKey) + "' width='300px' style='border-radius: 15px'>");
-                            }
-                        }
-                        out.write("</span>");
-                        out.write("</div>");
-                        out.write("</div>");
-                    } else if (rs.getString(6).equals("" + uid)) {
-                        out.write("<div class='message__list'>");
-                        out.write("<div class='message__item message__item--user'>");
-                        out.write("<span class='message message--user " + Dcolor + " ' data-balloon='" + rs.getString(4) + "' data-balloon-pos='left' >");
-                         out.write("<b class='right'>Me</b><br>");
-                        if (rs.getString(2) != null) {
-                            out.write(ENCDEC.decrypt(rs.getString(2), new KEY().secretKey));
-                        }
-                        if (rs.getString(3) != null) {
-                            if (rs.getString(2) == null) {
-                                out.write("<img class='responsive-img' src='" + ENCDEC.decrypt(rs.getString(3), new KEY().secretKey) + "' width='300px' style='border-radius: 15px'>");
-                            } else {
-                                out.write("<br><img class='responsive-img' src='" + ENCDEC.decrypt(rs.getString(3), new KEY().secretKey) + "' width='300px' style='border-radius: 15px'>");
-                            }
-                        }
-                        out.write("</span>");
-                        out.write("</div>");
-                        out.write("</div>");
+                String cmpic = "";
+                String cmfn = rs.getString(4);
+                String cmln = rs.getString(5);
+                java.sql.ResultSet imguserincmnt;
+                PreparedStatement imgPs = DB.prepare("Select image From user_profile_pic where users_idusers=?");
+                imgPs.setInt(1, rs.getInt(6));
+                imguserincmnt = imgPs.executeQuery();
+                if (imguserincmnt.next()) {
+                    cmpic = imguserincmnt.getString(1);
+                }
+                if (!rs.getString(3).equals("" + uid)) {
+                    out.write("<div class='message__list'>");
+                    out.write("<div class='message__item message__item--bot'>");
+                    out.write("<span class='message message--bot " + Dcolor + "'  data-balloon='" + rs.getString(8) + "' data-balloon-pos='right' >");
+                    out.write("<b>"+cmfn+" "+cmln+"</b><br>");
+                    if (rs.getString(7) != null) {
+                        out.write(esc(rs.getString(7)));
                     }
+                    if (rs.getString(8) != null) {
+                        if (rs.getString(7) == null) {
+                            out.write("<img class='responsive-img' src='" + esc(rs.getString(8)) + "' width='300px' style='border-radius: 15px'>");
+                        } else {
+                            out.write("<br><img class='responsive-img' src='" + esc(rs.getString(8)) + "' width='300px' style='border-radius: 15px'>");
+                        }
+                    }
+                    out.write("</span>");
+                    out.write("</div>");
+                    out.write("</div>");
+                } else if (rs.getString(3).equals("" + uid)) {
+                    out.write("<div class='message__list'>");
+                    out.write("<div class='message__item message__item--user'>");
+                    out.write("<span class='message message--user " + Dcolor + " ' data-balloon='" + rs.getString(8) + "' data-balloon-pos='left' >");
+                    out.write("<b class='right'>Me</b><br>");
+                    if (rs.getString(7) != null) {
+                        out.write(esc(rs.getString(7)));
+                    }
+                    if (rs.getString(8) != null) {
+                        if (rs.getString(7) == null) {
+                            out.write("<img class='responsive-img' src='" + esc(rs.getString(8)) + "' width='300px' style='border-radius: 15px'>");
+                        } else {
+                            out.write("<br><img class='responsive-img' src='" + esc(rs.getString(8)) + "' width='300px' style='border-radius: 15px'>");
+                        }
+                    }
+                    out.write("</span>");
+                    out.write("</div>");
+                    out.write("</div>");
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error loading group messages");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    // <editor-fold desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
      *
@@ -216,5 +162,4 @@ public class groupmessages extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
-
 }
