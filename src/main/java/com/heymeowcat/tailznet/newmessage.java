@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.heymeowcat.tailznet;
 
 import java.io.IOException;
@@ -13,22 +8,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- *
- * @author heymeowcat
- */
 @WebServlet(name = "newmessage", urlPatterns = {"/newmessage"})
 public class newmessage extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
@@ -45,13 +27,10 @@ public class newmessage extends HttpServlet {
             String msg = request.getParameter("msg");
             String src = request.getParameter("src");
 
-            String[] themeColors = ThemeHelper.getThemeColors(uid);
-            String Acolor = themeColors[0];
-            String Bcolor = themeColors[1];
-            String Ccolor = themeColors[2];
-            String Dcolor = themeColors[3];
-            String Ecolor = themeColors[4];
-            String Fcolor = themeColors[5];
+            String esc(String s) {
+                if (s == null) return "";
+                return s.replace("&", "&").replace("<", "<").replace(">", ">").replace("\"", """);
+            }
 
             boolean hasMsg = msg != null && !msg.isEmpty();
             boolean hasSrc = src != null && !src.equals("undefined");
@@ -61,21 +40,22 @@ public class newmessage extends HttpServlet {
             } else if (hasMsg && !hasSrc) {
                 PreparedStatement ps = DB.prepare(
                         "INSERT INTO chat (chat_text, user_sender, users_receiver, chattype_idchattype, chatlinestatus) VALUES (?, ?, ?, 1, 0)");
-                ps.setInt(1, uid);
-                ps.setInt(2, muid);
+                ps.setString(1, ENCDEC.encrypt(esc(msg), new KEY().secretKey));
+                ps.setInt(2, uid);
+                ps.setInt(3, muid);
                 ps.executeUpdate();
             } else if (!hasMsg && hasSrc) {
                 PreparedStatement ps = DB.prepare(
                         "INSERT INTO chat (src, user_sender, users_receiver, chattype_idchattype, chatlinestatus) VALUES (?, ?, ?, 1, 0)");
-                ps.setString(1, src);
+                ps.setString(1, ENCDEC.encrypt(esc(src), new KEY().secretKey));
                 ps.setInt(2, uid);
                 ps.setInt(3, muid);
                 ps.executeUpdate();
             } else {
                 PreparedStatement ps = DB.prepare(
                         "INSERT INTO chat (chat_text, src, user_sender, users_receiver, chattype_idchattype, chatlinestatus) VALUES (?, ?, ?, ?, 1, 0)");
-                ps.setString(1, msg);
-                ps.setString(2, src);
+                ps.setString(1, ENCDEC.encrypt(esc(msg), new KEY().secretKey));
+                ps.setString(2, ENCDEC.encrypt(esc(src), new KEY().secretKey));
                 ps.setInt(3, uid);
                 ps.setInt(4, muid);
                 ps.executeUpdate();

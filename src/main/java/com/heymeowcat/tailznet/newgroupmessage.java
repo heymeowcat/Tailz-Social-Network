@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.heymeowcat.tailznet;
 
 import java.io.IOException;
@@ -14,30 +9,29 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- *
- * @author heymeowcat
- */
 @WebServlet(name = "newgroupmessage", urlPatterns = {"/newgroupmessage"})
 public class newgroupmessage extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            int uid = Integer.parseInt(request.getParameter("uid"));
-            String muid = request.getParameter("muid");
+            int uid = 0;
+            int groupId = 0;
+            try {
+                uid = Integer.parseInt(request.getParameter("uid"));
+                groupId = Integer.parseInt(request.getParameter("muid"));
+            } catch (NumberFormatException | NullPointerException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid uid/muid");
+                return;
+            }
             String msg = request.getParameter("msg");
             String src = request.getParameter("src");
+
+            String esc(String s) {
+                if (s == null) return "";
+                return s.replace("&", "&").replace("<", "<").replace(">", ">").replace("\"", """);
+            }
 
             boolean hasMsg = msg != null && !msg.isEmpty();
             boolean hasSrc = src != null && !src.equals("undefined");
@@ -47,28 +41,33 @@ public class newgroupmessage extends HttpServlet {
             } else if (hasMsg && !hasSrc) {
                 PreparedStatement ps = DB.prepare(
                         "INSERT INTO group_chat (Groups_group_id, chat_text, users_idusers, chatstatus) VALUES (?, ?, ?, 0)");
-                ps.setString(1, muid);
-                ps.setString(2, ENCDEC.encrypt(msg, new KEY().secretKey));
+                ps.setInt(1, groupId);
+                ps.setString(2, ENCDEC.encrypt(esc(msg), new KEY().secretKey));
                 ps.setInt(3, uid);
                 ps.executeUpdate();
             } else if (!hasMsg && hasSrc) {
                 PreparedStatement ps = DB.prepare(
                         "INSERT INTO group_chat (Groups_group_id, src, users_idusers, chatstatus) VALUES (?, ?, ?, 0)");
-                ps.setString(1, muid);
-                ps.setString(2, ENCDEC.encrypt(src, new KEY().secretKey));
+                ps.setInt(1, groupId);
+                ps.setString(2, ENCDEC.encrypt(esc(src), new KEY().secretKey));
                 ps.setInt(3, uid);
                 ps.executeUpdate();
             } else {
                 PreparedStatement ps = DB.prepare(
                         "INSERT INTO group_chat (Groups_group_id, chat_text, src, users_idusers, chatstatus) VALUES (?, ?, ?, ?, 0)");
-                ps.setString(1, muid);
-                ps.setString(2, ENCDEC.encrypt(msg, new KEY().secretKey));
-                ps.setString(3, ENCDEC.encrypt(src, new KEY().secretKey));
+                ps.setInt(1, groupId);
+                ps.setString(2, ENCDEC.encrypt(esc(msg), new KEY().secretKey));
+                ps.setString(3, ENCDEC.encrypt(esc(src), new KEY().secretKey));
                 ps.setInt(4, uid);
                 ps.executeUpdate();
             }
         } catch (Exception e) {
             e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error processing group message");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 

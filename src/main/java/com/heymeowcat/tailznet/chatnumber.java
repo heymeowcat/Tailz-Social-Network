@@ -5,11 +5,7 @@
  */
 package com.heymeowcat.tailznet;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -21,22 +17,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- *
- * @author heymeowcat
- */
 @WebServlet(name = "chatnumber", urlPatterns = {"/chatnumber"})
 public class chatnumber extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
@@ -53,11 +36,12 @@ public class chatnumber extends HttpServlet {
             ps.setInt(1, uid);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                if(rs.getInt(1)==0){
-                    
-                }else if(rs.getInt(1)<=9){
-                    out.print(rs.getString(1));
-                }else if(rs.getInt(1)>9){
+                int count = rs.getInt(1);
+                if (count == 0) {
+                    // no output
+                } else if (count <= 9) {
+                    out.print(count);
+                } else {
                     out.print("+");
                 }
             }

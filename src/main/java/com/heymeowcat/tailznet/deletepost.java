@@ -1,11 +1,5 @@
 package com.heymeowcat.tailznet;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.PreparedStatement;
@@ -16,123 +10,52 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- *
- * @author heymeowcat
- */
 @WebServlet(name = "deletepost", urlPatterns = {"/deletepost"})
 public class deletepost extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            int uid = Integer.parseInt(request.getParameter("x"));
-            int pid = Integer.parseInt(request.getParameter("y"));
-            String up = "";
-            String Acolor = "";
-            String Bcolor = "";
-            String Ccolor = "";
-            String Dcolor = "";
-            String Ecolor = "";
-            String Fcolor = "";
-            PreparedStatement themePs = DB.prepare(
-                    "SELECT themename FROM app_theme WHERE users_idusers=?");
-            themePs.setInt(1, uid);
-            java.sql.ResultSet themers = themePs.executeQuery();
-            if (themers.next()) {
-                if (themers.getString(1).equals("pinkdark")) {
-                    Acolor = "black";
-                    Bcolor = "pink";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                    Fcolor = "#e91e63";
-                } else if (themers.getString(1).equals("pinklight")) {
-                    Acolor = "white";
-                    Bcolor = "pink lighten-4";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "red lighten-5";
-                    Fcolor = "#f8bbd0";
-                } else if (themers.getString(1).equals("bluelight")) {
-                    Acolor = "white";
-                    Bcolor = "light-blue lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "light-blue lighten-5";
-                    Fcolor = "#4fc3f7";
-                } else if (themers.getString(1).equals("bluedark")) {
-                    Acolor = "black";
-                    Bcolor = "blue";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                    Fcolor = "#2196F3";
-                } else if (themers.getString(1).equals("yellowlight")) {
-                    Acolor = "white";
-                    Bcolor = "yellow lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "yellow lighten-4";
-                    Fcolor = "#fff176";
-                } else if (themers.getString(1).equals("yellowdark")) {
-                    Acolor = "black";
-                    Bcolor = "yellow darken-4";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                    Fcolor = "#f57f17";
-                } else if (themers.getString(1).equals("greenlight")) {
-                    Acolor = "white";
-                    Bcolor = "light-green lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "light-green lighten-4";
-                    Fcolor = "#aed581";
-                } else if (themers.getString(1).equals("greendark")) {
-                    Acolor = "black";
-                    Bcolor = "green";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                    Fcolor = "#4CAF50";
-                } else if (themers.getString(1).equals("purplelight")) {
-                    Acolor = "white";
-                    Bcolor = "purple lighten-3";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "purple lighten-5";
-                    Fcolor = "#ce93d8";
-                } else if (themers.getString(1).equals("purpledark")) {
-                    Acolor = "black";
-                    Bcolor = "purple";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                    Fcolor = "#9c27b0";
-                }
+            int uid = 0;
+            int pid = 0;
+            try {
+                uid = Integer.parseInt(request.getParameter("x"));
+                pid = Integer.parseInt(request.getParameter("y"));
+            } catch (NumberFormatException | NullPointerException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid x/y parameter");
+                return;
             }
+
+            String[] themeColors = ThemeHelper.getThemeColors(uid);
+            String Acolor = themeColors[0];
+            String Bcolor = themeColors[1];
+            String Ccolor = themeColors[2];
+            String Dcolor = themeColors[3];
+            String Ecolor = themeColors[4];
+            String Fcolor = themeColors[5];
+
+            String esc(String s) {
+                if (s == null) return "";
+                return s.replace("&", "&").replace("<", "<").replace(">", ">").replace("\"", """);
+            }
+
             out.write("<i class='material-icons right waves-effect modal-close'>close</i>");
             out.write("<div class='center'>");
-            out.write("<div class='" + Acolor + " card-panel'>");
+            out.write("<div class='" + esc(Acolor) + " card-panel'>");
             out.write("Are You Sure You want to delete this post?");
             out.write("<br>");
             out.write("<br>");
-            out.write("<a onclick='deletethispost(" + uid + ", " + pid + ");refreshhhh();' class='" + Bcolor + " btn " + Dcolor + "'>Delete</a>");
+            out.write("<a onclick='deletethispost(" + uid + ", " + pid + ");refreshhhh();' class='" + esc(Bcolor) + " btn " + esc(Dcolor) + "'>Delete</a>");
             out.write("</div>");
             out.write("</div>");
         } catch (Exception e) {
             e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error loading delete confirmation");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 

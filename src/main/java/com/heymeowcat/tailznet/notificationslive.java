@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.heymeowcat.tailznet;
 
 import java.io.IOException;
@@ -15,219 +10,98 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- *
- * @author heymeowcat
- */
 @WebServlet(name = "notificationslive", urlPatterns = {"/notificationslive"})
 public class notificationslive extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            System.gc();
-            int uid = Integer.parseInt(request.getParameter("uid"));
-            String Acolor = "";
-            String Bcolor = "";
-            String Ccolor = "";
-            String Dcolor = "";
-            String Ecolor = "";
-            String Fcolor = "";
-            PreparedStatement themersPs = DB.prepare("Select themename from app_theme where users_idusers= ?");
-            themersPs.setInt(1, uid);
-            ResultSet themers = themersPs.executeQuery();
-            if (themers.next()) {
-                if (themers.getString(1).equals("pinkdark")) {
-                    Acolor = "black";
-                    Bcolor = "pink";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                    Fcolor = "white";
-                } else if (themers.getString(1).equals("pinklight")) {
-                    Acolor = "white";
-                    Bcolor = "pink lighten-4";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "red lighten-5";
-                    Fcolor = "black";
-                } else if (themers.getString(1).equals("bluelight")) {
-                    Acolor = "white";
-                    Bcolor = "light-blue lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "light-blue lighten-5";
-                    Fcolor = "black";
-                } else if (themers.getString(1).equals("bluedark")) {
-                    Acolor = "black";
-                    Bcolor = "blue";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                    Fcolor = "white";
-                } else if (themers.getString(1).equals("yellowlight")) {
-                    Acolor = "white";
-                    Bcolor = "yellow lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "yellow lighten-4";
-                    Fcolor = "black";
-                } else if (themers.getString(1).equals("yellowdark")) {
-                    Acolor = "black";
-                    Bcolor = "yellow darken-4";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                    Fcolor = "white";
-                } else if (themers.getString(1).equals("greenlight")) {
-                    Acolor = "white";
-                    Bcolor = "light-green lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "light-green lighten-4";
-                    Fcolor = "black";
-                } else if (themers.getString(1).equals("greendark")) {
-                    Acolor = "black";
-                    Bcolor = "green";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                    Fcolor = "white";
-                } else if (themers.getString(1).equals("purplelight")) {
-                    Acolor = "white";
-                    Bcolor = "purple lighten-3";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "purple lighten-5";
-                    Fcolor = "black";
-                } else if (themers.getString(1).equals("purpledark")) {
-                    Acolor = "black";
-                    Bcolor = "purple";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                    Fcolor = "white";
-                }
-            }
-            PreparedStatement rsopPs = DB.prepare("Select * FROM `notification` where notificationfor = ? ORDER BY time DESC");
-            rsopPs.setInt(1, uid);
-            ResultSet rsop = rsopPs.executeQuery();
-            if (!rsop.isBeforeFirst()) {
-
-                out.write("\n");
-                out.write("\n");
-                out.write("<div class='center'><img style=\"margin-top: 100px\" src='img/notifications-silenced.png' class='responsiveimg' style=\"margin-top: 100px\"></div>\n");
-                out.write("   <div class=\"grey-text center\">Icons made by <a href=\"https://www.freepik.com/\" title=\"Freepik\">Freepik</a> from <a href=\"https://www.flaticon.com/\" title=\"Flaticon\">www.flaticon.com</a> is licensed by <a href=\"http://creativecommons.org/licenses/by/3.0/\" title=\"Creative Commons BY 3.0\" target=\"_blank\">CC 3.0 BY</a>");
-            } else {
-                out.write("\n");
-                out.write("                <a class=\"");
-                out.print(Bcolor);
-                out.write(' ');
-                out.print(Dcolor);
-                out.write(" btn\" onclick=\"clearnotifications(");
-                out.print(uid);
-                out.write(")\">Mark All as Read</a>\n");
-            }
-
-            out.write("\n");
-            out.write("                <ul class=\"");
-            out.print(Acolor);
-            out.write(" collection\" style=\"border-color: ");
-            out.print(Ccolor);
-            out.write("\" >\n");
-            out.write("                    ");
+            int uid = 0;
             try {
-                String commenttext = "";
-                String notificationtxt = "";
-                PreparedStatement rsPs = DB.prepare("Select * FROM `notification` where notificationfor = ? ORDER BY time DESC");
-                rsPs.setInt(1, uid);
-                ResultSet rs = rsPs.executeQuery();
-                while (rs.next()) {
-                    if (rs.getString(4).equals("1")) {
-                        commenttext = "started following you";
-                    } else if (rs.getString(4).equals("2")) {
-                        commenttext = "commented on your post";
-                    }
-                    String imgup = "";
-                    String fnamepost = "";
-                    String lnamepost = "";
-                    PreparedStatement imgpostuserPs = DB.prepare("Select image From user_profile_pic where users_idusers=?");
-                    imgpostuserPs.setInt(1, rs.getInt(3));
-                    ResultSet imgpostuser = imgpostuserPs.executeQuery();
-                    if (imgpostuser.next()) {
-                        imgup = imgpostuser.getString(1);
-                    }
-                    PreparedStatement firstimguserPs = DB.prepare("Select firstname From users where idusers=?");
-                    firstimguserPs.setInt(1, rs.getInt(3));
-                    ResultSet firstimguser = firstimguserPs.executeQuery();
-                    if (firstimguser.next()) {
-                        fnamepost = firstimguser.getString(1);
-                    }
-                    PreparedStatement lastimguserPs = DB.prepare("Select lastname From users where idusers=?");
-                    lastimguserPs.setInt(1, rs.getInt(3));
-                    ResultSet lastimguser = lastimguserPs.executeQuery();
-                    if (lastimguser.next()) {
-                        lnamepost = lastimguser.getString(1);
-                    }
-                    notificationtxt = fnamepost + " " + lnamepost + " " + commenttext;
-                    if (rs.getInt(6) == 0) {
-                        if (rs.getString(4).equals("2")) {
-                            out.write("<li  class='" + Bcolor + " " + Dcolor + " collection-item avatar' style='cursor:pointer,border-color: " + Ccolor + "'>");
-                            out.write("<img src=" + imgup + " class='circle' >");
-                            out.write("<span onclick=\"clearnotification(" + rs.getString(1) + ");$('#opncmnts').modal('open'); showpostcmnts(" + uid + ", " + rs.getString(7) + ")\" class='title'>" + notificationtxt + "</span>");
-                            out.write("<p>");
-                            out.write("" + rs.getString(5) + "");
-                            out.write("</p>");
-                            out.write("</li>");
-                        } else {
-                            out.write("<li class='" + Bcolor + " " + Dcolor + " collection-item avatar' style='border-color: " + Ccolor + "'>");
-                            out.write("<img onclick=\"clearnotification(" + rs.getString(1) + ");$('#opncmnts').modal('close'); showprofile(" + rs.getInt(3) + "," + uid + ");$('#peekprofile').modal('open');\" src=" + imgup + " class='circle' >");
-                            out.write("<span class='title'>" + notificationtxt + "</span>");
-                            out.write("<p>");
-                            out.write("" + rs.getString(5) + "");
-                            out.write("</p>");
-                            out.write("</li>");
-                        }
-
-                    } else if (rs.getInt(6) == 1) {
-                        if (rs.getString(4).equals("2")) {
-                            out.write("<li  class='" + Acolor + " " + Dcolor + " collection-item avatar' style='cursor:pointer,border-color: " + Ccolor + "'>");
-                            out.write("<img src=" + imgup + " class='circle' >");
-                            out.write("<span onclick=\"clearnotification(" + rs.getString(1) + ");$('#opncmnts').modal('open'); showpostcmnts(" + uid + ", " + rs.getString(7) + ")\" class='title'>" + notificationtxt + "</span>");
-                            out.write("<p>");
-                            out.write("" + rs.getString(5) + "");
-                            out.write("</p>");
-                            out.write("</li>");
-                        } else {
-                            out.write("<li class='" + Acolor + " " + Dcolor + " collection-item avatar' style='border-color: " + Ccolor + "'>");
-                            out.write("<img onclick=\"clearnotification(" + rs.getString(1) + ");$('#opncmnts').modal('close'); clearnotification(" + rs.getString(1) + ");showprofile(" + rs.getInt(3) + "," + uid + ");$('#peekprofile').modal('open');\" src=" + imgup + " class='circle' >");
-                            out.write("<span class='title'>" + notificationtxt + "</span>");
-                            out.write("<p>");
-                            out.write("" + rs.getString(5) + "");
-                            out.write("</p>");
-                            out.write("</li>");
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+                uid = Integer.parseInt(request.getParameter("uid"));
+            } catch (NumberFormatException | NullPointerException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid uid parameter");
+                return;
             }
 
-            out.write("\n");
-            out.write("\n");
-            out.write("                </ul>\n");
+            String[] themeColors = ThemeHelper.getThemeColors(uid);
+            String Acolor = themeColors[0];
+            String Bcolor = themeColors[1];
+            String Ccolor = themeColors[2];
+            String Dcolor = themeColors[3];
+            String Ecolor = themeColors[4];
+            String Fcolor = themeColors[5];
+
+            String esc(String s) {
+                if (s == null) return "";
+                return s.replace("&", "&").replace("<", "<").replace(">", ">").replace("\"", """);
+            }
+
+            // Optimized query with JOIN to avoid N+1
+            String sql = "SELECT n.*, u.firstname, u.lastname, upp.image " +
+                    "FROM notification n " +
+                    "JOIN users u ON n.notificationfrom = u.idusers " +
+                    "JOIN user_profile_pic upp ON u.idusers = upp.users_idusers " +
+                    "WHERE n.notificationfor = ? " +
+                    "ORDER BY n.time DESC";
+
+            PreparedStatement rsPs = DB.prepare(sql);
+            rsPs.setInt(1, uid);
+            ResultSet rs = rsPs.executeQuery();
+
+            if (!rs.isBeforeFirst()) {
+                out.write("<div class='center'><img style='margin-top: 100px' src='img/notifications-silenced.png' class='responsiveimg'></div>");
+                out.write("<div class='grey-text center'>Icons made by <a href='https://www.freepik.com/' title='Freepik'>Freepik</a> from <a href='https://www.flaticon.com/' title='Flaticon'>www.flaticon.com</a> is licensed by <a href='http://creativecommons.org/licenses/by/3.0/' title='Creative Commons BY 3.0' target='_blank'>CC 3.0 BY</a>");
+            } else {
+                out.write("<a class='" + esc(Bcolor) + " " + esc(Dcolor) + " btn' onclick='clearnotifications(" + uid + ")'>Mark All as Read</a>");
+            }
+
+            out.write("<ul class='" + esc(Acolor) + " collection' style='border-color: " + esc(Ccolor) + "'>");
+
+            while (rs.next()) {
+                String notificationType = rs.getString(4);
+                String commenttext = "";
+                if (notificationType.equals("1")) {
+                    commenttext = "started following you";
+                } else if (notificationType.equals("2")) {
+                    commenttext = "commented on your post";
+                }
+
+                String imgup = esc(rs.getString("image"));
+                String fnamepost = esc(rs.getString("firstname"));
+                String lnamepost = esc(rs.getString("lastname"));
+                String notificationtxt = fnamepost + " " + lnamepost + " " + commenttext;
+                String time = esc(rs.getString(5));
+                int status = rs.getInt(6);
+                int notificationId = rs.getInt(1);
+                int target = rs.getInt(7);
+
+                String itemClass = (status == 0) ? (esc(Bcolor) + " " + esc(Dcolor)) : (esc(Acolor) + " " + esc(Dcolor));
+
+                if (notificationType.equals("2")) {
+                    out.write("<li class='" + itemClass + " collection-item avatar' style='cursor:pointer;border-color: " + esc(Ccolor) + "'>");
+                    out.write("<img src='" + imgup + "' class='circle'>");
+                    out.write("<span onclick=\"clearnotification(" + notificationId + ");$('#opncmnts').modal('open'); showpostcmnts(" + uid + ", " + target + ")\" class='title'>" + notificationtxt + "</span>");
+                    out.write("<p>" + time + "</p>");
+                    out.write("</li>");
+                } else {
+                    out.write("<li class='" + itemClass + " collection-item avatar' style='border-color: " + esc(Ccolor) + "'>");
+                    out.write("<img onclick=\"clearnotification(" + notificationId + ");$('#opncmnts').modal('close'); showprofile(" + rs.getInt(3) + "," + uid + ");$('#peekprofile').modal('open');\" src='" + imgup + "' class='circle'>");
+                    out.write("<span class='title'>" + notificationtxt + "</span>");
+                    out.write("<p>" + time + "</p>");
+                    out.write("</li>");
+                }
+            }
+
+            out.write("</ul>");
         } catch (Exception e) {
             e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error loading notifications");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
