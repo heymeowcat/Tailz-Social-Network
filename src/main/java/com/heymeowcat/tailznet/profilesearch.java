@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.heymeowcat.tailznet;
 
 import java.io.IOException;
@@ -14,118 +9,71 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
-/**
- *
- * @author heymeowcat
- */
 @WebServlet(name = "profilesearch", urlPatterns = {"/profilesearch"})
 public class profilesearch extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             String s = request.getParameter("name");
-            if(!s.isEmpty()){
-                      s = "%" + s + "%";
+            HttpSession session = request.getSession(false);
+            if (session == null || session.getAttribute("user") == null) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Not logged in");
+                return;
             }
-            int loggeduid = Integer.parseInt(request.getSession().getAttribute("user").toString());
-            String Acolor = "";
-            String Bcolor = "";
-            String Ccolor = "";
-            String Dcolor = "";
-            String Ecolor = "";
-            PreparedStatement themersPs = DB.prepare("Select themename from app_theme where users_idusers= ?");
-            themersPs.setInt(1, loggeduid);
-            ResultSet themers = themersPs.executeQuery();
-            if (themers.next()) {
-                if (themers.getString(1).equals("pinkdark")) {
-                    Acolor = "black";
-                    Bcolor = "pink";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                } else if (themers.getString(1).equals("pinklight")) {
-                    Acolor = "white";
-                    Bcolor = "pink lighten-4";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "red lighten-5";
-                } else if (themers.getString(1).equals("bluelight")) {
-                    Acolor = "white";
-                    Bcolor = "light-blue lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "light-blue lighten-5";
-                } else if (themers.getString(1).equals("bluedark")) {
-                    Acolor = "black";
-                    Bcolor = "blue";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                } else if (themers.getString(1).equals("yellowlight")) {
-                    Acolor = "white";
-                    Bcolor = "yellow lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "yellow lighten-4";
-                } else if (themers.getString(1).equals("yellowdark")) {
-                    Acolor = "black";
-                    Bcolor = "yellow darken-4";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                } else if (themers.getString(1).equals("greenlight")) {
-                    Acolor = "white";
-                    Bcolor = "light-green lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "light-green lighten-4";
-                } else if (themers.getString(1).equals("greendark")) {
-                    Acolor = "black";
-                    Bcolor = "green";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                } else if (themers.getString(1).equals("purplelight")) {
-                    Acolor = "white";
-                    Bcolor = "purple lighten-3";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "purple lighten-5";
-                } else if (themers.getString(1).equals("purpledark")) {
-                    Acolor = "black";
-                    Bcolor = "purple";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                }
+            int loggeduid = 0;
+            try {
+                loggeduid = Integer.parseInt(session.getAttribute("user").toString());
+            } catch (NumberFormatException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid user session");
+                return;
             }
+
+            String[] themeColors = ThemeHelper.getThemeColors(loggeduid);
+            String Acolor = themeColors[0];
+            String Bcolor = themeColors[1];
+            String Ccolor = themeColors[2];
+            String Dcolor = themeColors[3];
+            String Ecolor = themeColors[4];
+            String Fcolor = themeColors[5];
+
+            String esc(String str) {
+                if (str == null) return "";
+                return str.replace("&", "&").replace("<", "<").replace(">", ">").replace("\"", """);
+            }
+
+            if (s != null && !s.isEmpty()) {
+                s = "%" + s + "%";
+            } else {
+                s = "%%";
+            }
+
             PreparedStatement rsPs = DB.prepare("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT `idusers` FROM users WHERE firstname LIKE ? OR lastname LIKE ? OR  concat(firstname,' ',lastname) LIKE ? OR  concat(firstname,lastname) LIKE ? ) LIMIT 5");
             rsPs.setString(1, s);
             rsPs.setString(2, s);
             rsPs.setString(3, s);
             rsPs.setString(4, s);
             ResultSet rs = rsPs.executeQuery();
-            String text = "";
+
+            StringBuilder text = new StringBuilder();
             while (rs.next()) {
-                text += "<tr  class=animated fadeIn>";
-                text += "<td valign='middle' class='left'><img src=" + rs.getString(3) + " width='40px' height='40px' style='padding: 0; margin: 0' class='circle responsive-img '></td><td valign='middle'><h6 class='" + Dcolor + "'>" + rs.getString(1) + "  " + rs.getString(2) + "</h6></td><td><a onclick='fullviewprofile(" + rs.getString(4) + ")'><i class='material-icons right " + Dcolor + " waves-effect '>open_in_new</i></a></td>";
-                text += "</tr>";
+                text.append("<tr class='animated fadeIn'>");
+                text.append("<td valign='middle' class='left'><img src='").append(esc(rs.getString(3))).append("' width='40px' height='40px' style='padding: 0; margin: 0' class='circle responsive-img'></td>");
+                text.append("<td valign='middle'><h6 class='").append(esc(Dcolor)).append("'>").append(esc(rs.getString(1))).append("  ").append(esc(rs.getString(2))).append("</h6></td>");
+                text.append("<td><a onclick='fullviewprofile(").append(rs.getInt(4)).append(")'><i class='material-icons right ").append(esc(Dcolor)).append(" waves-effect '>open_in_new</i></a></td>");
+                text.append("</tr>");
             }
-            out.write(text);
+            out.write(text.toString());
         } catch (Exception e) {
             e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error searching profiles");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
