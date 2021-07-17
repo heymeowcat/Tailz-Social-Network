@@ -1,108 +1,44 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.heymeowcat.tailznet;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- *
- * @author HEYMEOWCAT
- */
 @WebServlet(name = "newpost", urlPatterns = {"/newpost"})
 public class newpost extends HttpServlet {
+
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             int uid = 0;
-            uid = Integer.parseInt(request.getSession().getAttribute("user").toString());
-            String Acolor = "";
-            String Bcolor = "";
-            String Ccolor = "";
-            String Dcolor = "";
-            String Ecolor = "";
-            PreparedStatement themersPs = DB.prepare("Select themename from app_theme where users_idusers= ?");
-            themersPs.setInt(1, uid);
-            ResultSet themers = themersPs.executeQuery();
-            if (themers.next()) {
-                if (themers.getString(1).equals("pinkdark")) {
-                    Acolor = "black";
-                    Bcolor = "pink";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                } else if (themers.getString(1).equals("pinklight")) {
-                    Acolor = "white";
-                    Bcolor = "pink lighten-4";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "red lighten-5";
-                } else if (themers.getString(1).equals("bluelight")) {
-                    Acolor = "white";
-                    Bcolor = "light-blue lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "light-blue lighten-5";
-                } else if (themers.getString(1).equals("bluedark")) {
-                    Acolor = "black";
-                    Bcolor = "blue";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                } else if (themers.getString(1).equals("yellowlight")) {
-                    Acolor = "white";
-                    Bcolor = "yellow lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "yellow lighten-4";
-                } else if (themers.getString(1).equals("yellowdark")) {
-                    Acolor = "black";
-                    Bcolor = "yellow darken-4";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                } else if (themers.getString(1).equals("greenlight")) {
-                    Acolor = "white";
-                    Bcolor = "light-green lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "light-green lighten-4";
-                } else if (themers.getString(1).equals("greendark")) {
-                    Acolor = "black";
-                    Bcolor = "green";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                } else if (themers.getString(1).equals("purplelight")) {
-                    Acolor = "white";
-                    Bcolor = "purple lighten-3";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "purple lighten-5";
-                } else if (themers.getString(1).equals("purpledark")) {
-                    Acolor = "black";
-                    Bcolor = "purple";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                }
+            try {
+                uid = Integer.parseInt(request.getSession().getAttribute("user").toString());
+            } catch (NumberFormatException | NullPointerException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid user session");
+                return;
             }
-            
-                        int privacy = 1;
+
+            String[] themeColors = ThemeHelper.getThemeColors(uid);
+            String Acolor = themeColors[0];
+            String Bcolor = themeColors[1];
+            String Ccolor = themeColors[2];
+            String Dcolor = themeColors[3];
+            String Ecolor = themeColors[4];
+            String Fcolor = themeColors[5];
+
+            int privacy = 1;
             PreparedStatement privacyrsPs = DB.prepare("SELECT `privacy_name` FROM user_privacy WHERE users_idusers=?");
             privacyrsPs.setInt(1, uid);
             ResultSet privacyrs = privacyrsPs.executeQuery();
@@ -124,125 +60,110 @@ public class newpost extends HttpServlet {
                 postIns.setInt(5, privacy);
                 postIns.executeUpdate();
             }
-            PreparedStatement rsPs = DB.prepare("Select * FROM `post` where Post_Privacy='1' and users_idusers = ANY (SELECT `receiver` FROM follow WHERE sender =? and Post_Privacy='1') OR users_idusers = ? and Post_Privacy='1' ORDER BY `post_time` DESC");
+            String feedSql = "SELECT p.*, u.firstname, u.lastname, upp.image, " +
+                    "DATE(p.post_time) as post_date, TIME(p.post_time) as post_time_val " +
+                    "FROM `post` p " +
+                    "JOIN `users` u ON p.users_idusers = u.idusers " +
+                    "JOIN `user_profile_pic` upp ON p.users_idusers = upp.users_idusers " +
+                    "WHERE p.Post_Privacy='1' and p.users_idusers = ANY (SELECT `receiver` FROM follow WHERE sender =? and Post_Privacy='1') OR p.users_idusers = ? and p.Post_Privacy='1' " +
+                    "ORDER BY p.post_time DESC";
+            PreparedStatement rsPs = DB.prepare(feedSql);
             rsPs.setInt(1, uid);
             rsPs.setInt(2, uid);
             ResultSet rs = rsPs.executeQuery();
+            boolean hasPosts = false;
             while (rs.next()) {
-                if (rs.getString(7).equals("1")) {
+                hasPosts = true;
+                String postType = rs.getString(7);
+                String postId = rs.getString(1);
+                String postHeading = esc(ENCDEC.decrypt(rs.getString(2), new KEY().secretKey));
+                String postImageRaw = ENCDEC.decrypt(rs.getString(3), new KEY().secretKey);
+                String postImage = esc(postImageRaw);
+                String postDetail = esc(ENCDEC.decrypt(rs.getString(4), new KEY().secretKey));
+                String authorFirstName = esc(rs.getString("firstname"));
+                String authorLastName = esc(rs.getString("lastname"));
+                String authorImage = esc(rs.getString("image"));
+                String postDate = esc(rs.getString("post_date"));
+                String postTime = esc(rs.getString("post_time_val"));
+
+                if (postType.equals("1")) {
                     out.write("\n");
                     out.write("                            <div class=\"col s12 m12 l6 \">\n");
                     out.write("                                <div class=\" ");
-                    out.print(Acolor);
+                    out.print(esc(Acolor));
                     out.write(' ');
-                    out.print(Dcolor);
+                    out.print(esc(Dcolor));
                     out.write(" card small hoverable\" >\n");
                     out.write("                                    <div class=\"card-image\">\n");
                     out.write("                                        <img class=\"responsive-img\" src=\"");
-                    out.print(ENCDEC.decrypt(rs.getString(3), new KEY().secretKey));
+                    out.print(postImage);
                     out.write("\">\n");
                     out.write("                                    </div>\n");
                     out.write("                                    <div class=\"card-content\" >\n");
                     out.write("                                        <span class=\"card-title ");
-                    out.print(Dcolor);
+                    out.print(esc(Dcolor));
                     out.write("\"><b class=\"truncate");
-                    out.print(Dcolor);
+                    out.print(esc(Dcolor));
                     out.write('"');
                     out.write('>');
-                    out.print(ENCDEC.decrypt(rs.getString(2), new KEY().secretKey));
+                    out.print(postHeading);
                     out.write("</b><i class=\"material-icons right activator waves-effect  ");
-                    out.print(Dcolor);
+                    out.print(esc(Dcolor));
                     out.write("\">more_vert</i></span>    \n");
                     out.write("                                        <p class=\"truncate\">");
-                    out.print(ENCDEC.decrypt(rs.getString(4), new KEY().secretKey));
+                    out.print(postDetail);
                     out.write("</p>\n");
                     out.write("                                    </div>\n");
                     out.write("                                    <div class=\" ");
-                    out.print(Dcolor);
+                    out.print(esc(Dcolor));
                     out.write(' ');
-                    out.print(Acolor);
+                    out.print(esc(Acolor));
                     out.write("  card-reveal\" >\n");
                     out.write("                                        <span class=\"card-title ");
-                    out.print(Dcolor);
+                    out.print(esc(Dcolor));
                     out.write(" text-darken-4 truncate \">");
-                    out.print(ENCDEC.decrypt(rs.getString(2), new KEY().secretKey));
+                    out.print(postHeading);
                     out.write("<i class=\"material-icons right waves-effect\">close</i></span>\n");
                     out.write("                                        <div class=\"card-content \">\n");
                     out.write("                                            <a onclick=\"showprofile('");
-                    out.print(rs.getString(1));
+                    out.print(postId);
                     out.write("', '");
                     out.print(uid);
                     out.write("');$('#peekprofile').modal('open');\">\n");
                     out.write("                                                <div class=\"");
-                    out.print(Bcolor);
+                    out.print(esc(Bcolor));
                     out.write(' ');
                     out.write(' ');
-                    out.print(Dcolor);
+                    out.print(esc(Dcolor));
                     out.write(" chip waves-effect waves-light \">\n");
                     out.write("                                                    ");
-
-                    String imgup = "";
-                    String fnamepost = "";
-                    String lnamepost = "";
-                    String postdate = "";
-                    String posttime = "";
-                    PreparedStatement imgpostuserPs = DB.prepare("Select image From user_profile_pic where users_idusers=?");
-                    imgpostuserPs.setInt(1, rs.getInt(6));
-                    ResultSet imgpostuser = imgpostuserPs.executeQuery();
-                    if (imgpostuser.next()) {
-                        imgup = imgpostuser.getString(1);
-                    }
-                    PreparedStatement firstimguserPs = DB.prepare("Select firstname From users where idusers=?");
-                    firstimguserPs.setInt(1, rs.getInt(6));
-                    ResultSet firstimguser = firstimguserPs.executeQuery();
-                    if (firstimguser.next()) {
-                        fnamepost = firstimguser.getString(1);
-                    }
-                    PreparedStatement lastimguserPs = DB.prepare("Select lastname From users where idusers=?");
-                    lastimguserPs.setInt(1, rs.getInt(6));
-                    ResultSet lastimguser = lastimguserPs.executeQuery();
-                    if (lastimguser.next()) {
-                        lnamepost = lastimguser.getString(1);
-                    }
-                    PreparedStatement imgdatePs = DB.prepare("Select cast(post_time as date) From post where idpost=?");
-                    imgdatePs.setInt(1, rs.getInt(1));
-                    ResultSet imgdate = imgdatePs.executeQuery();
-                    if (imgdate.next()) {
-                        postdate = imgdate.getString(1);
-                    }
-                    PreparedStatement imgtimePs = DB.prepare("Select cast(post_time as time) From post where idpost=?");
-                    imgtimePs.setInt(1, rs.getInt(1));
-                    ResultSet imgtime = imgtimePs.executeQuery();
-                    if (imgtime.next()) {
-                        posttime = imgtime.getString(1);
-                    }
 
                     out.write("\n");
                     out.write("                                                    <img src=\"");
-                    out.print(imgup);
+                    out.print(authorImage);
                     out.write("\">\n");
                     out.write("                                                    ");
-                    out.print(fnamepost + " " + lnamepost);
+                    out.print(authorFirstName + " " + authorLastName);
                     out.write("\n");
                     out.write("                                                </div></a>\n");
                     out.write("                                            <div class=\"");
-                    out.print(Bcolor);
+                    out.print(esc(Bcolor));
                     out.write(' ');
                     out.write(' ');
-                    out.print(Dcolor);
+                    out.print(esc(Dcolor));
                     out.write(" chip waves-effect waves-light \">\n");
                     out.write("                                                Date: ");
-                    out.print(postdate);
+                    out.print(postDate);
                     out.write("\n");
                     out.write("                                            </div>\n");
                     out.write("                                            <div class=\"");
-                    out.print(Bcolor);
+                    out.print(esc(Bcolor));
                     out.write(' ');
                     out.write(' ');
-                    out.print(Dcolor);
+                    out.print(esc(Dcolor));
                     out.write(" chip waves-effect waves-light \">\n");
                     out.write("                                                Time:  ");
-                    out.print(posttime);
+                    out.print(postTime);
                     out.write("\n");
                     out.write("                                            </div>\n");
                     out.write("                                        </div>\n");
@@ -252,14 +173,14 @@ public class newpost extends HttpServlet {
                     try {
                         PreparedStatement likechechPs = DB.prepare("Select likes from post_rank where likedby=? AND `post_rank`.`post_idpost` =?");
                         likechechPs.setInt(1, uid);
-                        likechechPs.setString(2, rs.getString(1));
+                        likechechPs.setString(2, postId);
                         ResultSet likechech = likechechPs.executeQuery();
                         if (!likechech.isBeforeFirst()) {
 
                             out.write("\n");
                             out.write("                                            <label class=\"toggle seedling-flower\" >\n");
                             out.write("                                                <input type=\"checkbox\" class=\"toggle-checkbox\" onchange=\"like('");
-                            out.print(rs.getString(1));
+                            out.print(postId);
                             out.write("', '");
                             out.print(uid);
                             out.write("')\">\n");
@@ -271,7 +192,7 @@ public class newpost extends HttpServlet {
                             out.write("\n");
                             out.write("                                            <label class=\"toggle seedling-flower\" >\n");
                             out.write("                                                <input type=\"checkbox\" checked=\"\" class=\"toggle-checkbox\" onchange=\"like('");
-                            out.print(rs.getString(1));
+                            out.print(postId);
                             out.write("', '");
                             out.print(uid);
                             out.write("')\">\n");
@@ -288,170 +209,134 @@ public class newpost extends HttpServlet {
                     out.write("                                            <i class=\" material-icons right waves-effect waves-circle waves-light\" onclick=\"$('#opncmnts').modal('open'); showpostcmnts('");
                     out.print(uid);
                     out.write("', '");
-                    out.print(rs.getString(1));
+                    out.print(postId);
                     out.write("')\">open_in_new</i>\n");
                     out.write("                                        </div>\n");
                     out.write("                                    </div>\n");
                     out.write("                                </div>\n");
                     out.write("                            </div>\n");
                     out.write("                            ");
-                } else if (rs.getString(7).equals("2")) {
+                } else if (postType.equals("2")) {
                     out.write("\n");
                     out.write("                            <div class=\"col s12 m12 l6 \">\n");
                     out.write("                                <div class=\" ");
-                    out.print(Acolor);
+                    out.print(esc(Acolor));
                     out.write(' ');
-                    out.print(Dcolor);
-                    out.write(" card small hoverable \">\n");
+                    out.print(esc(Dcolor));
+                    out.write(" card small hoverable\">\n");
                     out.write("                                    <div class=\"card-image\">\n");
                     out.write("                                       ");
-                    out.print(ENCDEC.decrypt(rs.getString(3), new KEY().secretKey));
+                    out.print(postImageRaw);
                     out.write("\n");
                     out.write("                                    </div>\n");
                     out.write("                                    <div class=\"card-content\">\n");
                     out.write("                                        <span class=\"card-title ");
-                    out.print(Dcolor);
+                    out.print(esc(Dcolor));
                     out.write("\"><b class=\"truncate ");
-                    out.print(Dcolor);
+                    out.print(esc(Dcolor));
                     out.write('"');
                     out.write('>');
-                    out.print(ENCDEC.decrypt(rs.getString(2), new KEY().secretKey));
+                    out.print(postHeading);
                     out.write("</b><i class=\"material-icons right activator waves-effect ");
-                    out.print(Dcolor);
+                    out.print(esc(Dcolor));
                     out.write("\">more_vert</i></span>    \n");
                     out.write("                                        <p class=\"truncate\">");
-                    out.print(ENCDEC.decrypt(rs.getString(4), new KEY().secretKey));
+                    out.print(postDetail);
                     out.write("</p>\n");
                     out.write("                                    </div>\n");
                     out.write("                                    <div class=\"");
-                    out.print(Acolor);
+                    out.print(esc(Acolor));
                     out.write(' ');
-                    out.print(Dcolor);
+                    out.print(esc(Dcolor));
                     out.write(" card-reveal\">\n");
                     out.write("                                        <i class=\"material-icons right waves-effect card-title ");
-                    out.print(Dcolor);
+                    out.print(esc(Dcolor));
                     out.write("\">close</i>\n");
                     out.write("                                        <span class=\"card-title ");
-                    out.print(Dcolor);
+                    out.print(esc(Dcolor));
                     out.write(" text-darken-4 truncate\">");
-                    out.print(ENCDEC.decrypt(rs.getString(2), new KEY().secretKey));
+                    out.print(postHeading);
                     out.write("</span>\n");
                     out.write("                                        <div class=\"card-content \">\n");
                     out.write("                                            <div class=\"");
-                    out.print(Bcolor);
+                    out.print(esc(Bcolor));
                     out.write(' ');
                     out.write(' ');
-                    out.print(Dcolor);
+                    out.print(esc(Dcolor));
                     out.write(" chip waves-effect waves-light \">\n");
                     out.write("                                                ");
-
-                    String imgup = "";
-                    String fnamepost = "";
-                    String lnamepost = "";
-                    String postdate = "";
-                    String posttime = "";
-                    PreparedStatement imgpostuserPs = DB.prepare("Select image From user_profile_pic where users_idusers=?");
-                    imgpostuserPs.setInt(1, rs.getInt(6));
-                    ResultSet imgpostuser = imgpostuserPs.executeQuery();
-                    if (imgpostuser.next()) {
-                        imgup = imgpostuser.getString(1);
-                    }
-                    PreparedStatement firstimguserPs = DB.prepare("Select firstname From users where idusers=?");
-                    firstimguserPs.setInt(1, rs.getInt(6));
-                    ResultSet firstimguser = firstimguserPs.executeQuery();
-                    if (firstimguser.next()) {
-                        fnamepost = firstimguser.getString(1);
-                    }
-                    PreparedStatement lastimguserPs = DB.prepare("Select lastname From users where idusers=?");
-                    lastimguserPs.setInt(1, rs.getInt(6));
-                    ResultSet lastimguser = lastimguserPs.executeQuery();
-                    if (lastimguser.next()) {
-                        lnamepost = lastimguser.getString(1);
-                    }
-                    PreparedStatement imgdatePs = DB.prepare("Select cast(post_time as date) From post where idpost=?");
-                    imgdatePs.setInt(1, rs.getInt(1));
-                    ResultSet imgdate = imgdatePs.executeQuery();
-                    if (imgdate.next()) {
-                        postdate = imgdate.getString(1);
-                    }
-                    PreparedStatement imgtimePs = DB.prepare("Select cast(post_time as time) From post where idpost=?");
-                    imgtimePs.setInt(1, rs.getInt(1));
-                    ResultSet imgtime = imgtimePs.executeQuery();
-                    if (imgtime.next()) {
-                        posttime = imgtime.getString(1);
-                    }
 
                     out.write("\n");
                     out.write("                                                <img src=\"");
-                    out.print(imgup);
+                    out.print(authorImage);
                     out.write("\">\n");
                     out.write("                                                ");
-                    out.print(fnamepost + " " + lnamepost);
+                    out.print(authorFirstName + " " + authorLastName);
                     out.write("\n");
                     out.write("                                            </div>\n");
                     out.write("                                            <div class=\"");
-                    out.print(Bcolor);
+                    out.print(esc(Bcolor));
                     out.write(' ');
                     out.write(' ');
-                    out.print(Dcolor);
+                    out.print(esc(Dcolor));
                     out.write(" chip waves-effect waves-light \">\n");
                     out.write("                                                Date: ");
-                    out.print(postdate);
+                    out.print(postDate);
                     out.write("\n");
                     out.write("                                            </div>\n");
                     out.write("                                            <div class=\"");
-                    out.print(Bcolor);
+                    out.print(esc(Bcolor));
                     out.write(' ');
                     out.write(' ');
-                    out.print(Dcolor);
-                    out.write(" chip waves-effect waves-light \">\n");
+                    out.print(esc(Dcolor));
+                    out.write(" chip waves-effect waves-light \">");
                     out.write("                                                Time:  ");
-                    out.print(posttime);
+                    out.print(postTime);
                     out.write("\n");
                     out.write("                                            </div>\n");
                     out.write("                                        </div>\n");
                     out.write("                                        <div class=\"card-action\">\n");
                     out.write("                                            ");
 
-                    java.sql.ResultSet likechech = null;
-                    {
+                    try {
                         PreparedStatement likechechPs = DB.prepare("Select likes from post_rank where likedby=? AND `post_rank`.`post_idpost` =?");
                         likechechPs.setInt(1, uid);
-                        likechechPs.setString(2, rs.getString(1));
-                        likechech = likechechPs.executeQuery();
-                    }
-                    if (!likechech.isBeforeFirst()) {
+                        likechechPs.setString(2, postId);
+                        ResultSet likechech = likechechPs.executeQuery();
+                        if (!likechech.isBeforeFirst()) {
 
-                        out.write("\n");
-                        out.write("                                            <label class=\"toggle seedling-flower\" >\n");
-                        out.write("                                                <input type=\"checkbox\" class=\"toggle-checkbox\" onchange=\"like('");
-                        out.print(rs.getString(1));
-                        out.write("', '");
-                        out.print(uid);
-                        out.write("')\">\n");
-                        out.write("                                                <div class=\"toggle-btn\"></div>\n");
-                        out.write("                                            </label>\n");
-                        out.write("                                            ");
+                            out.write("\n");
+                            out.write("                                            <label class=\"toggle seedling-flower\" >\n");
+                            out.write("                                                <input type=\"checkbox\" class=\"toggle-checkbox\" onchange=\"like('");
+                            out.print(postId);
+                            out.write("', '");
+                            out.print(uid);
+                            out.write("')\">\n");
+                            out.write("                                                <div class=\"toggle-btn\"></div>\n");
+                            out.write("                                            </label>\n");
+                            out.write("                                            ");
 
-                    } else if (likechech.next()) {
-                        out.write("\n");
-                        out.write("                                            <label class=\"toggle seedling-flower\" >\n");
-                        out.write("                                                <input type=\"checkbox\" checked=\"\" class=\"toggle-checkbox\" onchange=\"like('");
-                        out.print(rs.getString(1));
-                        out.write("', '");
-                        out.print(uid);
-                        out.write("')\">\n");
-                        out.write("                                                <div class=\"toggle-btn\"></div>\n");
-                        out.write("                                            </label>\n");
-                        out.write("                                            ");
-
+                        } else if (likechech.next()) {
+                            out.write("\n");
+                            out.write("                                            <label class=\"toggle seedling-flower\" >\n");
+                            out.write("                                                <input type=\"checkbox\" checked=\"\" class=\"toggle-checkbox\" onchange=\"like('");
+                            out.print(postId);
+                            out.write("', '");
+                            out.print(uid);
+                            out.write("')\">\n");
+                            out.write("                                                <div class=\"toggle-btn\"></div>\n");
+                            out.write("                                            </label>\n");
+                            out.write("                                            ");
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
 
                     out.write("\n");
                     out.write("                                            <i class=\" material-icons right waves-effect waves-circle waves-light\" onclick=\"$('#opncmnts').modal('open'); showpostcmnts('");
                     out.print(uid);
                     out.write("', '");
-                    out.print(rs.getString(1));
+                    out.print(postId);
                     out.write("')\">open_in_new</i>\n");
                     out.write("                                        </div>\n");
                     out.write("                                    </div>\n");
@@ -463,22 +348,20 @@ public class newpost extends HttpServlet {
 
             out.write("\n");
             out.write("                            ");
-            PreparedStatement noptrsPs = DB.prepare("Select * FROM `post` where Post_Privacy='1' and users_idusers = ANY (SELECT `receiver` FROM follow WHERE sender =? and Post_Privacy='1') OR users_idusers = ? and Post_Privacy='1' ORDER BY `post_time` DESC");
-            noptrsPs.setInt(1, uid);
-            noptrsPs.setInt(2, uid);
-            ResultSet noptrs = noptrsPs.executeQuery();
-            if (!noptrs.isBeforeFirst()) {
-
+            if (!hasPosts) {
                 out.write("\n");
                 out.write("                            <div class='center'><img src='img/no-feeds.png' style='top: 200px; position:  relative;' class='responsiveimg ' ></div>\n");
                 out.write("                                ");
-
             }
 
             out.write("\n");
         } catch (Exception e) {
             e.printStackTrace();
-
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error loading feed");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
