@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.heymeowcat.tailznet;
 
 import java.io.IOException;
@@ -15,99 +10,33 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- *
- * @author heymeowcat
- */
 @WebServlet(name = "newsuggfollow", urlPatterns = {"/newsuggfollow"})
 public class newsuggfollow extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            int loggeduid = Integer.parseInt(request.getParameter("loggedid"));
-            int x = Integer.parseInt(request.getParameter("x"));
-            String Acolor = "";
-            String Bcolor = "";
-            String Ccolor = "";
-            String Dcolor = "";
-            String Ecolor = "";
-            PreparedStatement themersPs = DB.prepare("Select themename from app_theme where users_idusers= ?");
-            themersPs.setInt(1, loggeduid);
-            ResultSet themers = themersPs.executeQuery();
-            if (themers.next()) {
-                if (themers.getString(1).equals("pinkdark")) {
-                    Acolor = "black";
-                    Bcolor = "pink";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                } else if (themers.getString(1).equals("pinklight")) {
-                    Acolor = "white";
-                    Bcolor = "pink lighten-4";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "red lighten-5";
-                } else if (themers.getString(1).equals("bluelight")) {
-                    Acolor = "white";
-                    Bcolor = "light-blue lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "light-blue lighten-5";
-                } else if (themers.getString(1).equals("bluedark")) {
-                    Acolor = "black";
-                    Bcolor = "blue";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                } else if (themers.getString(1).equals("yellowlight")) {
-                    Acolor = "white";
-                    Bcolor = "yellow lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "yellow lighten-4";
-                } else if (themers.getString(1).equals("yellowdark")) {
-                    Acolor = "black";
-                    Bcolor = "yellow darken-4";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                } else if (themers.getString(1).equals("greenlight")) {
-                    Acolor = "white";
-                    Bcolor = "light-green lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "light-green lighten-4";
-                } else if (themers.getString(1).equals("greendark")) {
-                    Acolor = "black";
-                    Bcolor = "green";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                } else if (themers.getString(1).equals("purplelight")) {
-                    Acolor = "white";
-                    Bcolor = "purple lighten-3";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "purple lighten-5";
-                } else if (themers.getString(1).equals("purpledark")) {
-                    Acolor = "black";
-                    Bcolor = "purple";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                }
+            int loggeduid = 0;
+            int x = 0;
+            try {
+                loggeduid = Integer.parseInt(request.getParameter("loggedid"));
+                x = Integer.parseInt(request.getParameter("x"));
+            } catch (NumberFormatException | NullPointerException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
+                return;
             }
+
+            String[] themeColors = ThemeHelper.getThemeColors(loggeduid);
+            String Acolor = themeColors[0];
+            String Bcolor = themeColors[1];
+            String Dcolor = themeColors[3];
+
             PreparedStatement followIns = DB.prepare("INSERT INTO `follow` (`sender`, `receiver`) VALUES (?, ?)");
             followIns.setInt(1, loggeduid);
             followIns.setInt(2, x);
@@ -118,27 +47,36 @@ public class newsuggfollow extends HttpServlet {
             rsPs.setInt(2, loggeduid);
             rsPs.setInt(3, loggeduid);
             ResultSet rs = rsPs.executeQuery();
-              while (rs.next()) {
+            boolean hasSuggestions = false;
+            while (rs.next()) {
+                hasSuggestions = true;
+                String firstname = esc(rs.getString(1));
+                String lastname = esc(rs.getString(2));
+                String image = esc(rs.getString(3));
+                String idusers = esc(rs.getString(4));
+
                 out.write("<div class='col s6 m3 l2 animated fadeIn'>");
-                out.write("<div class='"+Acolor+" card-panel hoverable'>");
-                out.write("<img src=" + rs.getString(3) + " class='circle responsive-img'>");
-                out.write("<div class='card-content center <%=Dcolor%>'>");
-                out.write("<p class='truncate'>" + rs.getString(1) + " " + rs.getString(2) + "</p>");
-                out.write("<a class=' btn "+Bcolor+" "+Dcolor+"  waves-effect' onclick='followthissugg('"+rs.getString(4)+"')'><i class='material-icons'>person_add</i></a>");
+                out.write("<div class='"+esc(Acolor)+" card-panel hoverable'>");
+                out.write("<img src=" + image + " class='circle responsive-img'>");
+                out.write("<div class='card-content center " + esc(Dcolor) + "'>");
+                out.write("<p class='truncate'>" + firstname + " " + lastname + "</p>");
+                out.write("<a class=' btn "+esc(Bcolor)+" "+esc(Dcolor)+"  waves-effect' onclick='followthissugg('"+idusers+"')'><i class='material-icons'>person_add</i></a>");
                 out.write("</div>");
                 out.write("</div>");
                 out.write("</div>");
             }
-            PreparedStatement rsopPs = DB.prepare("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT `receiver`FROM follow WHERE `sender` = ANY(SELECT `receiver` FROM follow WHERE sender =?) ) AND NOT idusers=? AND NOT idusers =ANY(SELECT `receiver` FROM follow WHERE `sender` = ?)");
-            rsopPs.setInt(1, loggeduid);
-            rsopPs.setInt(2, loggeduid);
-            rsopPs.setInt(3, loggeduid);
-            ResultSet rsop = rsopPs.executeQuery();
-            if (!rsop.isBeforeFirst()) {
+
+            if (!hasSuggestions) {
                 out.write("<div class='center'><img src='img/friendship.png' class='responsiveimg' ></div>");
             }
+
         } catch (Exception e) {
             e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error loading suggestions");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
