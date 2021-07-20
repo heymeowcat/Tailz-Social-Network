@@ -39,8 +39,10 @@ public class ThemeHelper {
                     String theme = rs.getString(1);
                     switch (theme) {
                         case "pinkdark":
+                        case "dark":
                             return new String[]{"black", "pink", "#1c1c1c", "white-text", "grey darken-4", "#e91e63"};
                         case "pinklight":
+                        case "light":
                             return new String[]{"white", "pink lighten-4", "#f7f4f4", "black-text", "red lighten-5", "#f8bbd0"};
                         case "bluelight":
                             return new String[]{"white", "light-blue lighten-2", "#f7f4f4", "black-text", "light-blue lighten-5", "#4fc3f7"};
