@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.heymeowcat.tailznet;
 
 import java.io.IOException;
@@ -15,103 +10,38 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- *
- * @author heymeowcat
- */
 @WebServlet(name = "newsuggfollowindex", urlPatterns = {"/newsuggfollowindex"})
 public class newsuggfollowindex extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            int loggeduid = Integer.parseInt(request.getParameter("loggedid"));
-            int x = Integer.parseInt(request.getParameter("x"));
-            String Acolor = "";
-            String Bcolor = "";
-            String Ccolor = "";
-            String Dcolor = "";
-            String Ecolor = "";
-            PreparedStatement themersPs = DB.prepare("Select themename from app_theme where users_idusers= ?");
-            themersPs.setInt(1, loggeduid);
-            ResultSet themers = themersPs.executeQuery();
-            if (themers.next()) {
-                if (themers.getString(1).equals("pinkdark")) {
-                    Acolor = "black";
-                    Bcolor = "pink";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                } else if (themers.getString(1).equals("pinklight")) {
-                    Acolor = "white";
-                    Bcolor = "pink lighten-4";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "red lighten-5";
-                } else if (themers.getString(1).equals("bluelight")) {
-                    Acolor = "white";
-                    Bcolor = "light-blue lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "light-blue lighten-5";
-                } else if (themers.getString(1).equals("bluedark")) {
-                    Acolor = "black";
-                    Bcolor = "blue";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                } else if (themers.getString(1).equals("yellowlight")) {
-                    Acolor = "white";
-                    Bcolor = "yellow lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "yellow lighten-4";
-                } else if (themers.getString(1).equals("yellowdark")) {
-                    Acolor = "black";
-                    Bcolor = "yellow darken-4";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                } else if (themers.getString(1).equals("greenlight")) {
-                    Acolor = "white";
-                    Bcolor = "light-green lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "light-green lighten-4";
-                } else if (themers.getString(1).equals("greendark")) {
-                    Acolor = "black";
-                    Bcolor = "green";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                } else if (themers.getString(1).equals("purplelight")) {
-                    Acolor = "white";
-                    Bcolor = "purple lighten-3";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "purple lighten-5";
-                } else if (themers.getString(1).equals("purpledark")) {
-                    Acolor = "black";
-                    Bcolor = "purple";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                }
+            int loggeduid = 0;
+            int x = 0;
+            try {
+                loggeduid = Integer.parseInt(request.getParameter("loggedid"));
+                x = Integer.parseInt(request.getParameter("x"));
+            } catch (NumberFormatException | NullPointerException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
+                return;
             }
+
+            String[] themeColors = ThemeHelper.getThemeColors(loggeduid);
+            String Acolor = themeColors[0];
+            String Bcolor = themeColors[1];
+            String Dcolor = themeColors[3];
+
             PreparedStatement followIns = DB.prepare("INSERT INTO `follow` (`sender`, `receiver`) VALUES (?, ?)");
             followIns.setInt(1, loggeduid);
             followIns.setInt(2, x);
             followIns.executeUpdate();
+
             boolean m = false;
             PreparedStatement rsPs = DB.prepare("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT `receiver`FROM follow WHERE `sender` = ANY(SELECT `receiver` FROM follow WHERE sender =?) ) AND NOT idusers=? AND NOT idusers =ANY(SELECT `receiver` FROM follow WHERE `sender` = ?) limit 5");
             rsPs.setInt(1, loggeduid);
@@ -120,22 +50,27 @@ public class newsuggfollowindex extends HttpServlet {
             ResultSet rs = rsPs.executeQuery();
             while (rs.next()) {
                 m = true;
+                String image = esc(rs.getString(3));
+                String firstname = esc(rs.getString(1));
+                String lastname = esc(rs.getString(2));
+                String idusers = esc(rs.getString(4));
+
                 out.write("\n");
                 out.write("                                    <tr><td  valign=\"middle\" class=\"left\"><img src=\"");
-                out.print(rs.getString(3));
+                out.print(image);
                 out.write("\" width=\"40px\" height=\"40px\" style=\"padding: 0; margin: 0\" class=\"circle responsive-img  animated fadeIn\"></td><td valign=\"middle \" ><div class=\"");
-                out.print(Dcolor);
+                out.print(esc(Dcolor));
                 out.write('"');
                 out.write('>');
-                out.print(rs.getString(1));
+                out.print(firstname);
                 out.write(' ');
-                out.print(rs.getString(2));
+                out.print(lastname);
                 out.write("</div></td><td valign=\"middle\" class=\"right valign-wrapper\"><h6><a class=\" btn ");
-                out.print(Bcolor);
+                out.print(esc(Bcolor));
                 out.write(' ');
-                out.print(Dcolor);
+                out.print(esc(Dcolor));
                 out.write(" waves-effect\" onclick=\"followthissugg('");
-                out.print(rs.getString(4));
+                out.print(idusers);
                 out.write("')\"><i class=\"material-icons\">person_add</i></a></h6></td></tr>\n");
                 out.write("                                            ");
 
@@ -145,9 +80,9 @@ public class newsuggfollowindex extends HttpServlet {
             if (m) {
                 out.write("\n");
                 out.write("                                           <tr style='border-color: transparent'><td class=\"");
-                out.print(Dcolor);
+                out.print(esc(Dcolor));
                 out.write("\"><a class=\"");
-                out.print(Dcolor);
+                out.print(esc(Dcolor));
                 out.write("\" href=\"search-trending.jsp\">More...</a></td></tr>\n");
                 out.write("                                    ");
             }
@@ -155,12 +90,7 @@ public class newsuggfollowindex extends HttpServlet {
             out.write("                                 \n");
             out.write("                                </table>\n");
             out.write("                                ");
-            PreparedStatement rsopPs = DB.prepare("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT `receiver`FROM follow WHERE `sender` = ANY(SELECT `receiver` FROM follow WHERE sender =?) ) AND NOT idusers=? AND NOT idusers =ANY(SELECT `receiver` FROM follow WHERE `sender` = ?)");
-            rsopPs.setInt(1, loggeduid);
-            rsopPs.setInt(2, loggeduid);
-            rsopPs.setInt(3, loggeduid);
-            ResultSet rsop = rsopPs.executeQuery();
-            if (!rsop.isBeforeFirst()) {
+            if (!m) {
                 out.write("\n");
                 out.write("                                <div class='center'><img src='img/friendship.png' class='responsiveimg' ></div>\n");
                 out.write("                            </div>\n");
@@ -168,8 +98,17 @@ public class newsuggfollowindex extends HttpServlet {
                 out.write("");
 
             }
+            out.write("\n");
+            out.write("                            </div>\n");
+            out.write("                        </div>\n");
+            out.write("                    </li>\n");
         } catch (Exception e) {
             e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error loading suggestions");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
