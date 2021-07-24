@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.heymeowcat.tailznet;
 
 import java.io.IOException;
@@ -15,180 +10,116 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- *
- * @author heymeowcat
- */
 @WebServlet(name = "expiredadsrefresh", urlPatterns = {"/expiredadsrefresh"})
 public class expiredadsrefresh extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            int uid = Integer.parseInt(request.getSession().getAttribute("user").toString());
-            String Acolor = "";
-            String Bcolor = "";
-            String Ccolor = "";
-            String Dcolor = "";
-            String Ecolor = "";
-            PreparedStatement themersPs = DB.prepare("Select themename from app_theme where users_idusers= ?");
-            themersPs.setInt(1, uid);
-            ResultSet themers = themersPs.executeQuery();
-            if (themers.next()) {
-                if (themers.getString(1).equals("pinkdark")) {
-                    Acolor = "black";
-                    Bcolor = "pink";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                } else if (themers.getString(1).equals("pinklight")) {
-                    Acolor = "white";
-                    Bcolor = "pink lighten-4";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "red lighten-5";
-                } else if (themers.getString(1).equals("bluelight")) {
-                    Acolor = "white";
-                    Bcolor = "light-blue lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "light-blue lighten-5";
-                } else if (themers.getString(1).equals("bluedark")) {
-                    Acolor = "black";
-                    Bcolor = "blue";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                } else if (themers.getString(1).equals("yellowlight")) {
-                    Acolor = "white";
-                    Bcolor = "yellow lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "yellow lighten-4";
-                } else if (themers.getString(1).equals("yellowdark")) {
-                    Acolor = "black";
-                    Bcolor = "yellow darken-4";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                } else if (themers.getString(1).equals("greenlight")) {
-                    Acolor = "white";
-                    Bcolor = "light-green lighten-2";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "light-green lighten-4";
-                } else if (themers.getString(1).equals("greendark")) {
-                    Acolor = "black";
-                    Bcolor = "green";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                } else if (themers.getString(1).equals("purplelight")) {
-                    Acolor = "white";
-                    Bcolor = "purple lighten-3";
-                    Ccolor = "#f7f4f4";
-                    Dcolor = "black-text";
-                    Ecolor = "purple lighten-5";
-                } else if (themers.getString(1).equals("purpledark")) {
-                    Acolor = "black";
-                    Bcolor = "purple";
-                    Ccolor = "#1c1c1c";
-                    Dcolor = "white-text";
-                    Ecolor = "grey darken-4";
-                }
+            int uid = 0;
+            try {
+                uid = Integer.parseInt(request.getSession().getAttribute("user").toString());
+            } catch (NumberFormatException | NullPointerException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid user session");
+                return;
             }
 
-            PreparedStatement ssexpPs = DB.prepare("Select Adid from ads where status='6' and users_idusers=? order by (SELECT `adendtime` FROM adtiming WHERE Ads_Adid = ads.Adid) DESC");
+            String[] themeColors = ThemeHelper.getThemeColors(uid);
+            String Acolor = themeColors[0];
+            String Bcolor = themeColors[1];
+            String Dcolor = themeColors[3];
+
+            PreparedStatement ssexpPs = DB.prepare("SELECT a.Adid, a.src, a.link, a.users_idusers, a.forhowmanyusers, a.forhowmanyhours, " +
+                                                   "TIMEDIFF(at.adendtime, CURRENT_TIMESTAMP) AS time_diff " +
+                                                   "FROM ads a LEFT JOIN adtiming at ON a.Adid = at.Ads_Adid " +
+                                                   "WHERE a.status='6' AND a.users_idusers=? " +
+                                                   "ORDER BY at.adendtime DESC");
             ssexpPs.setInt(1, uid);
             ResultSet ssexp = ssexpPs.executeQuery();
+            boolean hasAds = false;
             while (ssexp.next()) {
-                PreparedStatement adstoliversPs = DB.prepare("Select Adid,src,link,users_idusers,forhowmanyusers,forhowmanyhours from ads where Adid=? and status='6'");
-                adstoliversPs.setString(1, ssexp.getString(1));
-                ResultSet adstolivers = adstoliversPs.executeQuery();
-                while (adstolivers.next()) {
+                hasAds = true;
+                String adId = ssexp.getString("Adid");
+                String adSrc = esc(ssexp.getString("src"));
+                String adLink = esc(ssexp.getString("link"));
+                String timeDiff = ssexp.getString("time_diff");
 
-                    out.write("\n");
-                    out.write("                                <div class=\"col s12 m12 l4 \">\n");
-                    out.write("                                    <b class=\"letter-spacing: ; grey-text\">Ad Id:#");
-                    out.print(ssexp.getString(1));
-                    out.write("</b>\n");
-                    out.write("                                    <div class=\"card ");
-                    out.print(Acolor);
-                    out.write(" \">\n");
-                    out.write("                                        <div class=\"card-content ");
-                    out.print(Dcolor);
-                    out.write("\">\n");
-                    out.write("                                            <div class=\"card-image resizeimg\" style=\"overflow: hidden\">\n");
-                    out.write("                                            <a href=\"");
-                    out.print(adstolivers.getString(3));
-                    out.write("\">\n");
-                    out.write("                                                <img src=\"");
-                    out.print(adstolivers.getString(2));
-                    out.write("\" >\n");
-                    out.write("                                            </a>\n");
-                    out.write("                                            </div>\n");
-                    out.write("                                        </div>\n");
-                    out.write("                                        <div class=\"card-action\">\n");
-                    out.write("                                            <div class=\"");
-                    out.print(Bcolor);
-                    out.write(' ');
-                    out.print(Dcolor);
-                    out.write(" btn-floating center\">\n");
-                    out.write("                                                <span><i class=\"material-icons ");
-                    out.print(Dcolor);
-                    out.write("\">do_not_disturb_on</i></span>\n");
-                    out.write("                                            </div>\n");
-                    out.write("                                            ");
+                out.write("\n");
+                out.write("                                <div class=\"col s12 m12 l4 \">\n");
+                out.write("                                    <b class=\"letter-spacing: ; grey-text\">Ad Id:#");
+                out.print(esc(adId));
+                out.write("</b>\n");
+                out.write("                                    <div class=\"card ");
+                out.print(esc(Acolor));
+                out.write(" \">\n");
+                out.write("                                        <div class=\"card-content ");
+                out.print(esc(Dcolor));
+                out.write("\">\n");
+                out.write("                                            <div class=\"card-image resizeimg\" style=\"overflow: hidden\">\n");
+                out.write("                                            <a href=\"");
+                out.print(adLink);
+                out.write("\">\n");
+                out.write("                                                <img src=\"");
+                out.print(adSrc);
+                out.write("\" >\n");
+                out.write("                                            </a>\n");
+                out.write("                                            </div>\n");
+                out.write("                                        </div>\n");
+                out.write("                                        <div class=\"card-action\">\n");
+                out.write("                                            <div class=\"");
+                out.print(esc(Bcolor));
+                out.write(' ');
+                out.print(esc(Dcolor));
+                out.write(" btn-floating center\">\n");
+                out.write("                                                <span><i class=\"material-icons ");
+                out.print(esc(Dcolor));
+                out.write("\">do_not_disturb_on</i></span>\n");
+                out.write("                                            </div>\n");
+                out.write("                                            ");
 
-                    String timeremainingfrad = "";
-                    PreparedStatement timedifrsPs = DB.prepare("SELECT TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP),(SELECT CAST(TIMEDIFF(`adendtime`,CURRENT_TIMESTAMP) AS CHAR) FROM sEXUaFqh92.adtiming WHERE Ads_Adid =?) FROM adtiming WHERE Ads_Adid =?");
-                    timedifrsPs.setInt(1, ssexp.getInt(1));
-                    timedifrsPs.setInt(2, ssexp.getInt(1));
-                    ResultSet timedifrs = timedifrsPs.executeQuery();
-                    if (timedifrs.next()) {
-                        if (timedifrs.getString(2).startsWith("-")) {
-                            timeremainingfrad = "Expired";
-                        } else {
-                            timeremainingfrad = timedifrs.getString(1);
-                            PreparedStatement adsUpd = DB.prepare("UPDATE `ads` SET `status` = '4'  WHERE `ads`.`Adid` = ?");
-                            adsUpd.setInt(1, ssexp.getInt(1));
-                            adsUpd.executeUpdate();
-                        }
+                String timeremainingfrad = "";
+                if (timeDiff != null) {
+                    if (timeDiff.startsWith("-")) {
+                        timeremainingfrad = "Expired";
+                    } else {
+                        timeremainingfrad = timeDiff;
+                        PreparedStatement adsUpd = DB.prepare("UPDATE `ads` SET `status` = '4'  WHERE `ads`.`Adid` = ?");
+                        adsUpd.setString(1, adId);
+                        adsUpd.executeUpdate();
                     }
-
-                    out.write("\n");
-                    out.write("                                            <button class=\" ");
-                    out.print(Acolor);
-                    out.write(' ');
-                    out.print(Dcolor);
-                    out.write(" right btn-flat  \">");
-                    out.print(timeremainingfrad);
-                    out.write("</button>\n");
-                    out.write("                                        </div>  \n");
-                    out.write("                                    </div>  \n");
-                    out.write("                                </div>\n");
-                    out.write("                                ");
-
                 }
+
+                out.write("\n");
+                out.write("                                            <button class=\" ");
+                out.print(esc(Acolor));
+                out.write(' ');
+                out.print(esc(Dcolor));
+                out.write(" right btn-flat  \">");
+                out.print(esc(timeremainingfrad));
+                out.write("</button>\n");
+                out.write("                                        </div>  \n");
+                out.write("                                    </div>  \n");
+                out.write("                                </div>\n");
+                out.write("                                ");
+
             }
-            PreparedStatement rsPs = DB.prepare("Select * from ads where status='6' and users_idusers=?");
-            rsPs.setInt(1, uid);
-            ResultSet rs = rsPs.executeQuery();
-            if (!rs.isBeforeFirst()) {
+
+            if (!hasAds) {
                 out.write("<div class='center'><img src ='img/email.png' height='130px' class='animated pulse responsiveimg '></div>");
             }
         } catch (Exception e) {
             e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error loading expired ads");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
