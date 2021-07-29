@@ -1,10 +1,5 @@
 package com.heymeowcat.tailznet;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,6 +23,10 @@ public class register extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try {
             String newemail = request.getParameter("newmail");
+            if (newemail == null || newemail.isEmpty()) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Email parameter is required");
+                return;
+            }
             Random random = new Random();
             int randomNum = random.nextInt(999999);
             String myhash = DigestUtils.md5Hex("" + randomNum);
@@ -42,10 +41,10 @@ public class register extends HttpServlet {
             checkAny.setString(1, newemail);
             ResultSet regrss = checkAny.executeQuery();
 
-            if (!regrs.isBeforeFirst()) {
+            if (!regrs.next()) {
                 SendingEmail se = new SendingEmail();
                 se.sendMail(newemail, myhash);
-                if (!regrss.isBeforeFirst()) {
+                if (!regrss.next()) {
                     PreparedStatement ins = DB.prepare(
                             "INSERT INTO users (email, status, hash, user_type_iduser_type) VALUES (?, '0', ?, '2')");
                     ins.setString(1, newemail);
@@ -58,6 +57,11 @@ public class register extends HttpServlet {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error during registration");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
