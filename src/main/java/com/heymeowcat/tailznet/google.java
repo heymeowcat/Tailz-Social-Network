@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.heymeowcat.tailznet;
 
 import java.io.IOException;
@@ -24,32 +19,33 @@ import org.apache.commons.codec.digest.DigestUtils;
 @WebServlet(name = "google", urlPatterns = {"/google"})
 public class google extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            String id = DigestUtils.md5Hex(request.getParameter("id"));
+            String idParam = request.getParameter("id");
             String fullname = request.getParameter("name");
-            String[] nameparts = fullname.split("\\s+");
             String profilepic = request.getParameter("profilepic");
             String newemail = request.getParameter("email");
+            if (idParam == null || fullname == null || profilepic == null || newemail == null) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing parameters");
+                return;
+            }
+
+            String id = DigestUtils.md5Hex(idParam);
+            String[] nameparts = fullname.split("\\s+");
 
             PreparedStatement checkEmail = DB.prepare(
                     "SELECT email FROM users WHERE email=? AND status='1'");
             checkEmail.setString(1, newemail);
             ResultSet regrs = checkEmail.executeQuery();
 
-            if (!regrs.isBeforeFirst()) {
-                // New Google user - register them
+            if (!regrs.next()) {
                 PreparedStatement insUser = DB.prepare(
                         "INSERT INTO users (email, status, hash, user_type_iduser_type) VALUES (?, '1', ?, '2')");
                 insUser.setString(1, newemail);
@@ -105,7 +101,6 @@ public class google extends HttpServlet {
                     out.write("</div>");
                 }
             } else {
-                // Existing Google user - update their info and log in
                 PreparedStatement findId = DB.prepare(
                         "SELECT idusers FROM users WHERE email=? AND status='1'");
                 findId.setString(1, newemail);
@@ -137,6 +132,11 @@ public class google extends HttpServlet {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error processing Google login");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
