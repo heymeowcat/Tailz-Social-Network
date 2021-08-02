@@ -1,10 +1,5 @@
 package com.heymeowcat.tailznet;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.PreparedStatement;
@@ -25,13 +20,23 @@ import org.apache.commons.codec.digest.DigestUtils;
 @WebServlet(name = "loginprocess", urlPatterns = {"/loginprocess"})
 public class loginprocess extends HttpServlet {
 
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             String usn = request.getParameter("usn");
-            String psn = DigestUtils.md5Hex(request.getParameter("psn"));
+            String psn = request.getParameter("psn");
             String check = request.getParameter("check");
+            if (usn == null || psn == null) {
+                response.sendRedirect("login-register.jsp");
+                return;
+            }
+            String encryptedPsn = DigestUtils.md5Hex(psn);
 
             PreparedStatement ps = DB.prepare(
                     "SELECT password, users_idusers, iduser_login FROM user_login WHERE username=?");
@@ -39,7 +44,7 @@ public class loginprocess extends HttpServlet {
             ResultSet loginrs = ps.executeQuery();
 
             if (loginrs.next()) {
-                if (loginrs.getString(1).equals(psn)) {
+                if (loginrs.getString(1).equals(encryptedPsn)) {
                     HttpSession ses = request.getSession();
                     ses.setAttribute("user", loginrs.getInt(2));
                     if (check != null) {
@@ -62,6 +67,11 @@ public class loginprocess extends HttpServlet {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error during login");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
