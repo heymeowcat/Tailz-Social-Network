@@ -23,6 +23,11 @@ import org.apache.commons.codec.digest.DigestUtils;
 @WebServlet(name = "laststep", urlPatterns = {"/laststep"})
 public class laststep extends HttpServlet {
 
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -51,7 +56,7 @@ public class laststep extends HttpServlet {
 
             if (rs2.next()) {
                 exist = false;
-            } else if (!rs2.isBeforeFirst()) {
+            } else {
                 exist = true;
             }
 
