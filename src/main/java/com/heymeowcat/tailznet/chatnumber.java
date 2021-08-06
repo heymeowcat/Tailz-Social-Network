@@ -5,8 +5,6 @@
  */
 package com.heymeowcat.tailznet;
 
-package com.heymeowcat.tailznet;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.PreparedStatement;
@@ -19,6 +17,11 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet(name = "chatnumber", urlPatterns = {"/chatnumber"})
 public class chatnumber extends HttpServlet {
+
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -55,7 +58,7 @@ public class chatnumber extends HttpServlet {
         }
     }
 
-    // <editor-fold defaultstate="desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
      *
@@ -93,4 +96,5 @@ public class chatnumber extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
+
 }
