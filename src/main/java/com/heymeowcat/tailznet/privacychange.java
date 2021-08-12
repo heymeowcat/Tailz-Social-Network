@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.heymeowcat.tailznet;
 
 import java.io.IOException;
@@ -14,28 +9,30 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- *
- * @author heymeowcat
- */
 @WebServlet(name = "privacychange", urlPatterns = {"/privacychange"})
 public class privacychange extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            int uid = Integer.parseInt(request.getParameter("uid"));
+            int uid = 0;
+            try {
+                uid = Integer.parseInt(request.getParameter("uid"));
+            } catch (NumberFormatException | NullPointerException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid user ID");
+                return;
+            }
             String x = request.getParameter("x");
+            if (x == null) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing privacy parameter");
+                return;
+            }
 
             PreparedStatement psPrivacy = DB.prepare(
                     "UPDATE user_privacy SET privacy_name=? WHERE users_idusers=?");
@@ -43,7 +40,7 @@ public class privacychange extends HttpServlet {
             psPrivacy.setInt(2, uid);
             psPrivacy.executeUpdate();
 
-            int privacyCode = x.equals("public") ? 1 : 2;
+            int privacyCode = "public".equals(x) ? 1 : 2;
             PreparedStatement psPosts = DB.prepare(
                     "UPDATE post SET Post_Privacy=? WHERE users_idusers=?");
             psPosts.setInt(1, privacyCode);
@@ -51,6 +48,11 @@ public class privacychange extends HttpServlet {
             psPosts.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error changing privacy settings");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
