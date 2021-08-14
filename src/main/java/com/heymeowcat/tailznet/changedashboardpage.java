@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.heymeowcat.tailznet;
 
 import java.io.IOException;
@@ -14,28 +9,27 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- *
- * @author heymeowcat
- */
 @WebServlet(name = "changedashboardpage", urlPatterns = {"/changedashboardpage"})
 public class changedashboardpage extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            int uid = Integer.parseInt(request.getParameter("uid"));
-            int x = Integer.parseInt(request.getParameter("x"));
+            int uid = 0;
+            int x = 0;
+            try {
+                uid = Integer.parseInt(request.getParameter("uid"));
+                x = Integer.parseInt(request.getParameter("x"));
+            } catch (NumberFormatException | NullPointerException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
+                return;
+            }
             PreparedStatement ps = DB.prepare(
                     "UPDATE users SET user_type_iduser_type=? WHERE idusers=?");
             ps.setInt(1, x);
@@ -43,6 +37,11 @@ public class changedashboardpage extends HttpServlet {
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error changing dashboard page");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
