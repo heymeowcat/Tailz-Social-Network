@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.heymeowcat.tailznet;
 
 import java.io.IOException;
@@ -14,30 +9,32 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- *
- * @author heymeowcat
- */
 @WebServlet(name = "fbupdate", urlPatterns = {"/fbupdate"})
 public class fbupdate extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            int uid = Integer.parseInt(request.getParameter("uid"));
+            int uid = 0;
+            try {
+                uid = Integer.parseInt(request.getParameter("uid"));
+            } catch (NumberFormatException | NullPointerException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid user ID");
+                return;
+            }
             String fp = request.getParameter("x");
             String fin = request.getParameter("y");
             String ln = request.getParameter("z");
+            if (fin == null || ln == null) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing name parameters");
+                return;
+            }
 
             PreparedStatement psName = DB.prepare(
                     "UPDATE users SET firstname=?, lastname=? WHERE idusers=?");
@@ -48,13 +45,18 @@ public class fbupdate extends HttpServlet {
 
             PreparedStatement psPic = DB.prepare(
                     "UPDATE user_profile_pic SET image=? WHERE users_idusers=?");
-            psPic.setString(1, fp + "&height=250&width=250&ext=1553340328&hash=AeRR9S1XJWl9XeMx");
+            psPic.setString(1, esc(fp) + "&height=250&width=250&ext=1553340328&hash=AeRR9S1XJWl9XeMx");
             psPic.setInt(2, uid);
             psPic.executeUpdate();
 
             response.sendRedirect("profile.jsp");
         } catch (Exception e) {
             e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error updating Facebook profile");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
