@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.heymeowcat.tailznet;
 
 import java.io.IOException;
@@ -14,35 +9,42 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- *
- * @author heymeowcat
- */
 @WebServlet(name = "updateprofilepic", urlPatterns = {"/updateprofilepic"})
 public class updateprofilepic extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            int uid = Integer.parseInt(request.getSession().getAttribute("user").toString());
+            int uid = 0;
+            try {
+                uid = Integer.parseInt(request.getSession().getAttribute("user").toString());
+            } catch (NumberFormatException | NullPointerException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid user session");
+                return;
+            }
             String fp = request.getParameter("fp");
+            if (fp == null) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing profile picture parameter");
+                return;
+            }
             PreparedStatement ps = DB.prepare(
                     "UPDATE user_profile_pic SET image=? WHERE users_idusers=?");
-            ps.setString(1, fp);
+            ps.setString(1, esc(fp));
             ps.setInt(2, uid);
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error updating profile picture");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
