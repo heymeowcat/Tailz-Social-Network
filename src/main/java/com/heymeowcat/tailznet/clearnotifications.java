@@ -1,12 +1,5 @@
 package com.heymeowcat.tailznet;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.PreparedStatement;
@@ -16,33 +9,36 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- *
- * @author heymeowcat
- */
 @WebServlet(name = "clearnotifications", urlPatterns = {"/clearnotifications"})
 public class clearnotifications extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-           int nid = Integer.parseInt(request.getParameter("nid"));
-           PreparedStatement ps = DB.prepare(
-                   "UPDATE notification SET status='1' WHERE idnotification=?");
-           ps.setInt(1, nid);
-           ps.executeUpdate();
-        }catch(Exception e){
+            int nid = 0;
+            try {
+                nid = Integer.parseInt(request.getParameter("nid"));
+            } catch (NumberFormatException | NullPointerException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid notification ID");
+                return;
+            }
+            PreparedStatement ps = DB.prepare(
+                    "UPDATE notification SET status='1' WHERE idnotification=?");
+            ps.setInt(1, nid);
+            ps.executeUpdate();
+        } catch (Exception e) {
             e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error clearing notifications");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
