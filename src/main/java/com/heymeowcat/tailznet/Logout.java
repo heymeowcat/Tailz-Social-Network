@@ -24,21 +24,23 @@ import javax.servlet.http.HttpSession;
 @WebServlet(name = "Logout", urlPatterns = {"/Logout"})
 public class Logout extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
+            Integer uid = null;
             if (request.getSession().getAttribute("user") != null) {
-                int uid = Integer.parseInt(request.getSession().getAttribute("user").toString());
+                try {
+                    uid = Integer.parseInt(request.getSession().getAttribute("user").toString());
+                } catch (NumberFormatException e) {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid user session");
+                    return;
+                }
 
                 PreparedStatement ps = DB.prepare(
                         "SELECT idlogin_sessions FROM login_sessions "
@@ -71,6 +73,11 @@ public class Logout extends HttpServlet {
             response.sendRedirect("login-register.jsp");
         } catch (Exception ex) {
             ex.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error during logout");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
