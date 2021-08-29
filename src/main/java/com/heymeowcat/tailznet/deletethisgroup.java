@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.heymeowcat.tailznet;
 
 import java.io.IOException;
@@ -14,43 +9,44 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- *
- * @author heymeowcat
- */
 @WebServlet(name = "deletethisgroup", urlPatterns = {"/deletethisgroup"})
 public class deletethisgroup extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-           String groupid = request.getParameter("x");
-           PreparedStatement delChat = DB.prepare(
-                   "DELETE FROM group_chat WHERE Groups_group_id=?");
-           delChat.setString(1, groupid);
-           delChat.executeUpdate();
+            String groupid = request.getParameter("x");
+            if (groupid == null) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing group ID");
+                return;
+            }
+            PreparedStatement delChat = DB.prepare(
+                    "DELETE FROM group_chat WHERE Groups_group_id=?");
+            delChat.setString(1, groupid);
+            delChat.executeUpdate();
 
-           PreparedStatement delMembers = DB.prepare(
-                   "DELETE FROM group_members WHERE Groups_group_id=?");
-           delMembers.setString(1, groupid);
-           delMembers.executeUpdate();
+            PreparedStatement delMembers = DB.prepare(
+                    "DELETE FROM group_members WHERE Groups_group_id=?");
+            delMembers.setString(1, groupid);
+            delMembers.executeUpdate();
 
-           PreparedStatement delGroup = DB.prepare(
-                   "DELETE FROM groups WHERE group_id=?");
-           delGroup.setString(1, groupid);
-           delGroup.executeUpdate();
-        }catch(Exception  e){
+            PreparedStatement delGroup = DB.prepare(
+                    "DELETE FROM groups WHERE group_id=?");
+            delGroup.setString(1, groupid);
+            delGroup.executeUpdate();
+        } catch (Exception e) {
             e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error deleting group");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
