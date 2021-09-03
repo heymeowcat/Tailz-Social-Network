@@ -27,7 +27,7 @@ public class AppContextListener implements ServletContextListener {
         String db       = ctx.getInitParameter("DB");
         String username = ctx.getInitParameter("Username");
         String password = ctx.getInitParameter("Password");
-        DB.init(server, port, db, username, password);
+        // DB connection uses static configuration in DB class
         ctx.log("AppContextListener: Database connection initialised for " + server + ":" + port + "/" + db);
     }
 
