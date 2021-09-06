@@ -13,6 +13,11 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet(name = "notificationnumber", urlPatterns = {"/notificationnumber"})
 public class notificationnumber extends HttpServlet {
 
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
