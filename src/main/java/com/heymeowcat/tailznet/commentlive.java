@@ -99,7 +99,7 @@ public class commentlive extends HttpServlet {
 
     private String esc(String s) {
         if (s == null) return "";
-        return s.replace("&", "&").replace("<", "<").replace(">", ">").replace("\"", """);
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
     }
 
     // <editor-fold defaultstate="desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
