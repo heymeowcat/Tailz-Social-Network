@@ -37,6 +37,11 @@ public class commentsload extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
@@ -66,12 +71,6 @@ public class commentsload extends HttpServlet {
             if (piduidrs.next()) {
                 piduid = piduidrs.getInt(1);
             }
-
-            String esc(String s) {
-                if (s == null) return "";
-                return s.replace("&", "&").replace("<", "<").replace(">", ">").replace("\"", """);
-            }
-
             if (z != null && !z.isEmpty()) {
                 PreparedStatement cmntIns = DB.prepare("INSERT INTO `post_comment` ( `comment`, `users_idusers`, `post_idpost`) VALUES (?, ?, ?)");
                 cmntIns.setString(1, z);
@@ -87,7 +86,7 @@ public class commentsload extends HttpServlet {
                 notifIns.executeUpdate();
             }
             PreparedStatement cmntsrsPs = DB.prepare("Select pc.idpost_comment, pc.post_idpost, pc.users_idusers, u.firstname, u.lastname, u.image, pc.datetime, pc.likes FROM post_comment pc JOIN users u ON pc.users_idusers = u.idusers WHERE pc.post_idpost=? ORDER BY pc.datetime DESC");
-            cmntsRsPs.setInt(1, x);
+            cmntsrsPs.setInt(1, x);
             ResultSet cmntsrs = cmntsrsPs.executeQuery();
             if (!cmntsrs.isBeforeFirst()) {
                 out.write("<div class='center' style='top:40%; position:relative'><img src ='img/commentlive.png' class='animated pulse responsiveimg '></div>");
