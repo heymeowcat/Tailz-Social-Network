@@ -127,9 +127,10 @@ public class peekcomments extends HttpServlet {
             }
 
             PreparedStatement cmntsrsPs = DB.prepare("Select pc.idpost_comment, pc.post_idpost, pc.users_idusers, u.firstname, u.lastname, u.image, pc.datetime, pc.likes FROM post_comment pc JOIN users u ON pc.users_idusers = u.idusers WHERE pc.post_idpost=? ORDER BY pc.datetime DESC");
-            cmntsRsPs.setInt(1, pid);
-            ResultSet cmntsrs = cmntsRsPs.executeQuery();
-            if (!cmntsrs.isBeforeFirst()) {
+            cmntsrsPs.setInt(1, pid);
+            ResultSet cmntsrs = cmntsrsPs.executeQuery();
+            boolean hasComments = cmntsrs.next();
+            if (!hasComments) {
                 out.write("<div class='center' style='top:40%; position:relative'><img src ='img/commentlive.png' class='animated pulse responsiveimg '></div>");
             } else {
                 while (cmntsrs.next()) {
@@ -173,7 +174,7 @@ public class peekcomments extends HttpServlet {
 
     private String commentEscape(String s) {
         if (s == null) return "";
-        return s.replace("&", "&").replace("<", "<").replace(">", ">").replace("\"", """);
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
     }
 
     // <editor-fold defaultstate="desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
