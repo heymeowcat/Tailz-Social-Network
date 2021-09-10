@@ -5,18 +5,12 @@
  */
 package com.heymeowcat.tailznet;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.Servlet;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,7 +19,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author heymeowcat
  */
-@Servlet(urlPatterns = {"/groupmessages"})
+@WebServlet(name = "groupmessages", urlPatterns = {"/groupmessages"})
 public class groupmessages extends HttpServlet {
 
     /**
@@ -37,6 +31,11 @@ public class groupmessages extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
@@ -56,12 +55,6 @@ public class groupmessages extends HttpServlet {
             String Dcolor = themeColors[3];
             String Ecolor = themeColors[4];
             String Fcolor = themeColors[5];
-
-            String esc(String s) {
-                if (s == null) return "";
-                return s.replace("&", "&").replace("<", "<").replace(">", ">").replace("\"", """);
-            }
-
             PreparedStatement rsPs = DB.prepare("SELECT gc.idgroup_chat, gc.Groups_group_id, gc.users_idusers, u.firstname, u.lastname, u.image, gc.chat_text, gc.src, gc.chat_datetime FROM group_chat gc JOIN users u ON gc.users_idusers = u.idusers WHERE gc.Groups_group_id=? ORDER BY gc.chat_datetime ASC");
             rsPs.setString(1, muid);
             ResultSet rs = rsPs.executeQuery();
