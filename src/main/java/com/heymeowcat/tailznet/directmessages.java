@@ -12,6 +12,11 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet(name = "directmessages", urlPatterns = {"/directmessages"})
 public class directmessages extends HttpServlet {
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -34,12 +39,6 @@ public class directmessages extends HttpServlet {
             String Dcolor = themeColors[3];
             String Ecolor = themeColors[4];
             String Fcolor = themeColors[5];
-
-            String esc(String s) {
-                if (s == null) return "";
-                return s.replace("&", "&").replace("<", "<").replace(">", ">").replace("\"", """);
-            }
-
             String muidFirstName = "";
             String uidFirstName = "";
             String uidLastName = "";
