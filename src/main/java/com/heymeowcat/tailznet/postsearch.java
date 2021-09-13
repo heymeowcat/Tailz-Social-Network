@@ -13,6 +13,11 @@ import javax.servlet.http.HttpSession;
 
 @WebServlet(name = "postsearch", urlPatterns = {"/postsearch"})
 public class postsearch extends HttpServlet {
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -38,12 +43,6 @@ public class postsearch extends HttpServlet {
             String Dcolor = themeColors[3];
             String Ecolor = themeColors[4];
             String Fcolor = themeColors[5];
-
-            String esc(String s) {
-                if (s == null) return "";
-                return s.replace("&", "&").replace("<", "<").replace(">", ">").replace("\"", """);
-            }
-
             int privacy = 1;
             PreparedStatement privacyrsPs = DB.prepare("SELECT `privacy_name` FROM user_privacy WHERE users_idusers=?");
             privacyrsPs.setInt(1, uid);
