@@ -2,6 +2,7 @@ package com.heymeowcat.tailznet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -10,6 +11,11 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet(name = "newmessage", urlPatterns = {"/newmessage"})
 public class newmessage extends HttpServlet {
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -26,12 +32,6 @@ public class newmessage extends HttpServlet {
             }
             String msg = request.getParameter("msg");
             String src = request.getParameter("src");
-
-            String esc(String s) {
-                if (s == null) return "";
-                return s.replace("&", "&").replace("<", "<").replace(">", ">").replace("\"", """);
-            }
-
             boolean hasMsg = msg != null && !msg.isEmpty();
             boolean hasSrc = src != null && !src.equals("undefined");
 
