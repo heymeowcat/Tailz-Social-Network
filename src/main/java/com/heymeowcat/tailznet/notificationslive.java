@@ -12,6 +12,11 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet(name = "notificationslive", urlPatterns = {"/notificationslive"})
 public class notificationslive extends HttpServlet {
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -32,12 +37,6 @@ public class notificationslive extends HttpServlet {
             String Dcolor = themeColors[3];
             String Ecolor = themeColors[4];
             String Fcolor = themeColors[5];
-
-            String esc(String s) {
-                if (s == null) return "";
-                return s.replace("&", "&").replace("<", "<").replace(">", ">").replace("\"", """);
-            }
-
             // Optimized query with JOIN to avoid N+1
             String sql = "SELECT n.*, u.firstname, u.lastname, upp.image " +
                     "FROM notification n " +
