@@ -11,6 +11,11 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet(name = "newgroupmessage", urlPatterns = {"/newgroupmessage"})
 public class newgroupmessage extends HttpServlet {
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -27,12 +32,6 @@ public class newgroupmessage extends HttpServlet {
             }
             String msg = request.getParameter("msg");
             String src = request.getParameter("src");
-
-            String esc(String s) {
-                if (s == null) return "";
-                return s.replace("&", "&").replace("<", "<").replace(">", ">").replace("\"", """);
-            }
-
             boolean hasMsg = msg != null && !msg.isEmpty();
             boolean hasSrc = src != null && !src.equals("undefined");
 
