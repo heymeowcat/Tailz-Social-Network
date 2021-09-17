@@ -12,6 +12,11 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet(name = "deletepost", urlPatterns = {"/deletepost"})
 public class deletepost extends HttpServlet {
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -34,12 +39,6 @@ public class deletepost extends HttpServlet {
             String Dcolor = themeColors[3];
             String Ecolor = themeColors[4];
             String Fcolor = themeColors[5];
-
-            String esc(String s) {
-                if (s == null) return "";
-                return s.replace("&", "&").replace("<", "<").replace(">", ">").replace("\"", """);
-            }
-
             out.write("<i class='material-icons right waves-effect modal-close'>close</i>");
             out.write("<div class='center'>");
             out.write("<div class='" + esc(Acolor) + " card-panel'>");
