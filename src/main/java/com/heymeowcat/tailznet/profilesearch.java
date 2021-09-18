@@ -13,6 +13,11 @@ import javax.servlet.http.HttpSession;
 
 @WebServlet(name = "profilesearch", urlPatterns = {"/profilesearch"})
 public class profilesearch extends HttpServlet {
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -39,12 +44,6 @@ public class profilesearch extends HttpServlet {
             String Dcolor = themeColors[3];
             String Ecolor = themeColors[4];
             String Fcolor = themeColors[5];
-
-            String esc(String str) {
-                if (str == null) return "";
-                return str.replace("&", "&").replace("<", "<").replace(">", ">").replace("\"", """);
-            }
-
             if (s != null && !s.isEmpty()) {
                 s = "%" + s + "%";
             } else {
