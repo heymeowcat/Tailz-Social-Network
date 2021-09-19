@@ -12,6 +12,11 @@ import javax.servlet.http.HttpServletResponse;
 
 @WebServlet(name = "refreshmsgoverview", urlPatterns = {"/refreshmsgoverview"})
 public class refreshmsgoverview extends HttpServlet {
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -32,12 +37,6 @@ public class refreshmsgoverview extends HttpServlet {
             String Dcolor = themeColors[3];
             String Ecolor = themeColors[4];
             String Fcolor = themeColors[5];
-
-            String esc(String s) {
-                if (s == null) return "";
-                return s.replace("&", "&").replace("<", "<").replace(">", ">").replace("\"", """);
-            }
-
             // Optimized query with JOIN to avoid N+1
             String sql = "SELECT u.firstname, u.lastname, u.image, u.idusers, " +
                     "(SELECT COUNT(*) FROM chat WHERE chatlinestatus='0' AND user_sender=u.idusers AND users_receiver=?) AS unseen_sent, " +
