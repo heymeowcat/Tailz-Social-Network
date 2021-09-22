@@ -17,6 +17,15 @@ public class newmessage extends HttpServlet {
     }
 
 
+    private void pushWebSocketNotification(int senderId, int receiverId) {
+        try {
+            ChatMessage wsMsg = new ChatMessage("new_message", String.valueOf(senderId), String.valueOf(receiverId), "");
+            ChatWebSocket.sendMessageToUser(String.valueOf(receiverId), wsMsg.toJson());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
@@ -44,6 +53,7 @@ public class newmessage extends HttpServlet {
                 ps.setInt(2, uid);
                 ps.setInt(3, muid);
                 ps.executeUpdate();
+                pushWebSocketNotification(uid, muid);
             } else if (!hasMsg && hasSrc) {
                 PreparedStatement ps = DB.prepare(
                         "INSERT INTO chat (src, user_sender, users_receiver, chattype_idchattype, chatlinestatus) VALUES (?, ?, ?, 1, 0)");
@@ -51,6 +61,7 @@ public class newmessage extends HttpServlet {
                 ps.setInt(2, uid);
                 ps.setInt(3, muid);
                 ps.executeUpdate();
+                pushWebSocketNotification(uid, muid);
             } else {
                 PreparedStatement ps = DB.prepare(
                         "INSERT INTO chat (chat_text, src, user_sender, users_receiver, chattype_idchattype, chatlinestatus) VALUES (?, ?, ?, ?, 1, 0)");
@@ -59,6 +70,7 @@ public class newmessage extends HttpServlet {
                 ps.setInt(3, uid);
                 ps.setInt(4, muid);
                 ps.executeUpdate();
+                pushWebSocketNotification(uid, muid);
             }
         } catch (Exception e) {
             e.printStackTrace();
