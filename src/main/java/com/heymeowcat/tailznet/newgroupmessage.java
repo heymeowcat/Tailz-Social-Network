@@ -17,6 +17,15 @@ public class newgroupmessage extends HttpServlet {
     }
 
 
+    private void pushGroupWebSocketNotification(int senderId, int groupId) {
+        try {
+            ChatMessage wsMsg = new ChatMessage("new_group_message", String.valueOf(senderId), "", String.valueOf(groupId));
+            ChatWebSocket.sendMessageToGroup(String.valueOf(groupId), wsMsg.toJson());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
@@ -44,6 +53,7 @@ public class newgroupmessage extends HttpServlet {
                 ps.setString(2, ENCDEC.encrypt(esc(msg), new KEY().secretKey));
                 ps.setInt(3, uid);
                 ps.executeUpdate();
+                pushGroupWebSocketNotification(uid, groupId);
             } else if (!hasMsg && hasSrc) {
                 PreparedStatement ps = DB.prepare(
                         "INSERT INTO group_chat (Groups_group_id, src, users_idusers, chatstatus) VALUES (?, ?, ?, 0)");
@@ -51,6 +61,7 @@ public class newgroupmessage extends HttpServlet {
                 ps.setString(2, ENCDEC.encrypt(esc(src), new KEY().secretKey));
                 ps.setInt(3, uid);
                 ps.executeUpdate();
+                pushGroupWebSocketNotification(uid, groupId);
             } else {
                 PreparedStatement ps = DB.prepare(
                         "INSERT INTO group_chat (Groups_group_id, chat_text, src, users_idusers, chatstatus) VALUES (?, ?, ?, ?, 0)");
@@ -59,6 +70,7 @@ public class newgroupmessage extends HttpServlet {
                 ps.setString(3, ENCDEC.encrypt(esc(src), new KEY().secretKey));
                 ps.setInt(4, uid);
                 ps.executeUpdate();
+                pushGroupWebSocketNotification(uid, groupId);
             }
         } catch (Exception e) {
             e.printStackTrace();
