@@ -386,6 +386,33 @@
                                 xhttp.send();
                             }
 
+                            var ws;
+                            function initWebSocket() {
+                                if (typeof WebSocket !== "undefined") {
+                                    ws = new WebSocket("ws://" + window.location.host + "/Tailz/websocket/chat");
+                                    ws.onopen = function () {
+                                        ws.send(JSON.stringify({type: "register", uid: userid}));
+                                    };
+                                    ws.onmessage = function (event) {
+                                        var data = JSON.parse(event.data);
+                                        if (data.type === "new_message") {
+                                            refreshChat();
+                                        }
+                                    };
+                                    ws.onerror = function (err) {
+                                        console.log("WebSocket error: ", err);
+                                    };
+                                    ws.onclose = function () {
+                                        setTimeout(initWebSocket, 5000);
+                                    };
+                                } else {
+                                    console.log("WebSocket not supported by this browser.");
+                                }
+                            }
+                            $(document).ready(function () {
+                                initWebSocket();
+                            });
+
         </script>
         <%   } else {
                     response.sendRedirect("messege.jsp");
