@@ -356,13 +356,19 @@
                                 xhttp.open("GET", "peekprofile?q=" + str + "&loggedusr=" + loggedurs, true);
                                 xhttp.send();
                             }
+                            function refreshChat() {
+                                var objDiv = document.getElementById("peekmessage");
+                                $('#peekmessage').load("directmessages?uid=" + userid + "&muid=" + outmuid, function () {
+                                    objDiv.scrollTop = objDiv.scrollHeight * objDiv.scrollHeight;
+                                });
+                            }
                             function chatrefresh() {
                                 var objDiv = document.getElementById("peekmessage");
                                 timer = setTimeout(function () {
                                     $('#peekmessage').load("directmessages?uid=" + userid + "&muid=" + outmuid);
                                     objDiv.scrollTop = objDiv.scrollHeight * objDiv.scrollHeight;
                                     chatrefresh();
-                                }, 1000);
+                                }, 5000);
                             }
                             function chatfirst() {
                                 var objDiv = document.getElementById("peekmessage");
