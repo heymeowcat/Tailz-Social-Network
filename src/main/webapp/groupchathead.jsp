@@ -442,6 +442,36 @@
                                     xhtp.open("GET", "leavethisgroup?x=" + x+"&y="+y, true);
                                     xhtp.send();
                                 }
+                                var ws;
+                                function initWebSocket() {
+                                    if (typeof WebSocket !== "undefined") {
+                                        ws = new WebSocket("ws://" + window.location.host + "/Tailz/websocket/chat");
+                                        ws.onopen = function () {
+                                            ws.send(JSON.stringify({type: "register_group", groupId: groupid, uid: userid}));
+                                        };
+                                        ws.onmessage = function (event) {
+                                            var data = JSON.parse(event.data);
+                                            if (data.type === "new_group_message") {
+                                                refreshGroupChat();
+                                            }
+                                        };
+                                        ws.onerror = function (err) {
+                                            console.log("WebSocket error: ", err);
+                                        };
+                                        ws.onclose = function () {
+                                            setTimeout(initWebSocket, 5000);
+                                        };
+                                    }
+                                }
+                                function refreshGroupChat() {
+                                    var objDiv = document.getElementById("peekmessage");
+                                    $('#peekmessage').load("groupmessages?uid=" + userid + "&muid=" + groupid, function () {
+                                        objDiv.scrollTop = objDiv.scrollHeight * objDiv.scrollHeight;
+                                    });
+                                }
+                                $(document).ready(function () {
+                                    initWebSocket();
+                                });
         </script>
         <%   } else {
                     response.sendRedirect("messege.jsp");
