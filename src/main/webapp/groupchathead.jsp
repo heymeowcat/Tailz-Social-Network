@@ -393,7 +393,7 @@
                                         $('#peekmessage').load("groupmessages?uid=" + userid + "&muid=" + groupid);
                                         objDiv.scrollTop = objDiv.scrollHeight * objDiv.scrollHeight;
                                         chatrefresh();
-                                    }, 1000);
+                                    }, 5000);
                                 }
                                 function chatfirst() {
                                     $('#peekmessage').load("groupmessages?uid=" + userid + "&muid=" + groupid);
