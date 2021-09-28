@@ -1,7 +1,6 @@
 package com.heymeowcat.tailznet;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,8 +11,6 @@ import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 
 @ServerEndpoint("/websocket/chat")
 public class ChatWebSocket {
@@ -23,23 +20,51 @@ public class ChatWebSocket {
 
     @OnOpen
     public void onOpen(Session session, EndpointConfig config) {
-        String uid = (String) config.getUserProperties().get("uid");
-        if (uid != null) {
-            userSessions.put(uid, session);
-        }
     }
 
     @OnMessage
     public void onMessage(String message, Session session) {
-        session.getAsyncRemote().sendText("echo:" + message);
+        try {
+            ChatMessage wsMsg = ChatMessage.fromJson(message);
+            String uid = wsMsg.getSenderId();
+            if (uid == null) return;
+
+            if ("register".equals(wsMsg.getType())) {
+                userSessions.put(uid, session);
+                session.getUserProperties().put("uid", uid);
+                return;
+            }
+
+            if ("register_group".equals(wsMsg.getType())) {
+                userSessions.put(uid, session);
+                session.getUserProperties().put("uid", uid);
+                String groupId = wsMsg.getGroupId();
+                if (groupId != null) {
+                    registerGroupMember(groupId, uid);
+                }
+                return;
+            }
+
+            if ("new_message".equals(wsMsg.getType())) {
+                sendMessageToUser(wsMsg.getReceiverId(), "new_message:" + wsMsg.getSenderId());
+            } else if ("new_group_message".equals(wsMsg.getType())) {
+                sendMessageToGroup(wsMsg.getGroupId(), "new_group_message:" + wsMsg.getSenderId());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @OnClose
     public void onClose(Session session) {
-        for (String uid : userSessions.keySet()) {
-            if (userSessions.get(uid) == session) {
-                userSessions.remove(uid);
-                break;
+        String uid = (String) session.getUserProperties().get("uid");
+        if (uid != null) {
+            userSessions.remove(uid);
+        }
+        for (String groupId : groupSessions.keySet()) {
+            Set<String> members = groupSessions.get(groupId);
+            if (members != null) {
+                members.remove(uid);
             }
         }
     }
