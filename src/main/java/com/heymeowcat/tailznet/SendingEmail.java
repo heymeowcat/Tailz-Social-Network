@@ -23,14 +23,22 @@ import javax.mail.internet.MimeMultipart;
  */
 public class SendingEmail {
 
+    private static final String ESC(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
     String useremail;
     String userhash;
 
     public void sendMail(String useremail, String userhash) {
+        if (useremail == null || useremail.isEmpty() || userhash == null || userhash.isEmpty()) {
+            return;
+        }
         this.useremail = useremail;
         this.userhash = userhash;
-        final String email = "*";
-        final String password = "*";
+        final String email = "tailznetwork@gmail.com";
+        final String password = System.getenv("EMAIL_PASSWORD");
         Properties props = new Properties();
         props.put("mail.smtp.host", "smtp.gmail.com");
         props.put("mail.smtp.auth", "true");
@@ -51,7 +59,7 @@ public class SendingEmail {
         try {
             MimeMessage message = new MimeMessage(session);
             message.setFrom(new InternetAddress(email));
-            message.setRecipient(Message.RecipientType.TO, new InternetAddress(useremail));
+            message.setRecipient(Message.RecipientType.TO, new InternetAddress(ESC(useremail)));
 
             message.setSubject("Taiz | Email Verification Link");
             message.setText("Verification Link  ");
