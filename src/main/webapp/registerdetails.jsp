@@ -6,6 +6,7 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page import="com.heymeowcat.tailznet.JspUtils"%>
 <%
     String email = request.getParameter("mail");
     String hash = request.getParameter("hash");
@@ -89,7 +90,7 @@
                     </div>
                     <div id="login" class="col s12 ">
                         <div class="card-panel">
-                            <form action="laststep?email=<%=email%>&hash=<%=hash%>" method="post">
+                            <form action="laststep?email=<%=JspUtils.esc(email)%>&hash=<%=JspUtils.esc(hash)%>" method="post">
                                 Username
                                 <div class="row">
                                     <div class="input-field col s12 m12 ">
