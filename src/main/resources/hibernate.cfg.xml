@@ -14,5 +14,25 @@
         <property name="hibernate.format_sql">true</property>
         <property name="hibernate.connection.pool_size">10</property>
         <property name="hibernate.current_session_context_class">thread</property>
+
+        <mapping class="com.heymeowcat.tailznet.entities.User"/>
+        <mapping class="com.heymeowcat.tailznet.entities.UserLogin"/>
+        <mapping class="com.heymeowcat.tailznet.entities.UserProfilePic"/>
+        <mapping class="com.heymeowcat.tailznet.entities.Post"/>
+        <mapping class="com.heymeowcat.tailznet.entities.PostComment"/>
+        <mapping class="com.heymeowcat.tailznet.entities.Chat"/>
+        <mapping class="com.heymeowcat.tailznet.entities.GroupEntity"/>
+        <mapping class="com.heymeowcat.tailznet.entities.GroupMembers"/>
+        <mapping class="com.heymeowcat.tailznet.entities.GroupChat"/>
+        <mapping class="com.heymeowcat.tailznet.entities.Follow"/>
+        <mapping class="com.heymeowcat.tailznet.entities.Notification"/>
+        <mapping class="com.heymeowcat.tailznet.entities.AppTheme"/>
+        <mapping class="com.heymeowcat.tailznet.entities.Ads"/>
+        <mapping class="com.heymeowcat.tailznet.entities.AdTiming"/>
+        <mapping class="com.heymeowcat.tailznet.entities.UserBookmark"/>
+        <mapping class="com.heymeowcat.tailznet.entities.UserPrivacy"/>
+        <mapping class="com.heymeowcat.tailznet.entities.PostRank"/>
+        <mapping class="com.heymeowcat.tailznet.entities.LoginSession"/>
+        <mapping class="com.heymeowcat.tailznet.entities.AppLayout"/>
     </session-factory>
 </hibernate-configuration>
