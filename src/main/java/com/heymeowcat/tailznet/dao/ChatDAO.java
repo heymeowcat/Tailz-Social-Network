@@ -22,10 +22,10 @@ public class ChatDAO extends BaseDAO<Chat> {
         try {
             Criteria criteria = session.createCriteria(Chat.class);
             criteria.add(Restrictions.or(
-                Restrictions.and(Restrictions.eq("sender", senderId), Restrictions.eq("receiver", receiverId)),
-                Restrictions.and(Restrictions.eq("sender", receiverId), Restrictions.eq("receiver", senderId))
+                Restrictions.and(Restrictions.eq("userSender", senderId), Restrictions.eq("userReceiver", receiverId)),
+                Restrictions.and(Restrictions.eq("userSender", receiverId), Restrictions.eq("userReceiver", senderId))
             ));
-            criteria.addOrder(Order.asc("time"));
+            criteria.addOrder(Order.asc("chatDatetime"));
             List<Chat> list = criteria.list();
             tx.commit();
             return list;
@@ -41,9 +41,9 @@ public class ChatDAO extends BaseDAO<Chat> {
         Transaction tx = session.beginTransaction();
         try {
             Criteria criteria = session.createCriteria(Chat.class);
-            criteria.add(Restrictions.eq("receiver", receiverId));
-            criteria.add(Restrictions.eq("sender", senderId));
-            criteria.add(Restrictions.eq("status", "0"));
+            criteria.add(Restrictions.eq("userReceiver", receiverId));
+            criteria.add(Restrictions.eq("userSender", senderId));
+            criteria.add(Restrictions.eq("chatlineStatus", 0));
             List<Chat> list = criteria.list();
             tx.commit();
             return list.size();
