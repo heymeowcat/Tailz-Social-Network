@@ -1,0 +1,35 @@
+package com.heymeowcat.tailznet.service;
+
+import com.heymeowcat.tailznet.dao.NotificationDAO;
+import com.heymeowcat.tailznet.entities.Notification;
+import java.util.List;
+
+public class NotificationService {
+
+    private final NotificationDAO notificationDAO;
+
+    public NotificationService() {
+        this.notificationDAO = new NotificationDAO();
+    }
+
+    public List<Notification> getUserNotifications(int userId) {
+        return notificationDAO.findByUser(userId);
+    }
+
+    public int getUnreadCount(int userId) {
+        return notificationDAO.getUnreadCount(userId);
+    }
+
+    public void markAsRead(Notification notification) {
+        notification.setStatus("1");
+        notificationDAO.update(notification);
+    }
+
+    public void createNotification(Notification notification) {
+        notificationDAO.save(notification);
+    }
+
+    public void deleteNotification(int notificationId) {
+        notificationDAO.deleteById(notificationId);
+    }
+}
