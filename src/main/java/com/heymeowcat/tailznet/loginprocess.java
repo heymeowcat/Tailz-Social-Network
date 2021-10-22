@@ -1,9 +1,10 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.LoginSessionService;
+import com.heymeowcat.tailznet.service.UserLoginService;
+import com.heymeowcat.tailznet.entities.UserLogin;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.Cookie;
@@ -13,10 +14,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import org.apache.commons.codec.digest.DigestUtils;
 
-/**
- *
- * @author HEYMEOWCAT
- */
 @WebServlet(name = "loginprocess", urlPatterns = {"/loginprocess"})
 public class loginprocess extends HttpServlet {
 
@@ -38,26 +35,21 @@ public class loginprocess extends HttpServlet {
             }
             String encryptedPsn = DigestUtils.md5Hex(psn);
 
-            PreparedStatement ps = DB.prepare(
-                    "SELECT password, users_idusers, iduser_login FROM user_login WHERE username=?");
-            ps.setString(1, usn);
-            ResultSet loginrs = ps.executeQuery();
+            UserLoginService loginService = new UserLoginService();
+            UserLogin login = loginService.getLoginByUsername(usn);
 
-            if (loginrs.next()) {
-                if (loginrs.getString(1).equals(encryptedPsn)) {
+            if (login != null) {
+                if (login.getPassword().equals(encryptedPsn)) {
                     HttpSession ses = request.getSession();
-                    ses.setAttribute("user", loginrs.getInt(2));
+                    ses.setAttribute("user", login.getUserId());
                     if (check != null) {
-                        String encryptedString = ENCDEC.encrypt(loginrs.getString(2), new KEY().secretKey);
+                        String encryptedString = ENCDEC.encrypt(String.valueOf(login.getUserId()), new KEY().secretKey);
                         Cookie cookie = new Cookie("MEOWID", encryptedString);
                         cookie.setMaxAge(60 * 60 * 24 * 30);
                         response.addCookie(cookie);
                     }
-                    PreparedStatement logIns = DB.prepare(
-                            "INSERT INTO login_sessions (ip_address, in_time, user_login_iduser_login) VALUES (?, CURRENT_TIMESTAMP, ?)");
-                    logIns.setString(1, request.getRemoteHost());
-                    logIns.setString(2, loginrs.getString(3));
-                    logIns.executeUpdate();
+                    LoginSessionService sessionService = new LoginSessionService();
+                    sessionService.logLoginSession(login.getId(), request.getRemoteHost());
                     response.sendRedirect("index.jsp");
                 } else {
                     response.sendRedirect("login-register.jsp?error=Come On!");
