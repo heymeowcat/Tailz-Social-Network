@@ -1,5 +1,12 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.FollowService;
+import com.heymeowcat.tailznet.service.PostService;
+import com.heymeowcat.tailznet.service.UserPrivacyService;
+import com.heymeowcat.tailznet.service.UserProfilePicService;
+import com.heymeowcat.tailznet.service.UserService;
+import com.heymeowcat.tailznet.entities.User;
+import com.heymeowcat.tailznet.entities.UserPrivacy;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.PreparedStatement;
@@ -40,28 +47,15 @@ public class profilefullview extends HttpServlet {
             String Ecolor = themeColors[4];
             String Fcolor = themeColors[5];
 
-            String up = "";
-            String fn = "";
-            String ln = "";
-            PreparedStatement uflPs = DB.prepare("Select firstname,lastname FROM `users` where idusers=?");
-            uflPs.setInt(1, uid);
-            ResultSet ufl = uflPs.executeQuery();
-            if (ufl.next()) {
-                fn = esc(ufl.getString(1));
-                ln = esc(ufl.getString(2));
-            }
+            UserService userService = new UserService();
+            String fn = esc(userService.getUserFirstName(uid));
+            String ln = esc(userService.getUserLastName(uid));
 
-            String usrpostcount = "0";
-            String followercount = "0";
-            String followingcount = "0";
-            PreparedStatement uspPs = DB.prepare("Select image FROM `user_profile_pic` where users_idusers=?");
-            uspPs.setInt(1, uid);
-            ResultSet usp = uspPs.executeQuery();
-            if (!usp.isBeforeFirst()) {
-                up = "img/Profile_avatar_placeholder_large.png";
-            } else if (usp.next()) {
-                up = esc(usp.getString(1));
-            }
+            UserProfilePicService picService = new UserProfilePicService();
+            String up = picService.getProfilePicPath(uid);
+
+            FollowService followService = new FollowService();
+            PostService postService = new PostService();
             out.write("<i class='material-icons right waves-effect modal-close " + esc(Dcolor) + "'>close</i>");
             out.write("<ul class='" + esc(Acolor) + " collapsible 'style='border-color: " + esc(Ccolor) + "'>");
             out.write("<li class='active'>");
@@ -78,11 +72,8 @@ public class profilefullview extends HttpServlet {
                 if (loggeduid == uid) {
 
                 } else {
-                    PreparedStatement iffillowPs = DB.prepare("SELECT receiver FROM `follow` WHERE `sender`=? AND receiver=?");
-                    iffillowPs.setInt(1, loggeduid);
-                    iffillowPs.setInt(2, uid);
-                    ResultSet iffillow = iffillowPs.executeQuery();
-                    if (iffillow.next()) {
+                    boolean isFollowing = followService.isFollowing(loggeduid, uid);
+                    if (isFollowing) {
                         out.write("<a onclick='unfollow(" + loggeduid + "," + uid + "); refreshhhh()' class='" + esc(Dcolor) + " " + esc(Bcolor) + " btn-small' >Unfollow</a>");
                     } else {
                         out.write("<a onclick='follow(" + loggeduid + "," + uid + "); refreshhhh()' class='" + esc(Dcolor) + " " + esc(Bcolor) + " btn-small' >Follow</a>");
@@ -95,39 +86,12 @@ public class profilefullview extends HttpServlet {
             out.write("</div>");
             out.write("<br>");
             out.write("<br>");
+            String usrpostcount = String.valueOf(postService.getPostCount(uid));
+            String followercount = String.valueOf(followService.getFollowerCount(uid));
+            String followingcount = String.valueOf(followService.getFollowingCount(uid));
             out.write("<div class='row center'>");
-            try {
-                PreparedStatement postcountPs = DB.prepare("SELECT COUNT(`users_idusers`) FROM `post` WHERE `users_idusers`=?");
-                postcountPs.setInt(1, uid);
-                ResultSet postcount = postcountPs.executeQuery();
-                if (postcount.next()) {
-                    usrpostcount = postcount.getString(1);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
             out.write("<div class='col s4 waves-effect'> <span class='transparent '>Posts</span><br><b>" + usrpostcount + "</b></div>");
-            try {
-                PreparedStatement postcountPs = DB.prepare("SELECT DISTINCT COUNT(`sender`) FROM `follow` WHERE `receiver`=?");
-                postcountPs.setInt(1, uid);
-                ResultSet postcount = postcountPs.executeQuery();
-                if (postcount.next()) {
-                    followercount = postcount.getString(1);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
             out.write("<div class='col s4 waves-effect'> <span class='transparent '>Followers</span><br><b>" + followercount + "</b></div>");
-            try {
-                PreparedStatement postcountPs = DB.prepare("SELECT DISTINCT COUNT(`receiver`) FROM `follow` WHERE `sender`=?");
-                postcountPs.setInt(1, uid);
-                ResultSet postcount = postcountPs.executeQuery();
-                if (postcount.next()) {
-                    followingcount = postcount.getString(1);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
             out.write("<div class='col s4 waves-effect'> <span class='transparent '>Following</span><br><b>" + followingcount + "</b></div>");
             out.write("</div>");
             out.write("</div>");
@@ -136,11 +100,10 @@ public class profilefullview extends HttpServlet {
             out.write("<div class='" + esc(Acolor) + " " + esc(Dcolor) + " collapsible-header' style='border-color: " + esc(Ccolor) + "'><b>Posts</b></div>");
             out.write("<div class='" + esc(Ecolor) + " collapsible-body' style='border-color: " + esc(Ccolor) + "' >");
 
-            PreparedStatement privacyrsPs = DB.prepare("SELECT privacy_name FROM `user_privacy` WHERE `users_idusers`=?");
-            privacyrsPs.setInt(1, uid);
-            ResultSet privacyrs = privacyrsPs.executeQuery();
-            if (privacyrs.next()) {
-                if (privacyrs.getString(1).equals("private")) {
+            UserPrivacyService privacyService = new UserPrivacyService();
+            UserPrivacy privacy = privacyService.getUserPrivacy(uid);
+            boolean isPrivate = privacy != null && "private".equals(privacy.getPrivacyName());
+            if (isPrivate) {
                     out.write("<div class='row'>");
                     out.write("<div class='center'><img src='img/private.png' class='responsiveimg' ></div>");
                     out.write("</div>");
@@ -287,7 +250,6 @@ public class profilefullview extends HttpServlet {
                     }
                     out.write("</div>");
                 }
-            }
 
             out.write("</div>");
             out.write("</li>");
@@ -295,11 +257,7 @@ public class profilefullview extends HttpServlet {
             out.write("<div class='collapsible-header " + esc(Acolor) + " " + esc(Dcolor) + "' style='border-color: " + esc(Ccolor) + "'><b>Followers</b></div>");
             out.write("<div class='collapsible-body " + esc(Ecolor) + " " + esc(Dcolor) + "' style='border-color: " + esc(Ccolor) + "'>");
 
-            PreparedStatement privacyrs2Ps = DB.prepare("SELECT privacy_name FROM `user_privacy` WHERE `users_idusers`=?");
-            privacyrs2Ps.setInt(1, uid);
-            ResultSet privacyrs2 = privacyrs2Ps.executeQuery();
-            if (privacyrs2.next()) {
-                if (privacyrs2.getString(1).equals("private")) {
+            if (isPrivate) {
                     out.write("<div class='row'>");
                     out.write("<div class='center'><img src='img/private.png' class='responsiveimg' ></div>");
                     out.write("</div>");
@@ -340,18 +298,13 @@ public class profilefullview extends HttpServlet {
                         out.write("<div class='center'><img src='img/friendship.png' class='responsiveimg ' ></div>");
                     }
                 }
-            }
 
             out.write("</div>");
             out.write("</li>");
             out.write("<li>");
             out.write("<div class='collapsible-header " + esc(Acolor) + " " + esc(Dcolor) + "' style='border-color: " + esc(Ccolor) + "'><b>Following</b></div>");
             out.write("<div class='collapsible-body " + esc(Ecolor) + " " + esc(Dcolor) + "' style='border-color: " + esc(Ccolor) + "'>");
-            PreparedStatement privacyrs3Ps = DB.prepare("SELECT privacy_name FROM `user_privacy` WHERE `users_idusers`=?");
-            privacyrs3Ps.setInt(1, uid);
-            ResultSet privacyrs3 = privacyrs3Ps.executeQuery();
-            if (privacyrs3.next()) {
-                if (privacyrs3.getString(1).equals("private")) {
+            if (isPrivate) {
                     out.write("<div class='row'>");
                     out.write("<div class='center'><img src='img/private.png' class='responsiveimg' ></div>");
                     out.write("</div>");
@@ -381,7 +334,6 @@ public class profilefullview extends HttpServlet {
                         out.write("<div class='center'><img src='img/friendship.png' class='responsiveimg ' ></div>");
                     }
                 }
-            }
 
             out.write("</div>");
             out.write("</li>");

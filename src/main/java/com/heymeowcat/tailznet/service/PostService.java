@@ -24,6 +24,10 @@ public class PostService {
         return postDAO.findByPrivacyAndFollowers(userId, privacy);
     }
 
+    public int getPostCount(int userId) {
+        return postDAO.getPostCount(userId);
+    }
+
     public void savePost(Post post) {
         postDAO.save(post);
     }

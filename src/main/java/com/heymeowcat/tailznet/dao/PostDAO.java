@@ -7,6 +7,7 @@ import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 
 public class PostDAO extends BaseDAO<Post> {
@@ -25,8 +26,8 @@ public class PostDAO extends BaseDAO<Post> {
         Transaction tx = session.beginTransaction();
         try {
             Criteria criteria = session.createCriteria(Post.class);
-            criteria.add(Restrictions.eq("postedby", userId));
-            criteria.addOrder(Order.desc("posttime"));
+            criteria.add(Restrictions.eq("userId", userId));
+            criteria.addOrder(Order.desc("postTime"));
             List<Post> list = criteria.list();
             tx.commit();
             return list;
@@ -43,9 +44,9 @@ public class PostDAO extends BaseDAO<Post> {
         Transaction tx = session.beginTransaction();
         try {
             Criteria criteria = session.createCriteria(Post.class);
-            criteria.add(Restrictions.eq("postedby", userId));
-            criteria.add(Restrictions.eq("privacy", privacy));
-            criteria.addOrder(Order.desc("posttime"));
+            criteria.add(Restrictions.eq("userId", userId));
+            criteria.add(Restrictions.eq("postPrivacy", privacy));
+            criteria.addOrder(Order.desc("postTime"));
             List<Post> list = criteria.list();
             tx.commit();
             return list;
@@ -53,6 +54,23 @@ public class PostDAO extends BaseDAO<Post> {
             tx.rollback();
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public int getPostCount(int userId) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            Criteria criteria = session.createCriteria(Post.class);
+            criteria.add(Restrictions.eq("userId", userId));
+            criteria.setProjection(Projections.rowCount());
+            List<?> list = criteria.list();
+            tx.commit();
+            return list.isEmpty() ? 0 : ((Long) list.get(0)).intValue();
+        } catch (Exception e) {
+            tx.rollback();
+            e.printStackTrace();
+            return 0;
         }
     }
 }
