@@ -1,8 +1,8 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.FollowService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -31,11 +31,8 @@ public class unfollow extends HttpServlet {
                 return;
             }
 
-            PreparedStatement del = DB.prepare(
-                    "DELETE FROM follow WHERE sender=? AND receiver=?");
-            del.setInt(1, sender);
-            del.setInt(2, receiver);
-            del.executeUpdate();
+            FollowService followService = new FollowService();
+            followService.unfollow(sender, receiver);
 
             out.write("unfollowed");
         } catch (Exception e) {

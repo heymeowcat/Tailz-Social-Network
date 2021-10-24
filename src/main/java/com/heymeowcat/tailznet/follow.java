@@ -1,8 +1,10 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.FollowService;
+import com.heymeowcat.tailznet.service.NotificationService;
+import com.heymeowcat.tailznet.entities.Notification;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -31,17 +33,17 @@ public class follow extends HttpServlet {
                 return;
             }
 
-            PreparedStatement ins = DB.prepare(
-                    "INSERT INTO follow (sender, receiver) VALUES (?, ?)");
-            ins.setInt(1, sender);
-            ins.setInt(2, receiver);
-            ins.executeUpdate();
+            FollowService followService = new FollowService();
+            followService.follow(sender, receiver);
 
-            PreparedStatement notif = DB.prepare(
-                    "INSERT INTO notification (notificationfor, notificationfrom, `notification-type`, status, target) VALUES (?, ?, '1', '0', '0')");
-            notif.setInt(1, receiver);
-            notif.setInt(2, sender);
-            notif.executeUpdate();
+            NotificationService notifService = new NotificationService();
+            Notification notif = new Notification();
+            notif.setNotificationFor(receiver);
+            notif.setNotificationFrom(sender);
+            notif.setNotificationType("1");
+            notif.setStatus("0");
+            notif.setTarget(0);
+            notifService.createNotification(notif);
 
             out.write("followed");
         } catch (Exception e) {
