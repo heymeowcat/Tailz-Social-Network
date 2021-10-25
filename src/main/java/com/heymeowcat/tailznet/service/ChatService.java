@@ -20,6 +20,10 @@ public class ChatService {
         return chatDAO.getUnreadCount(receiverId, senderId);
     }
 
+    public int getTotalUnreadCount(int receiverId) {
+        return chatDAO.getTotalUnreadCount(receiverId);
+    }
+
     public void saveMessage(Chat chat) {
         chatDAO.save(chat);
     }

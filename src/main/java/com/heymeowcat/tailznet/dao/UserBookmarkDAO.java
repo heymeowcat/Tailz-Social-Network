@@ -1,7 +1,10 @@
 package com.heymeowcat.tailznet.dao;
 
+import com.heymeowcat.tailznet.HibernateUtil;
 import com.heymeowcat.tailznet.entities.UserBookmark;
 import java.util.List;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 public class UserBookmarkDAO extends BaseDAO<UserBookmark> {
 
@@ -23,5 +26,18 @@ public class UserBookmarkDAO extends BaseDAO<UserBookmark> {
             }
         }
         return false;
+    }
+
+    public void deleteByPost(int postId) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            session.createQuery("DELETE FROM UserBookmark WHERE postId = :postId")
+                    .setInteger("postId", postId).executeUpdate();
+            tx.commit();
+        } catch (Exception e) {
+            tx.rollback();
+            e.printStackTrace();
+        }
     }
 }

@@ -1,8 +1,8 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.PostService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -29,21 +29,8 @@ public class deletethispost extends HttpServlet {
                 return;
             }
 
-            PreparedStatement delRank = DB.prepare("DELETE FROM post_rank WHERE post_idpost=?");
-            delRank.setInt(1, pid);
-            delRank.executeUpdate();
-
-            PreparedStatement delComment = DB.prepare("DELETE FROM post_comment WHERE post_idpost=?");
-            delComment.setInt(1, pid);
-            delComment.executeUpdate();
-
-            PreparedStatement delBookmark = DB.prepare("DELETE FROM user_bookmarks WHERE post_idpost=?");
-            delBookmark.setInt(1, pid);
-            delBookmark.executeUpdate();
-
-            PreparedStatement delPost = DB.prepare("DELETE FROM post WHERE idpost=?");
-            delPost.setInt(1, pid);
-            delPost.executeUpdate();
+            PostService postService = new PostService();
+            postService.deletePostCascade(pid);
 
         } catch (Exception e) {
             e.printStackTrace();

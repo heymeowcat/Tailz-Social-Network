@@ -1,15 +1,24 @@
 package com.heymeowcat.tailznet.service;
 
+import com.heymeowcat.tailznet.dao.PostCommentDAO;
 import com.heymeowcat.tailznet.dao.PostDAO;
+import com.heymeowcat.tailznet.dao.PostRankDAO;
+import com.heymeowcat.tailznet.dao.UserBookmarkDAO;
 import com.heymeowcat.tailznet.entities.Post;
 import java.util.List;
 
 public class PostService {
 
     private final PostDAO postDAO;
+    private final PostRankDAO postRankDAO;
+    private final PostCommentDAO postCommentDAO;
+    private final UserBookmarkDAO bookmarkDAO;
 
     public PostService() {
         this.postDAO = new PostDAO();
+        this.postRankDAO = new PostRankDAO();
+        this.postCommentDAO = new PostCommentDAO();
+        this.bookmarkDAO = new UserBookmarkDAO();
     }
 
     public Post getPostById(int postId) {
@@ -37,6 +46,13 @@ public class PostService {
     }
 
     public void deletePost(int postId) {
+        postDAO.deleteById(postId);
+    }
+
+    public void deletePostCascade(int postId) {
+        postRankDAO.deleteByPost(postId);
+        postCommentDAO.deleteByPost(postId);
+        bookmarkDAO.deleteByPost(postId);
         postDAO.deleteById(postId);
     }
 }

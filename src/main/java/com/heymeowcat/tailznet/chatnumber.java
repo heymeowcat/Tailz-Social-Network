@@ -5,10 +5,9 @@
  */
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.ChatService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -34,19 +33,14 @@ public class chatnumber extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid uid parameter");
                 return;
             }
-            PreparedStatement ps = DB.prepare(
-                    "SELECT count(chatlinestatus) FROM chat WHERE users_receiver=? AND chatlinestatus='0'");
-            ps.setInt(1, uid);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                int count = rs.getInt(1);
-                if (count == 0) {
-                    // no output
-                } else if (count <= 9) {
-                    out.print(count);
-                } else {
-                    out.print("+");
-                }
+            ChatService chatService = new ChatService();
+            int count = chatService.getTotalUnreadCount(uid);
+            if (count == 0) {
+                // no output
+            } else if (count <= 9) {
+                out.print(count);
+            } else {
+                out.print("+");
             }
         } catch (Exception e) {
             e.printStackTrace();
