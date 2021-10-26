@@ -5,6 +5,8 @@ import com.heymeowcat.tailznet.dao.PostDAO;
 import com.heymeowcat.tailznet.dao.PostRankDAO;
 import com.heymeowcat.tailznet.dao.UserBookmarkDAO;
 import com.heymeowcat.tailznet.entities.Post;
+import com.heymeowcat.tailznet.ENCDEC;
+import com.heymeowcat.tailznet.KEY;
 import java.util.List;
 
 public class PostService {
@@ -38,6 +40,17 @@ public class PostService {
     }
 
     public void savePost(Post post) {
+        postDAO.save(post);
+    }
+
+    public void createPost(int userId, String heading, String image, String detail, int privacy) {
+        Post post = new Post();
+        post.setHeading(ENCDEC.encrypt(heading, new KEY().secretKey));
+        post.setImage(ENCDEC.encrypt(image, new KEY().secretKey));
+        post.setDetail(ENCDEC.encrypt(detail, new KEY().secretKey));
+        post.setUserId(userId);
+        post.setPostTypeId(1);
+        post.setPostPrivacy(privacy);
         postDAO.save(post);
     }
 

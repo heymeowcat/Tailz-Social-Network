@@ -1,5 +1,8 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.PostService;
+import com.heymeowcat.tailznet.service.UserPrivacyService;
+import com.heymeowcat.tailznet.entities.UserPrivacy;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.PreparedStatement;
@@ -39,26 +42,18 @@ public class newpost extends HttpServlet {
             String Fcolor = themeColors[5];
 
             int privacy = 1;
-            PreparedStatement privacyrsPs = DB.prepare("SELECT `privacy_name` FROM user_privacy WHERE users_idusers=?");
-            privacyrsPs.setInt(1, uid);
-            ResultSet privacyrs = privacyrsPs.executeQuery();
-            if (privacyrs.next()) {
-                if (privacyrs.getString(1).equals("private")) {
-                    privacy = 2;
-                }
+            UserPrivacyService privacyService = new UserPrivacyService();
+            UserPrivacy userPrivacy = privacyService.getUserPrivacy(uid);
+            if (userPrivacy != null && "private".equals(userPrivacy.getPrivacyName())) {
+                privacy = 2;
             }
 
             String title = request.getParameter("title");
             String description = request.getParameter("description");
             String fp = request.getParameter("fp");
             if (!fp.equals("undefined")) {
-                PreparedStatement postIns = DB.prepare("INSERT INTO `post` ( `post_heading`, `post_img_area`, `post_detial`, `post_time`, `users_idusers`, `post_type_idpost_type`,Post_Privacy) VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, '1', ?)");
-                postIns.setString(1, ENCDEC.encrypt(title, new KEY().secretKey));
-                postIns.setString(2, ENCDEC.encrypt(fp, new KEY().secretKey));
-                postIns.setString(3, ENCDEC.encrypt(description, new KEY().secretKey));
-                postIns.setInt(4, uid);
-                postIns.setInt(5, privacy);
-                postIns.executeUpdate();
+                PostService postService = new PostService();
+                postService.createPost(uid, title, fp, description, privacy);
             }
             String feedSql = "SELECT p.*, u.firstname, u.lastname, upp.image, " +
                     "DATE(p.post_time) as post_date, TIME(p.post_time) as post_time_val " +
