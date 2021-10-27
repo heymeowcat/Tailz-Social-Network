@@ -1,8 +1,9 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.UserService;
+import com.heymeowcat.tailznet.entities.User;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -34,12 +35,13 @@ public class update extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing name parameters");
                 return;
             }
-            PreparedStatement ps = DB.prepare(
-                    "UPDATE users SET firstname=?, lastname=? WHERE idusers=?");
-            ps.setString(1, fn);
-            ps.setString(2, ln);
-            ps.setInt(3, uid);
-            ps.executeUpdate();
+            UserService userService = new UserService();
+            User user = userService.getUserById(uid);
+            if (user != null) {
+                user.setFirstName(fn);
+                user.setLastName(ln);
+                userService.updateUser(user);
+            }
             response.sendRedirect("profile.jsp");
         } catch (Exception e) {
             e.printStackTrace();
