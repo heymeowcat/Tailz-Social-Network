@@ -1,5 +1,15 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.dao.AppLayoutDAO;
+import com.heymeowcat.tailznet.entities.AppLayout;
+import com.heymeowcat.tailznet.entities.User;
+import com.heymeowcat.tailznet.entities.UserProfilePic;
+import com.heymeowcat.tailznet.entities.UserPrivacy;
+import com.heymeowcat.tailznet.service.AppThemeService;
+import com.heymeowcat.tailznet.entities.AppTheme;
+import com.heymeowcat.tailznet.service.UserPrivacyService;
+import com.heymeowcat.tailznet.service.UserProfilePicService;
+import com.heymeowcat.tailznet.service.UserService;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.PreparedStatement;
@@ -36,38 +46,42 @@ public class firstupdateprofile extends HttpServlet {
             }
             String fp = "img/Profile_avatar_placeholder_large.png";
 
-            PreparedStatement updName = DB.prepare(
-                    "UPDATE users SET firstname=?, lastname=? WHERE idusers=?");
-            updName.setString(1, fn);
-            updName.setString(2, ln);
-            updName.setInt(3, uid);
-            updName.executeUpdate();
+            UserService userService = new UserService();
+            User user = userService.getUserById(uid);
+            if (user != null) {
+                user.setFirstName(fn);
+                user.setLastName(ln);
+                userService.updateUser(user);
+            }
 
-            PreparedStatement insPic = DB.prepare(
-                    "INSERT INTO user_profile_pic (image, users_idusers) VALUES (?, ?)");
-            insPic.setString(1, fp);
-            insPic.setInt(2, uid);
-            insPic.executeUpdate();
+            UserProfilePicService picService = new UserProfilePicService();
+            UserProfilePic pic = new UserProfilePic();
+            pic.setUserId(uid);
+            pic.setImage(fp);
+            picService.saveProfilePic(pic);
 
-            PreparedStatement insTheme = DB.prepare(
-                    "INSERT INTO app_theme (themename, users_idusers) VALUES ('purplelight', ?)");
-            insTheme.setInt(1, uid);
-            insTheme.executeUpdate();
+            AppThemeService themeService = new AppThemeService();
+            AppTheme theme = new AppTheme();
+            theme.setUserId(uid);
+            theme.setThemeName("purplelight");
+            themeService.saveTheme(theme);
 
-            PreparedStatement insLayout = DB.prepare(
-                    "INSERT INTO app_layout (users_idusers, layout) VALUES (?, 1)");
-            insLayout.setInt(1, uid);
-            insLayout.executeUpdate();
+            AppLayoutDAO layoutDAO = new AppLayoutDAO();
+            AppLayout layout = new AppLayout();
+            layout.setUserId(uid);
+            layout.setLayout("1");
+            layoutDAO.save(layout);
 
             PreparedStatement insUap = DB.prepare(
                     "INSERT INTO uap (Preference, users_idusers) VALUES ('1', ?)");
             insUap.setInt(1, uid);
             insUap.executeUpdate();
 
-            PreparedStatement insPrivacy = DB.prepare(
-                    "INSERT INTO user_privacy (privacy_name, users_idusers) VALUES ('public', ?)");
-            insPrivacy.setInt(1, uid);
-            insPrivacy.executeUpdate();
+            UserPrivacyService privacyService = new UserPrivacyService();
+            UserPrivacy userPriv = new UserPrivacy();
+            userPriv.setUserId(uid);
+            userPriv.setPrivacyName("public");
+            privacyService.savePrivacy(userPriv);
 
             response.sendRedirect("login-register.jsp");
         } catch (Exception e) {
