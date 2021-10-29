@@ -1,8 +1,8 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.UserProfilePicService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -28,10 +28,8 @@ public class resetprofilepic extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid user session");
                 return;
             }
-            PreparedStatement ps = DB.prepare(
-                    "UPDATE user_profile_pic SET image='img/Profile_avatar_placeholder_large.png' WHERE users_idusers=?");
-            ps.setInt(1, uid);
-            ps.executeUpdate();
+            UserProfilePicService picService = new UserProfilePicService();
+            picService.resetProfilePic(uid);
             response.sendRedirect("profile.jsp");
         } catch (Exception e) {
             e.printStackTrace();

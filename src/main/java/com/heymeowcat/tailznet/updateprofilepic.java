@@ -1,8 +1,8 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.UserProfilePicService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -33,11 +33,8 @@ public class updateprofilepic extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing profile picture parameter");
                 return;
             }
-            PreparedStatement ps = DB.prepare(
-                    "UPDATE user_profile_pic SET image=? WHERE users_idusers=?");
-            ps.setString(1, esc(fp));
-            ps.setInt(2, uid);
-            ps.executeUpdate();
+            UserProfilePicService picService = new UserProfilePicService();
+            picService.updateProfilePic(uid, esc(fp));
         } catch (Exception e) {
             e.printStackTrace();
             try {

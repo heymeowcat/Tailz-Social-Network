@@ -28,4 +28,18 @@ public class UserProfilePicService {
     public void updateProfilePic(UserProfilePic pic) {
         picDAO.update(pic);
     }
+
+    public void updateProfilePic(int userId, String imagePath) {
+        UserProfilePic pic = picDAO.findByUserId(userId);
+        if (pic == null) {
+            pic = new UserProfilePic();
+            pic.setUserId(userId);
+        }
+        pic.setImage(imagePath);
+        picDAO.save(pic);
+    }
+
+    public void resetProfilePic(int userId) {
+        updateProfilePic(userId, "img/Profile_avatar_placeholder_large.png");
+    }
 }
