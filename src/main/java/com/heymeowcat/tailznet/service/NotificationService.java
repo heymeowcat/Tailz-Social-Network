@@ -25,6 +25,14 @@ public class NotificationService {
         notificationDAO.update(notification);
     }
 
+    public void markAsRead(int notificationId) {
+        Notification notif = notificationDAO.findById(notificationId);
+        if (notif != null) {
+            notif.setStatus("1");
+            notificationDAO.update(notif);
+        }
+    }
+
     public void createNotification(Notification notification) {
         notificationDAO.save(notification);
     }

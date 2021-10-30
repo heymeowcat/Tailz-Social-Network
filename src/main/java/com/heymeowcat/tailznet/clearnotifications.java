@@ -1,8 +1,8 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.NotificationService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -28,10 +28,8 @@ public class clearnotifications extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid notification ID");
                 return;
             }
-            PreparedStatement ps = DB.prepare(
-                    "UPDATE notification SET status='1' WHERE idnotification=?");
-            ps.setInt(1, nid);
-            ps.executeUpdate();
+            NotificationService notifService = new NotificationService();
+            notifService.markAsRead(nid);
         } catch (Exception e) {
             e.printStackTrace();
             try {

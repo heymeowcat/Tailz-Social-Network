@@ -1,8 +1,8 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.ChatService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -30,11 +30,8 @@ public class setmessageseen extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
                 return;
             }
-            PreparedStatement ps = DB.prepare(
-                    "UPDATE chat SET chatlinestatus='1' WHERE user_sender=? AND users_receiver=? AND chatlinestatus='0'");
-            ps.setInt(1, muid);
-            ps.setInt(2, uid);
-            ps.executeUpdate();
+            ChatService chatService = new ChatService();
+            chatService.markMessagesAsRead(uid, muid);
         } catch (Exception e) {
             e.printStackTrace();
             try {
