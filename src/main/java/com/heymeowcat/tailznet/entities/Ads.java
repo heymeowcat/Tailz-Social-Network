@@ -22,12 +22,24 @@ public class Ads {
     @Column(name = "forhowmanyhours")
     private int forHowManyHours;
 
+    @Column(name = "adcategory")
+    private int adCategory;
+
+    @Column(name = "src")
+    private String src;
+
+    @Column(name = "link")
+    private String link;
+
     public Ads() {}
 
-    public Ads(int adId, String status, int forHowManyHours) {
+    public Ads(int adId, String status, int forHowManyHours, int adCategory, String src, String link) {
         this.adId = adId;
         this.status = status;
         this.forHowManyHours = forHowManyHours;
+        this.adCategory = adCategory;
+        this.src = src;
+        this.link = link;
     }
 
     public int getAdId() { return adId; }
@@ -38,4 +50,13 @@ public class Ads {
 
     public int getForHowManyHours() { return forHowManyHours; }
     public void setForHowManyHours(int forHowManyHours) { this.forHowManyHours = forHowManyHours; }
+
+    public int getAdCategory() { return adCategory; }
+    public void setAdCategory(int adCategory) { this.adCategory = adCategory; }
+
+    public String getSrc() { return src; }
+    public void setSrc(String src) { this.src = src; }
+
+    public String getLink() { return link; }
+    public void setLink(String link) { this.link = link; }
 }

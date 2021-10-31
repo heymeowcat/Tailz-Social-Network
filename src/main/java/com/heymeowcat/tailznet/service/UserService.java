@@ -49,6 +49,14 @@ public class UserService {
         userDAO.update(user);
     }
 
+    public void updateUserType(int userId, int userTypeId) {
+        User user = userDAO.findById(userId);
+        if (user != null) {
+            user.setUserTypeId(userTypeId);
+            userDAO.update(user);
+        }
+    }
+
     public void deleteUser(int userId) {
         userDAO.deleteById(userId);
     }

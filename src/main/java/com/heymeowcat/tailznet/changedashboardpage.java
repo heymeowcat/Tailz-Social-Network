@@ -1,8 +1,8 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.UserService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -30,11 +30,8 @@ public class changedashboardpage extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
                 return;
             }
-            PreparedStatement ps = DB.prepare(
-                    "UPDATE users SET user_type_iduser_type=? WHERE idusers=?");
-            ps.setInt(1, x);
-            ps.setInt(2, uid);
-            ps.executeUpdate();
+            UserService userService = new UserService();
+            userService.updateUserType(uid, x);
         } catch (Exception e) {
             e.printStackTrace();
             try {

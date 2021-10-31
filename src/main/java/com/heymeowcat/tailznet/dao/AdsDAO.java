@@ -16,4 +16,9 @@ public class AdsDAO extends BaseDAO<Ads> {
     public List<Ads> findByStatus(String status) {
         return findByProperty("status", status);
     }
+
+    public void updateAd(Ads ads) {
+        ads.setStatus("3");
+        update(ads);
+    }
 }

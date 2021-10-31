@@ -1,8 +1,9 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.dao.AdsDAO;
+import com.heymeowcat.tailznet.entities.Ads;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -36,13 +37,14 @@ public class completethead extends HttpServlet {
                 return;
             }
 
-            PreparedStatement ps = DB.prepare(
-                    "UPDATE ads SET adcategory=?, src=?, link=?, status='3' WHERE Adid=?");
-            ps.setInt(1, cate);
-            ps.setString(2, src);
-            ps.setString(3, link);
-            ps.setString(4, adid);
-            ps.executeUpdate();
+            AdsDAO adsDAO = new AdsDAO();
+            Ads ad = adsDAO.findById(Integer.parseInt(adid));
+            if (ad != null) {
+                ad.setAdCategory(cate);
+                ad.setSrc(src);
+                ad.setLink(link);
+                adsDAO.updateAd(ad);
+            }
             response.sendRedirect("dashboard.jsp");
         } catch (Exception e) {
             e.printStackTrace();
