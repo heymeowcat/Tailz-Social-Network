@@ -1,8 +1,10 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.entities.GroupEntity;
+import com.heymeowcat.tailznet.entities.GroupMembers;
+import com.heymeowcat.tailznet.service.GroupService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import java.util.UUID;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -39,19 +41,18 @@ public class createnewgroup extends HttpServlet {
             if (!groupname.isEmpty()) {
                 String imgToUse = "undefined".equals(groupimg) ? "img/ion-android-people.png" : (groupimg != null ? groupimg : "img/ion-android-people.png");
 
-                PreparedStatement insGroup = DB.prepare(
-                        "INSERT INTO groups (group_id, groupname, groupimg, groupadmin) VALUES (?, ?, ?, ?)");
-                insGroup.setString(1, groupid);
-                insGroup.setString(2, groupname);
-                insGroup.setString(3, imgToUse);
-                insGroup.setInt(4, uid);
-                insGroup.executeUpdate();
+                GroupService groupService = new GroupService();
+                GroupEntity group = new GroupEntity();
+                group.setGroupId(groupid);
+                group.setGroupName(groupname);
+                group.setGroupImage(imgToUse);
+                group.setGroupAdmin(uid);
 
-                PreparedStatement insMember = DB.prepare(
-                        "INSERT INTO group_members (Groups_group_id, members) VALUES (?, ?)");
-                insMember.setString(1, groupid);
-                insMember.setInt(2, uid);
-                insMember.executeUpdate();
+                GroupMembers founder = new GroupMembers();
+                founder.setGroupId(groupid);
+                founder.setMemberId(uid);
+
+                groupService.createGroup(group, founder);
             }
         } catch (Exception e) {
             e.printStackTrace();

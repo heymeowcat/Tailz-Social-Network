@@ -15,8 +15,18 @@ public class GroupEntityDAO extends BaseDAO<GroupEntity> {
         super(GroupEntity.class);
     }
 
-    public GroupEntity findById(int id) {
-        return super.findById(id);
+    public GroupEntity findById(String id) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            GroupEntity entity = (GroupEntity) session.get(GroupEntity.class, id);
+            tx.commit();
+            return entity;
+        } catch (Exception e) {
+            tx.rollback();
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -25,7 +35,7 @@ public class GroupEntityDAO extends BaseDAO<GroupEntity> {
         Transaction tx = session.beginTransaction();
         try {
             Criteria criteria = session.createCriteria(GroupEntity.class);
-            criteria.add(Restrictions.eq("groupowner", ownerId));
+            criteria.add(Restrictions.eq("groupAdmin", ownerId));
             List<GroupEntity> list = criteria.list();
             tx.commit();
             return list;

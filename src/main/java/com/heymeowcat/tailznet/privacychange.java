@@ -1,8 +1,9 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.PostService;
+import com.heymeowcat.tailznet.service.UserPrivacyService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -34,18 +35,16 @@ public class privacychange extends HttpServlet {
                 return;
             }
 
-            PreparedStatement psPrivacy = DB.prepare(
-                    "UPDATE user_privacy SET privacy_name=? WHERE users_idusers=?");
-            psPrivacy.setString(1, x);
-            psPrivacy.setInt(2, uid);
-            psPrivacy.executeUpdate();
+            UserPrivacyService privacyService = new UserPrivacyService();
+            com.heymeowcat.tailznet.entities.UserPrivacy priv = privacyService.getUserPrivacy(uid);
+            if (priv != null) {
+                priv.setPrivacyName(x);
+                privacyService.updatePrivacy(priv);
+            }
 
             int privacyCode = "public".equals(x) ? 1 : 2;
-            PreparedStatement psPosts = DB.prepare(
-                    "UPDATE post SET Post_Privacy=? WHERE users_idusers=?");
-            psPosts.setInt(1, privacyCode);
-            psPosts.setInt(2, uid);
-            psPosts.executeUpdate();
+            PostService postService = new PostService();
+            postService.updatePostPrivacy(uid, privacyCode);
         } catch (Exception e) {
             e.printStackTrace();
             try {

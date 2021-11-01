@@ -16,7 +16,7 @@ public class GroupChatDAO extends BaseDAO<GroupChat> {
     }
 
     @SuppressWarnings("unchecked")
-    public List<GroupChat> findByGroup(int groupId) {
+    public List<GroupChat> findByGroup(String groupId) {
         Session session = HibernateUtil.getSessionFactory().getCurrentSession();
         Transaction tx = session.beginTransaction();
         try {

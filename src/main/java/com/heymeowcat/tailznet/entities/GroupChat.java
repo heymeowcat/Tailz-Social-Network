@@ -16,8 +16,8 @@ public class GroupChat {
     @Column(name = "idgroup_chat")
     private int id;
 
-    @Column(name = "Groups_group_id")
-    private int groupId;
+    @Column(name = "Groups_group_id", length = 64)
+    private String groupId;
 
     @Column(name = "chat_text")
     private String chatText;
@@ -36,7 +36,7 @@ public class GroupChat {
 
     public GroupChat() {}
 
-    public GroupChat(int id, int groupId, String chatText, String src,
+    public GroupChat(int id, String groupId, String chatText, String src,
                      int userId, int chatStatus, String chatDatetime) {
         this.id = id;
         this.groupId = groupId;
@@ -50,8 +50,8 @@ public class GroupChat {
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
-    public int getGroupId() { return groupId; }
-    public void setGroupId(int groupId) { this.groupId = groupId; }
+    public String getGroupId() { return groupId; }
+    public void setGroupId(String groupId) { this.groupId = groupId; }
 
     public String getChatText() { return chatText; }
     public void setChatText(String chatText) { this.chatText = chatText; }

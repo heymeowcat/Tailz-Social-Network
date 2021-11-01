@@ -73,4 +73,19 @@ public class PostDAO extends BaseDAO<Post> {
             return 0;
         }
     }
+
+    public void updatePostPrivacyForUser(int userId, int privacy) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            session.createQuery("UPDATE Post SET postPrivacy = :privacy WHERE userId = :userId")
+                    .setInteger("privacy", privacy)
+                    .setInteger("userId", userId)
+                    .executeUpdate();
+            tx.commit();
+        } catch (Exception e) {
+            tx.rollback();
+            e.printStackTrace();
+        }
+    }
 }

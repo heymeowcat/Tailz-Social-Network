@@ -15,7 +15,7 @@ public class GroupMembersDAO extends BaseDAO<GroupMembers> {
     }
 
     @SuppressWarnings("unchecked")
-    public List<GroupMembers> findByGroup(int groupId) {
+    public List<GroupMembers> findByGroup(String groupId) {
         Session session = HibernateUtil.getSessionFactory().getCurrentSession();
         Transaction tx = session.beginTransaction();
         try {
@@ -37,7 +37,7 @@ public class GroupMembersDAO extends BaseDAO<GroupMembers> {
         Transaction tx = session.beginTransaction();
         try {
             Criteria criteria = session.createCriteria(GroupMembers.class);
-            criteria.add(Restrictions.eq("userId", userId));
+            criteria.add(Restrictions.eq("memberId", userId));
             List<GroupMembers> list = criteria.list();
             tx.commit();
             return list;
@@ -48,12 +48,12 @@ public class GroupMembersDAO extends BaseDAO<GroupMembers> {
         }
     }
 
-    public boolean isMember(int userId, int groupId) {
+    public boolean isMember(int userId, String groupId) {
         Session session = HibernateUtil.getSessionFactory().getCurrentSession();
         Transaction tx = session.beginTransaction();
         try {
             Criteria criteria = session.createCriteria(GroupMembers.class);
-            criteria.add(Restrictions.eq("userId", userId));
+            criteria.add(Restrictions.eq("memberId", userId));
             criteria.add(Restrictions.eq("groupId", groupId));
             List<?> list = criteria.list();
             tx.commit();

@@ -68,4 +68,8 @@ public class PostService {
         bookmarkDAO.deleteByPost(postId);
         postDAO.deleteById(postId);
     }
+
+    public void updatePostPrivacy(int userId, int privacy) {
+        postDAO.updatePostPrivacyForUser(userId, privacy);
+    }
 }

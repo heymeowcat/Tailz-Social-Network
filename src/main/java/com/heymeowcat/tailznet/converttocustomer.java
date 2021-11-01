@@ -1,8 +1,8 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.UserService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -28,10 +28,8 @@ public class converttocustomer extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid user ID");
                 return;
             }
-            PreparedStatement ps = DB.prepare(
-                    "UPDATE users SET user_type_iduser_type='3' WHERE idusers=?");
-            ps.setInt(1, uid);
-            ps.executeUpdate();
+            UserService userService = new UserService();
+            userService.updateUserType(uid, 3);
             response.sendRedirect("dashboard.jsp");
         } catch (Exception e) {
             e.printStackTrace();

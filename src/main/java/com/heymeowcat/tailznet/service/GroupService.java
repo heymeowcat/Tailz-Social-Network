@@ -16,7 +16,7 @@ public class GroupService {
         this.membersDAO = new GroupMembersDAO();
     }
 
-    public GroupEntity getGroupById(int groupId) {
+    public GroupEntity getGroupById(String groupId) {
         return groupDAO.findById(groupId);
     }
 
@@ -24,7 +24,7 @@ public class GroupService {
         return groupDAO.findByOwner(ownerId);
     }
 
-    public List<GroupMembers> getGroupMembers(int groupId) {
+    public List<GroupMembers> getGroupMembers(String groupId) {
         return membersDAO.findByGroup(groupId);
     }
 
@@ -32,12 +32,13 @@ public class GroupService {
         return membersDAO.findByUser(userId);
     }
 
-    public boolean isUserMember(int userId, int groupId) {
+    public boolean isUserMember(int userId, String groupId) {
         return membersDAO.isMember(userId, groupId);
     }
 
-    public void createGroup(GroupEntity group) {
+    public void createGroup(GroupEntity group, GroupMembers founder) {
         groupDAO.save(group);
+        membersDAO.save(founder);
     }
 
     public void addMember(GroupMembers member) {

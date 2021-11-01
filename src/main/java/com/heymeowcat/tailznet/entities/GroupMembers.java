@@ -16,15 +16,15 @@ public class GroupMembers {
     @Column(name = "idgroup_members")
     private int id;
 
-    @Column(name = "groups_group_id")
-    private int groupId;
+    @Column(name = "groups_group_id", length = 64)
+    private String groupId;
 
     @Column(name = "members")
     private int memberId;
 
     public GroupMembers() {}
 
-    public GroupMembers(int id, int groupId, int memberId) {
+    public GroupMembers(int id, String groupId, int memberId) {
         this.id = id;
         this.groupId = groupId;
         this.memberId = memberId;
@@ -33,8 +33,8 @@ public class GroupMembers {
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
-    public int getGroupId() { return groupId; }
-    public void setGroupId(int groupId) { this.groupId = groupId; }
+    public String getGroupId() { return groupId; }
+    public void setGroupId(String groupId) { this.groupId = groupId; }
 
     public int getMemberId() { return memberId; }
     public void setMemberId(int memberId) { this.memberId = memberId; }
