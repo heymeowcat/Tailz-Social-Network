@@ -15,6 +15,19 @@ public class GroupChatDAO extends BaseDAO<GroupChat> {
         super(GroupChat.class);
     }
 
+    public void deleteByGroup(String groupId) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            session.createQuery("DELETE FROM GroupChat WHERE groupId = :groupId")
+                    .setString("groupId", groupId).executeUpdate();
+            tx.commit();
+        } catch (Exception e) {
+            tx.rollback();
+            e.printStackTrace();
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public List<GroupChat> findByGroup(String groupId) {
         Session session = HibernateUtil.getSessionFactory().getCurrentSession();

@@ -64,4 +64,17 @@ public class GroupMembersDAO extends BaseDAO<GroupMembers> {
             return false;
         }
     }
+
+    public void deleteByGroup(String groupId) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            session.createQuery("DELETE FROM GroupMembers WHERE groupId = :groupId")
+                    .setString("groupId", groupId).executeUpdate();
+            tx.commit();
+        } catch (Exception e) {
+            tx.rollback();
+            e.printStackTrace();
+        }
+    }
 }

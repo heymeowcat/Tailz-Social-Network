@@ -1,8 +1,8 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.GroupService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -26,20 +26,8 @@ public class deletethisgroup extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing group ID");
                 return;
             }
-            PreparedStatement delChat = DB.prepare(
-                    "DELETE FROM group_chat WHERE Groups_group_id=?");
-            delChat.setString(1, groupid);
-            delChat.executeUpdate();
-
-            PreparedStatement delMembers = DB.prepare(
-                    "DELETE FROM group_members WHERE Groups_group_id=?");
-            delMembers.setString(1, groupid);
-            delMembers.executeUpdate();
-
-            PreparedStatement delGroup = DB.prepare(
-                    "DELETE FROM groups WHERE group_id=?");
-            delGroup.setString(1, groupid);
-            delGroup.executeUpdate();
+            GroupService groupService = new GroupService();
+            groupService.deleteGroupCascade(groupid);
         } catch (Exception e) {
             e.printStackTrace();
             try {

@@ -1,5 +1,6 @@
 package com.heymeowcat.tailznet.service;
 
+import com.heymeowcat.tailznet.dao.GroupChatDAO;
 import com.heymeowcat.tailznet.dao.GroupEntityDAO;
 import com.heymeowcat.tailznet.dao.GroupMembersDAO;
 import com.heymeowcat.tailznet.entities.GroupEntity;
@@ -10,10 +11,12 @@ public class GroupService {
 
     private final GroupEntityDAO groupDAO;
     private final GroupMembersDAO membersDAO;
+    private final GroupChatDAO chatDAO;
 
     public GroupService() {
         this.groupDAO = new GroupEntityDAO();
         this.membersDAO = new GroupMembersDAO();
+        this.chatDAO = new GroupChatDAO();
     }
 
     public GroupEntity getGroupById(String groupId) {
@@ -47,5 +50,11 @@ public class GroupService {
 
     public void removeMember(GroupMembers member) {
         membersDAO.delete(member);
+    }
+
+    public void deleteGroupCascade(String groupId) {
+        chatDAO.deleteByGroup(groupId);
+        membersDAO.deleteByGroup(groupId);
+        groupDAO.deleteById(groupId);
     }
 }

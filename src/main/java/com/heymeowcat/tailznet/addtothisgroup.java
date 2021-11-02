@@ -1,8 +1,9 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.GroupService;
+import com.heymeowcat.tailznet.entities.GroupMembers;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -33,11 +34,11 @@ public class addtothisgroup extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing group ID");
                 return;
             }
-            PreparedStatement ps = DB.prepare(
-                    "INSERT INTO group_members (Groups_group_id, members) VALUES (?, ?)");
-            ps.setString(1, groupid);
-            ps.setInt(2, member);
-            ps.executeUpdate();
+            GroupService groupService = new GroupService();
+            GroupMembers memberEntity = new GroupMembers();
+            memberEntity.setGroupId(groupid);
+            memberEntity.setMemberId(member);
+            groupService.addMember(memberEntity);
         } catch (Exception e) {
             e.printStackTrace();
             try {

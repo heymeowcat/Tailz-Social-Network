@@ -45,4 +45,16 @@ public class GroupEntityDAO extends BaseDAO<GroupEntity> {
             return null;
         }
     }
+
+    public void deleteById(String id) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            session.delete(session.get(GroupEntity.class, id));
+            tx.commit();
+        } catch (Exception e) {
+            tx.rollback();
+            e.printStackTrace();
+        }
+    }
 }

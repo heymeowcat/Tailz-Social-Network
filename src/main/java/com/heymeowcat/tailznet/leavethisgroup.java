@@ -1,8 +1,11 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.GroupService;
+import com.heymeowcat.tailznet.entities.GroupMembers;
+import com.heymeowcat.tailznet.dao.GroupMembersDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -33,11 +36,14 @@ public class leavethisgroup extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing group ID");
                 return;
             }
-            PreparedStatement ps = DB.prepare(
-                    "DELETE FROM group_members WHERE Groups_group_id=? AND members=?");
-            ps.setString(1, groupid);
-            ps.setInt(2, memberid);
-            ps.executeUpdate();
+            GroupMembersDAO membersDAO = new GroupMembersDAO();
+            List<GroupMembers> memberships = membersDAO.findByGroup(groupid);
+            for (GroupMembers gm : memberships) {
+                if (gm.getMemberId() == memberid) {
+                    membersDAO.delete(gm);
+                    break;
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
             try {
