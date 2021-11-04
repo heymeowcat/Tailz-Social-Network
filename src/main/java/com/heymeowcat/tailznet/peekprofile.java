@@ -1,9 +1,11 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.FollowService;
+import com.heymeowcat.tailznet.service.PostService;
+import com.heymeowcat.tailznet.service.UserProfilePicService;
+import com.heymeowcat.tailznet.service.UserService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -39,61 +41,18 @@ public class peekprofile extends HttpServlet {
             String Dcolor = themeColors[3];
             String Ecolor = themeColors[4];
             String Fcolor = themeColors[5];
-            String up = "";
-            String fn = "";
-            String ln = "";
-            PreparedStatement uflPs = DB.prepare("Select firstname,lastname FROM `users` where idusers=?");
-            uflPs.setInt(1, uid);
-            ResultSet ufl = uflPs.executeQuery();
-            if (ufl.next()) {
-                fn = esc(ufl.getString(1));
-                ln = esc(ufl.getString(2));
-            }
+            UserService userService = new UserService();
+            String fn = esc(userService.getUserFirstName(uid));
+            String ln = esc(userService.getUserLastName(uid));
 
-            String usrpostcount = "0";
-            String followercount = "0";
-            String followingcount = "0";
-            PreparedStatement uspPs = DB.prepare("Select image FROM `user_profile_pic` where users_idusers=?");
-            uspPs.setInt(1, uid);
-            ResultSet usp = uspPs.executeQuery();
-            if (!usp.isBeforeFirst()) {
-                up = "img/Profile_avatar_placeholder_large.png";
-            } else if (usp.next()) {
-                up = esc(usp.getString(1));
-            }
+            UserProfilePicService picService = new UserProfilePicService();
+            String up = picService.getProfilePicPath(uid);
 
-            try {
-                PreparedStatement postcountPs = DB.prepare("SELECT COUNT(`users_idusers`) FROM `post` WHERE `users_idusers`=?");
-                postcountPs.setInt(1, uid);
-                ResultSet postcount = postcountPs.executeQuery();
-                if (postcount.next()) {
-                    usrpostcount = postcount.getString(1);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            try {
-                PreparedStatement postcountPs = DB.prepare("SELECT DISTINCT COUNT(`sender`) FROM `follow` WHERE `receiver`=?");
-                postcountPs.setInt(1, uid);
-                ResultSet postcount = postcountPs.executeQuery();
-                if (postcount.next()) {
-                    followercount = postcount.getString(1);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            try {
-                PreparedStatement postcountPs = DB.prepare("SELECT DISTINCT COUNT(`receiver`) FROM `follow` WHERE `sender`=?");
-                postcountPs.setInt(1, uid);
-                ResultSet postcount = postcountPs.executeQuery();
-                if (postcount.next()) {
-                    followingcount = postcount.getString(1);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            FollowService followService = new FollowService();
+            PostService postService = new PostService();
+            String usrpostcount = String.valueOf(postService.getPostCount(uid));
+            String followercount = String.valueOf(followService.getFollowerCount(uid));
+            String followingcount = String.valueOf(followService.getFollowingCount(uid));
 
             out.write("<i class='material-icons right waves-effect modal-close " + esc(Dcolor) + "'>close</i>");
             out.write("<div class='center'>");

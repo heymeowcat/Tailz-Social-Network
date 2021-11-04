@@ -6,8 +6,12 @@ import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class BaseDAO<T> {
+
+    private static final Logger logger = LoggerFactory.getLogger(BaseDAO.class);
 
     protected Class<T> entityClass;
 
@@ -24,7 +28,7 @@ public abstract class BaseDAO<T> {
             return entity;
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("Database operation failed: {}", e.getMessage());
             return null;
         }
     }
@@ -39,7 +43,7 @@ public abstract class BaseDAO<T> {
             return list;
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("Database operation failed: {}", e.getMessage());
             return null;
         }
     }
@@ -52,7 +56,7 @@ public abstract class BaseDAO<T> {
             tx.commit();
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("Database operation failed: {}", e.getMessage());
         }
     }
 
@@ -64,7 +68,7 @@ public abstract class BaseDAO<T> {
             tx.commit();
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("Database operation failed: {}", e.getMessage());
         }
     }
 
@@ -76,7 +80,7 @@ public abstract class BaseDAO<T> {
             tx.commit();
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("Database operation failed: {}", e.getMessage());
         }
     }
 
@@ -99,7 +103,7 @@ public abstract class BaseDAO<T> {
             return list;
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("Database operation failed: {}", e.getMessage());
             return null;
         }
     }

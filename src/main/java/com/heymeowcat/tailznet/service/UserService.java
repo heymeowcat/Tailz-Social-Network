@@ -3,9 +3,12 @@ package com.heymeowcat.tailznet.service;
 import com.heymeowcat.tailznet.dao.UserDAO;
 import com.heymeowcat.tailznet.entities.User;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UserService {
 
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     private final UserDAO userDAO;
 
     public UserService() {

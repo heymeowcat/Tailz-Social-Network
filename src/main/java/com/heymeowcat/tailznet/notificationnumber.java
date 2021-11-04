@@ -1,9 +1,8 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.NotificationService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -29,18 +28,14 @@ public class notificationnumber extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid uid parameter");
                 return;
             }
-            PreparedStatement rsPs = DB.prepare("Select count(notificationfor) from notification where notificationfor=? and status='0' ");
-            rsPs.setInt(1, uid);
-            ResultSet rs = rsPs.executeQuery();
-            if (rs.next()) {
-                int count = rs.getInt(1);
-                if (count == 0) {
-                    // no output
-                } else if (count <= 9) {
-                    out.print(count);
-                } else {
-                    out.print("+");
-                }
+            NotificationService notifService = new NotificationService();
+            int count = notifService.getUnreadCount(uid);
+            if (count == 0) {
+                // no output
+            } else if (count <= 9) {
+                out.print(count);
+            } else {
+                out.print("+");
             }
         } catch (Exception e) {
             e.printStackTrace();

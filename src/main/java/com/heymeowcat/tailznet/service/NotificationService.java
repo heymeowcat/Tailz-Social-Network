@@ -3,9 +3,12 @@ package com.heymeowcat.tailznet.service;
 import com.heymeowcat.tailznet.dao.NotificationDAO;
 import com.heymeowcat.tailznet.entities.Notification;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NotificationService {
 
+    private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
     private final NotificationDAO notificationDAO;
 
     public NotificationService() {
