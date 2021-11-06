@@ -11,6 +11,13 @@ package com.heymeowcat.tailznet;
  * and open the template in the editor.
  */
 
+import com.heymeowcat.tailznet.entities.PostComment;
+import com.heymeowcat.tailznet.entities.Notification;
+import com.heymeowcat.tailznet.service.CommentService;
+import com.heymeowcat.tailznet.service.NotificationService;
+import com.heymeowcat.tailznet.service.PostService;
+import com.heymeowcat.tailznet.service.UserProfilePicService;
+import com.heymeowcat.tailznet.service.UserService;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.PreparedStatement;
@@ -64,50 +71,46 @@ public class commentsload extends HttpServlet {
             String Ecolor = themeColors[4];
             String Fcolor = themeColors[5];
 
-            PreparedStatement piduidrsPs = DB.prepare("Select users_idusers from post where idpost= ?");
-            piduidrsPs.setInt(1, x);
-            ResultSet piduidrs = piduidrsPs.executeQuery();
-            int piduid = 0;
-            if (piduidrs.next()) {
-                piduid = piduidrs.getInt(1);
-            }
+            PostService postService = new PostService();
+            CommentService commentService = new CommentService();
+            NotificationService notifService = new NotificationService();
+            UserService userService = new UserService();
+            UserProfilePicService picService = new UserProfilePicService();
+
+            int postOwnerId = postService.getPostById(x) != null ? postService.getPostById(x).getUserId() : 0;
+
             if (z != null && !z.isEmpty()) {
-                PreparedStatement cmntIns = DB.prepare("INSERT INTO `post_comment` ( `comment`, `users_idusers`, `post_idpost`) VALUES (?, ?, ?)");
-                cmntIns.setString(1, z);
-                cmntIns.setInt(2, y);
-                cmntIns.setInt(3, x);
-                cmntIns.executeUpdate();
+                PostComment newComment = new PostComment();
+                newComment.setPostId(x);
+                newComment.setUserId(y);
+                newComment.setCommentText(z);
+                commentService.saveComment(newComment);
             }
-            if (piduid != y) {
-                PreparedStatement notifIns = DB.prepare("INSERT INTO `notification` (`notificationfor`, `notificationfrom`,`notification-type`,`status`,`target`) VALUES (?, ?, '2', '0', ?)");
-                notifIns.setInt(1, piduid);
-                notifIns.setInt(2, y);
-                notifIns.setInt(3, x);
-                notifIns.executeUpdate();
+
+            if (postOwnerId != 0 && postOwnerId != y) {
+                Notification notif = new Notification();
+                notif.setNotificationFor(postOwnerId);
+                notif.setNotificationFrom(y);
+                notif.setNotificationType("2");
+                notif.setStatus("0");
+                notif.setTarget(x);
+                notifService.createNotification(notif);
             }
-            PreparedStatement cmntsrsPs = DB.prepare("Select pc.idpost_comment, pc.post_idpost, pc.users_idusers, u.firstname, u.lastname, u.image, pc.datetime, pc.likes FROM post_comment pc JOIN users u ON pc.users_idusers = u.idusers WHERE pc.post_idpost=? ORDER BY pc.datetime DESC");
-            cmntsrsPs.setInt(1, x);
-            ResultSet cmntsrs = cmntsrsPs.executeQuery();
-            if (!cmntsrs.isBeforeFirst()) {
+
+            java.util.List<PostComment> comments = commentService.getCommentsForPost(x);
+            if (comments == null || comments.isEmpty()) {
                 out.write("<div class='center' style='top:40%; position:relative'><img src ='img/commentlive.png' class='animated pulse responsiveimg '></div>");
             } else {
                 out.write("<ul class='collection' style='width: 100%;height: 55vh;overflow: scroll; border-color:"+Ccolor+"' >");
-                while (cmntsrs.next()) {
-                    String cmpic = "";
-                    String cmfn = cmntsrs.getString(4);
-                    String cmln = cmntsrs.getString(5);
-                    java.sql.ResultSet imguserincmnt;
-                    PreparedStatement imgPs = DB.prepare("Select image From user_profile_pic where users_idusers=?");
-                    imgPs.setInt(1, cmntsrs.getInt(6));
-                    imguserincmnt = imgPs.executeQuery();
-                    if (imguserincmnt.next()) {
-                        cmpic = imguserincmnt.getString(1);
-                    }
+                for (PostComment comment : comments) {
+                    String cmpic = picService.getProfilePicPath(comment.getUserId());
+                    String cmfn = esc(userService.getUserFirstName(comment.getUserId()));
+                    String cmln = esc(userService.getUserLastName(comment.getUserId()));
                     out.write("<li class='collection-item avatar "+Acolor+" "+Dcolor+"' style='border-color:"+Ccolor+"'>");
                     out.write("<img src='" + cmpic + "'  class='circle'>");
                     out.write("<span class='title'>" + cmfn + " " + cmln + "</span>");
-                    out.write("<p>" + esc(cmntsrs.getString(1)) + "<br>");
-                    out.write("" + esc(cmntsrs.getString(2)) + " ");
+                    out.write("<p>" + esc(comment.getCommentText()) + "<br>");
+                    out.write("" + esc(comment.getDatetime()) + " ");
                     out.write("</p>");
                     out.write("</li>");
                 }

@@ -1,5 +1,8 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.ChatService;
+import com.heymeowcat.tailznet.service.UserProfilePicService;
+import com.heymeowcat.tailznet.service.UserService;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.PreparedStatement;
@@ -43,65 +46,56 @@ public class directmessages extends HttpServlet {
             String uidFirstName = "";
             String uidLastName = "";
             String uidImage = "";
-            PreparedStatement muidPs = DB.prepare("SELECT firstname FROM users WHERE idusers=?");
-            muidPs.setInt(1, muid);
-            ResultSet muidRs = muidPs.executeQuery();
-            if (muidRs.next()) {
-                muidFirstName = muidRs.getString(1);
-            }
-            PreparedStatement uidPs = DB.prepare("SELECT firstname, lastname, image FROM users JOIN user_profile_pic ON users.idusers = user_profile_pic.users_idusers WHERE idusers=?");
-            uidPs.setInt(1, uid);
-            ResultSet uidRs = uidPs.executeQuery();
-            if (uidRs.next()) {
-                uidFirstName = uidRs.getString(1);
-                uidLastName = uidRs.getString(2);
-                uidImage = uidRs.getString(3);
-            }
 
-            PreparedStatement chatPs = DB.prepare(
-                    "SELECT * FROM chat WHERE (user_sender=? AND users_receiver=?) OR (user_sender=? AND users_receiver=?) ORDER BY chat_datetime ASC");
-            chatPs.setInt(1, muid);
-            chatPs.setInt(2, uid);
-            chatPs.setInt(3, uid);
-            chatPs.setInt(4, muid);
-            ResultSet rs = chatPs.executeQuery();
-            while (rs.next()) {
-                if (rs.getString(5).equals("" + muid)) {
-                    out.write("<div class='message__list'>");
-                    out.write("<div class='message__item message__item--bot'>");
-                    out.write("<span class='message message--bot " + Dcolor + "'  data-balloon='" + esc(rs.getString(4)) + "' data-balloon-pos='right' >");
-                    out.write("<b>" + esc(muidFirstName) + "</b><br>");
-                    if (rs.getString(2) != null) {
-                        out.write(esc(ENCDEC.decrypt(rs.getString(2), new KEY().secretKey)));
-                    }
-                    if (rs.getString(3) != null) {
-                        if (rs.getString(2) == null) {
-                            out.write("<img class='responsive-img' src='" + esc(ENCDEC.decrypt(rs.getString(3), new KEY().secretKey)) + "' width='300px' style='border-radius: 15px'>");
-                        } else {
-                            out.write("<br><img class='responsive-img' src='" + esc(ENCDEC.decrypt(rs.getString(3), new KEY().secretKey)) + "' width='300px' style='border-radius: 15px'>");
+            UserService userService = new UserService();
+            muidFirstName = userService.getUserFirstName(muid);
+            uidFirstName = userService.getUserFirstName(uid);
+            uidLastName = userService.getUserLastName(uid);
+
+            UserProfilePicService picService = new UserProfilePicService();
+            uidImage = picService.getProfilePicPath(uid);
+
+            ChatService chatService = new ChatService();
+            java.util.List<com.heymeowcat.tailznet.entities.Chat> chatList = chatService.getConversation(muid, uid);
+            if (chatList != null) {
+                for (com.heymeowcat.tailznet.entities.Chat chat : chatList) {
+                    if (chat.getUserReceiver() == muid) {
+                        out.write("<div class='message__list'>");
+                        out.write("<div class='message__item message__item--bot'>");
+                        out.write("<span class='message message--bot " + Dcolor + "'  data-balloon='" + esc(String.valueOf(chat.getUserSender())) + "' data-balloon-pos='right' >");
+                        out.write("<b>" + esc(muidFirstName) + "</b><br>");
+                        if (chat.getChatText() != null) {
+                            out.write(esc(ENCDEC.decrypt(chat.getChatText(), new KEY().secretKey)));
                         }
-                    }
-                    out.write("</span>");
-                    out.write("</div>");
-                    out.write("</div>");
-                } else if (rs.getString(5).equals("" + uid)) {
-                    out.write("<div class='message__list'>");
-                    out.write("<div class='message__item message__item--user'>");
-                    out.write("<span class='message message--user " + Dcolor + "' data-balloon='" + esc(rs.getString(4)) + "' data-balloon-pos='left' >");
-                    out.write("<b class='right'>Me</b><br>");
-                    if (rs.getString(2) != null) {
-                        out.write(esc(ENCDEC.decrypt(rs.getString(2), new KEY().secretKey)));
-                    }
-                    if (rs.getString(3) != null) {
-                        if (rs.getString(2) == null) {
-                            out.write("<img class='responsive-img' src='" + esc(ENCDEC.decrypt(rs.getString(3), new KEY().secretKey)) + "' width='300px' style='border-radius: 15px'>");
-                        } else {
-                            out.write("<br><img class='responsive-img' src='" + esc(ENCDEC.decrypt(rs.getString(3), new KEY().secretKey)) + "' width='300px' style='border-radius: 15px'>");
+                        if (chat.getSrc() != null) {
+                            if (chat.getChatText() == null) {
+                                out.write("<img class='responsive-img' src='" + esc(ENCDEC.decrypt(chat.getSrc(), new KEY().secretKey)) + "' width='300px' style='border-radius: 15px'>");
+                            } else {
+                                out.write("<br><img class='responsive-img' src='" + esc(ENCDEC.decrypt(chat.getSrc(), new KEY().secretKey)) + "' width='300px' style='border-radius: 15px'>");
+                            }
                         }
+                        out.write("</span>");
+                        out.write("</div>");
+                        out.write("</div>");
+                    } else if (chat.getUserReceiver() == uid) {
+                        out.write("<div class='message__list'>");
+                        out.write("<div class='message__item message__item--user'>");
+                        out.write("<span class='message message--user " + Dcolor + "' data-balloon='" + esc(String.valueOf(chat.getUserSender())) + "' data-balloon-pos='left' >");
+                        out.write("<b class='right'>Me</b><br>");
+                        if (chat.getChatText() != null) {
+                            out.write(esc(ENCDEC.decrypt(chat.getChatText(), new KEY().secretKey)));
+                        }
+                        if (chat.getSrc() != null) {
+                            if (chat.getChatText() == null) {
+                                out.write("<img class='responsive-img' src='" + esc(ENCDEC.decrypt(chat.getSrc(), new KEY().secretKey)) + "' width='300px' style='border-radius: 15px'>");
+                            } else {
+                                out.write("<br><img class='responsive-img' src='" + esc(ENCDEC.decrypt(chat.getSrc(), new KEY().secretKey)) + "' width='300px' style='border-radius: 15px'>");
+                            }
+                        }
+                        out.write("</span>");
+                        out.write("</div>");
+                        out.write("</div>");
                     }
-                    out.write("</span>");
-                    out.write("</div>");
-                    out.write("</div>");
                 }
             }
         } catch (Exception e) {
