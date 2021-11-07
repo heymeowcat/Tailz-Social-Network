@@ -2,8 +2,11 @@ package com.heymeowcat.tailznet.service;
 
 import com.heymeowcat.tailznet.dao.UserProfilePicDAO;
 import com.heymeowcat.tailznet.entities.UserProfilePic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UserProfilePicService {
+    private static final Logger logger = LoggerFactory.getLogger(UserProfilePicService.class);
 
     private final UserProfilePicDAO picDAO;
 

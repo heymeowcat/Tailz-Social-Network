@@ -6,8 +6,12 @@ import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PostRankDAO extends BaseDAO<PostRank> {
+
+    private static final Logger logger = LoggerFactory.getLogger(PostRankDAO.class);
 
     public PostRankDAO() {
         super(PostRank.class);
@@ -35,7 +39,7 @@ public class PostRankDAO extends BaseDAO<PostRank> {
             tx.commit();
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("DAO operation failed: {}", e.getMessage());
         }
     }
 }

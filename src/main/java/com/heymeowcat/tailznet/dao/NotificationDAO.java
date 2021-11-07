@@ -9,8 +9,12 @@ import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NotificationDAO extends BaseDAO<Notification> {
+
+    private static final Logger logger = LoggerFactory.getLogger(NotificationDAO.class);
 
     public NotificationDAO() {
         super(Notification.class);
@@ -29,7 +33,7 @@ public class NotificationDAO extends BaseDAO<Notification> {
             return list;
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("DAO operation failed: {}", e.getMessage());
             return null;
         }
     }
@@ -47,7 +51,7 @@ public class NotificationDAO extends BaseDAO<Notification> {
             return list.isEmpty() ? 0 : ((Long) list.get(0)).intValue();
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("DAO operation failed: {}", e.getMessage());
             return 0;
         }
     }

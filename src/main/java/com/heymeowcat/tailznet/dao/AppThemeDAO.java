@@ -2,8 +2,12 @@ package com.heymeowcat.tailznet.dao;
 
 import com.heymeowcat.tailznet.entities.AppTheme;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AppThemeDAO extends BaseDAO<AppTheme> {
+
+    private static final Logger logger = LoggerFactory.getLogger(AppThemeDAO.class);
 
     public AppThemeDAO() {
         super(AppTheme.class);

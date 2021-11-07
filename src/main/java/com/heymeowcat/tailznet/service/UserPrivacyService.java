@@ -2,8 +2,11 @@ package com.heymeowcat.tailznet.service;
 
 import com.heymeowcat.tailznet.dao.UserPrivacyDAO;
 import com.heymeowcat.tailznet.entities.UserPrivacy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UserPrivacyService {
+    private static final Logger logger = LoggerFactory.getLogger(UserPrivacyService.class);
 
     private final UserPrivacyDAO privacyDAO;
 

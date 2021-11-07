@@ -7,8 +7,12 @@ import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UserDAO extends BaseDAO<User> {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserDAO.class);
 
     public UserDAO() {
         super(User.class);
@@ -28,7 +32,7 @@ public class UserDAO extends BaseDAO<User> {
             return null;
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("DAO operation failed: {}", e.getMessage());
             return null;
         }
     }
@@ -42,7 +46,7 @@ public class UserDAO extends BaseDAO<User> {
             return user;
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("DAO operation failed: {}", e.getMessage());
             return null;
         }
     }

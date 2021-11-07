@@ -3,8 +3,11 @@ package com.heymeowcat.tailznet.service;
 import com.heymeowcat.tailznet.dao.UserBookmarkDAO;
 import com.heymeowcat.tailznet.entities.UserBookmark;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UserBookmarkService {
+    private static final Logger logger = LoggerFactory.getLogger(UserBookmarkService.class);
 
     private final UserBookmarkDAO bookmarkDAO;
 

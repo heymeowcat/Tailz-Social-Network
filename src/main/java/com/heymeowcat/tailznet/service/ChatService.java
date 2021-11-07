@@ -3,8 +3,11 @@ package com.heymeowcat.tailznet.service;
 import com.heymeowcat.tailznet.dao.ChatDAO;
 import com.heymeowcat.tailznet.entities.Chat;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ChatService {
+    private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
 
     private final ChatDAO chatDAO;
 

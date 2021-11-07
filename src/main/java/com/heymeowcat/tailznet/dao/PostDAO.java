@@ -9,8 +9,12 @@ import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PostDAO extends BaseDAO<Post> {
+
+    private static final Logger logger = LoggerFactory.getLogger(PostDAO.class);
 
     public PostDAO() {
         super(Post.class);
@@ -33,7 +37,7 @@ public class PostDAO extends BaseDAO<Post> {
             return list;
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("DAO operation failed: {}", e.getMessage());
             return null;
         }
     }
@@ -52,7 +56,7 @@ public class PostDAO extends BaseDAO<Post> {
             return list;
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("DAO operation failed: {}", e.getMessage());
             return null;
         }
     }
@@ -69,7 +73,7 @@ public class PostDAO extends BaseDAO<Post> {
             return list.isEmpty() ? 0 : ((Long) list.get(0)).intValue();
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("DAO operation failed: {}", e.getMessage());
             return 0;
         }
     }
@@ -85,7 +89,7 @@ public class PostDAO extends BaseDAO<Post> {
             tx.commit();
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("DAO operation failed: {}", e.getMessage());
         }
     }
 }

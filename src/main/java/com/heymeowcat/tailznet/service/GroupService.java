@@ -6,8 +6,11 @@ import com.heymeowcat.tailznet.dao.GroupMembersDAO;
 import com.heymeowcat.tailznet.entities.GroupEntity;
 import com.heymeowcat.tailznet.entities.GroupMembers;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GroupService {
+    private static final Logger logger = LoggerFactory.getLogger(GroupService.class);
 
     private final GroupEntityDAO groupDAO;
     private final GroupMembersDAO membersDAO;

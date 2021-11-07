@@ -8,8 +8,12 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GroupEntityDAO extends BaseDAO<GroupEntity> {
+
+    private static final Logger logger = LoggerFactory.getLogger(GroupEntityDAO.class);
 
     public GroupEntityDAO() {
         super(GroupEntity.class);
@@ -24,7 +28,7 @@ public class GroupEntityDAO extends BaseDAO<GroupEntity> {
             return entity;
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("DAO operation failed: {}", e.getMessage());
             return null;
         }
     }
@@ -41,7 +45,7 @@ public class GroupEntityDAO extends BaseDAO<GroupEntity> {
             return list;
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("DAO operation failed: {}", e.getMessage());
             return null;
         }
     }
@@ -54,7 +58,7 @@ public class GroupEntityDAO extends BaseDAO<GroupEntity> {
             tx.commit();
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("DAO operation failed: {}", e.getMessage());
         }
     }
 }

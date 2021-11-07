@@ -8,8 +8,11 @@ import com.heymeowcat.tailznet.entities.Post;
 import com.heymeowcat.tailznet.ENCDEC;
 import com.heymeowcat.tailznet.KEY;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PostService {
+    private static final Logger logger = LoggerFactory.getLogger(PostService.class);
 
     private final PostDAO postDAO;
     private final PostRankDAO postRankDAO;

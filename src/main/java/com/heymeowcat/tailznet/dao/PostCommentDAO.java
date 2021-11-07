@@ -5,8 +5,12 @@ import com.heymeowcat.tailznet.entities.PostComment;
 import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PostCommentDAO extends BaseDAO<PostComment> {
+
+    private static final Logger logger = LoggerFactory.getLogger(PostCommentDAO.class);
 
     public PostCommentDAO() {
         super(PostComment.class);
@@ -29,7 +33,7 @@ public class PostCommentDAO extends BaseDAO<PostComment> {
             tx.commit();
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("DAO operation failed: {}", e.getMessage());
         }
     }
 }

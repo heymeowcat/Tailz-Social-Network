@@ -5,8 +5,12 @@ import com.heymeowcat.tailznet.entities.UserBookmark;
 import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UserBookmarkDAO extends BaseDAO<UserBookmark> {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserBookmarkDAO.class);
 
     public UserBookmarkDAO() {
         super(UserBookmark.class);
@@ -37,7 +41,7 @@ public class UserBookmarkDAO extends BaseDAO<UserBookmark> {
             tx.commit();
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("DAO operation failed: {}", e.getMessage());
         }
     }
 }

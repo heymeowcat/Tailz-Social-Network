@@ -2,8 +2,12 @@ package com.heymeowcat.tailznet.dao;
 
 import com.heymeowcat.tailznet.entities.UserLogin;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UserLoginDAO extends BaseDAO<UserLogin> {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserLoginDAO.class);
 
     public UserLoginDAO() {
         super(UserLogin.class);

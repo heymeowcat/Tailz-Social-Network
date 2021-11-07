@@ -8,8 +8,12 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FollowDAO extends BaseDAO<Follow> {
+
+    private static final Logger logger = LoggerFactory.getLogger(FollowDAO.class);
 
     public FollowDAO() {
         super(Follow.class);
@@ -27,7 +31,7 @@ public class FollowDAO extends BaseDAO<Follow> {
             return list.isEmpty() ? 0 : ((Long) list.get(0)).intValue();
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("DAO operation failed: {}", e.getMessage());
             return 0;
         }
     }
@@ -44,7 +48,7 @@ public class FollowDAO extends BaseDAO<Follow> {
             return list.isEmpty() ? 0 : ((Long) list.get(0)).intValue();
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("DAO operation failed: {}", e.getMessage());
             return 0;
         }
     }
@@ -61,7 +65,7 @@ public class FollowDAO extends BaseDAO<Follow> {
             return !list.isEmpty();
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace();
+            logger.error("DAO operation failed: {}", e.getMessage());
             return false;
         }
     }

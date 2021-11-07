@@ -2,8 +2,11 @@ package com.heymeowcat.tailznet.service;
 
 import com.heymeowcat.tailznet.dao.AppThemeDAO;
 import com.heymeowcat.tailznet.entities.AppTheme;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AppThemeService {
+    private static final Logger logger = LoggerFactory.getLogger(AppThemeService.class);
 
     private final AppThemeDAO themeDAO;
 
