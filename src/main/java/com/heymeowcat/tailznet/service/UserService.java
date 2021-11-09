@@ -3,6 +3,13 @@ package com.heymeowcat.tailznet.service;
 import com.heymeowcat.tailznet.dao.UserDAO;
 import com.heymeowcat.tailznet.entities.User;
 import java.util.List;
+import org.hibernate.Criteria;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.criterion.MatchMode;
+import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,5 +69,26 @@ public class UserService {
 
     public void deleteUser(int userId) {
         userDAO.deleteById(userId);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<User> searchUsers(String keyword) {
+        Session session = com.heymeowcat.tailznet.HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            Criteria criteria = session.createCriteria(User.class);
+            String pattern = "%" + keyword + "%";
+            criteria.add(Restrictions.or(
+                Restrictions.ilike("firstName", pattern, MatchMode.ANYWHERE),
+                Restrictions.ilike("lastName", pattern, MatchMode.ANYWHERE)
+            ));
+            List<User> list = criteria.list();
+            tx.commit();
+            return list;
+        } catch (Exception e) {
+            tx.rollback();
+            logger.error("Error searching users: {}", e.getMessage());
+            return null;
+        }
     }
 }

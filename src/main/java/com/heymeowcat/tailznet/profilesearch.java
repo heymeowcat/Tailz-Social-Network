@@ -1,9 +1,11 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.entities.User;
+import com.heymeowcat.tailznet.service.UserProfilePicService;
+import com.heymeowcat.tailznet.service.UserService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -50,20 +52,21 @@ public class profilesearch extends HttpServlet {
                 s = "%%";
             }
 
-            PreparedStatement rsPs = DB.prepare("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT `idusers` FROM users WHERE firstname LIKE ? OR lastname LIKE ? OR  concat(firstname,' ',lastname) LIKE ? OR  concat(firstname,lastname) LIKE ? ) LIMIT 5");
-            rsPs.setString(1, s);
-            rsPs.setString(2, s);
-            rsPs.setString(3, s);
-            rsPs.setString(4, s);
-            ResultSet rs = rsPs.executeQuery();
+            UserService userService = new UserService();
+            UserProfilePicService picService = new UserProfilePicService();
+            List<User> results = userService.searchUsers(s.replace("%", ""));
 
             StringBuilder text = new StringBuilder();
-            while (rs.next()) {
-                text.append("<tr class='animated fadeIn'>");
-                text.append("<td valign='middle' class='left'><img src='").append(esc(rs.getString(3))).append("' width='40px' height='40px' style='padding: 0; margin: 0' class='circle responsive-img'></td>");
-                text.append("<td valign='middle'><h6 class='").append(esc(Dcolor)).append("'>").append(esc(rs.getString(1))).append("  ").append(esc(rs.getString(2))).append("</h6></td>");
-                text.append("<td><a onclick='fullviewprofile(").append(rs.getInt(4)).append(")'><i class='material-icons right ").append(esc(Dcolor)).append(" waves-effect '>open_in_new</i></a></td>");
-                text.append("</tr>");
+            if (results != null) {
+                for (User user : results) {
+                    String pic = picService.getProfilePicPath(user.getId());
+                    text.append("<tr class='animated fadeIn'>");
+                    text.append("<td valign='middle' class='left'><img src='").append(esc(pic)).append("' width='40px' height='40px' style='padding: 0; margin: 0' class='circle responsive-img'></td>");
+                    text.append("<td valign='middle'><h6 class='").append(esc(Dcolor)).append("'>").append(esc(user.getFirstName())).append("  ").append(esc(user.getLastName())).append("</h6></td>");
+
+                    text.append("<td><a onclick='fullviewprofile(").append(user.getId()).append(")'><i class='material-icons right ").append(esc(Dcolor)).append(" waves-effect '>open_in_new</i></a></td>");
+                    text.append("</tr>");
+                }
             }
             out.write(text.toString());
         } catch (Exception e) {

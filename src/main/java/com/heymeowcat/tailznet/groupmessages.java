@@ -5,10 +5,12 @@
  */
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.entities.GroupChat;
+import com.heymeowcat.tailznet.service.GroupChatService;
+import com.heymeowcat.tailznet.service.UserProfilePicService;
+import com.heymeowcat.tailznet.service.UserService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -55,51 +57,48 @@ public class groupmessages extends HttpServlet {
             String Dcolor = themeColors[3];
             String Ecolor = themeColors[4];
             String Fcolor = themeColors[5];
-            PreparedStatement rsPs = DB.prepare("SELECT gc.idgroup_chat, gc.Groups_group_id, gc.users_idusers, u.firstname, u.lastname, u.image, gc.chat_text, gc.src, gc.chat_datetime FROM group_chat gc JOIN users u ON gc.users_idusers = u.idusers WHERE gc.Groups_group_id=? ORDER BY gc.chat_datetime ASC");
-            rsPs.setString(1, muid);
-            ResultSet rs = rsPs.executeQuery();
-            while (rs.next()) {
-                String cmpic = "";
-                String cmfn = rs.getString(4);
-                String cmln = rs.getString(5);
-                java.sql.ResultSet imguserincmnt;
-                PreparedStatement imgPs = DB.prepare("Select image From user_profile_pic where users_idusers=?");
-                imgPs.setInt(1, rs.getInt(6));
-                imguserincmnt = imgPs.executeQuery();
-                if (imguserincmnt.next()) {
-                    cmpic = imguserincmnt.getString(1);
-                }
-                if (!rs.getString(3).equals("" + uid)) {
+            GroupChatService groupChatService = new GroupChatService();
+            UserService userService = new UserService();
+            UserProfilePicService picService = new UserProfilePicService();
+
+            java.util.List<GroupChat> chatList = groupChatService.getGroupMessages(muid);
+            for (GroupChat chat : chatList) {
+                String senderName = esc(userService.getUserFirstName(chat.getUserId())) + " " + esc(userService.getUserLastName(chat.getUserId()));
+                String senderPic = picService.getProfilePicPath(chat.getUserId());
+                String chatText = chat.getChatText() != null ? esc(ENCDEC.decrypt(chat.getChatText(), new KEY().secretKey)) : null;
+                String chatSrc = chat.getSrc() != null ? esc(ENCDEC.decrypt(chat.getSrc(), new KEY().secretKey)) : null;
+
+                if (chat.getUserId() != uid) {
                     out.write("<div class='message__list'>");
                     out.write("<div class='message__item message__item--bot'>");
-                    out.write("<span class='message message--bot " + Dcolor + "'  data-balloon='" + rs.getString(8) + "' data-balloon-pos='right' >");
-                    out.write("<b>"+cmfn+" "+cmln+"</b><br>");
-                    if (rs.getString(7) != null) {
-                        out.write(esc(rs.getString(7)));
+                    out.write("<span class='message message--bot " + Dcolor + "'  data-balloon='" + senderName + "' data-balloon-pos='right' >");
+                    out.write("<b>" + senderName + "</b><br>");
+                    if (chatText != null) {
+                        out.write(chatText);
                     }
-                    if (rs.getString(8) != null) {
-                        if (rs.getString(7) == null) {
-                            out.write("<img class='responsive-img' src='" + esc(rs.getString(8)) + "' width='300px' style='border-radius: 15px'>");
+                    if (chatSrc != null) {
+                        if (chatText == null) {
+                            out.write("<img class='responsive-img' src='" + chatSrc + "' width='300px' style='border-radius: 15px'>");
                         } else {
-                            out.write("<br><img class='responsive-img' src='" + esc(rs.getString(8)) + "' width='300px' style='border-radius: 15px'>");
+                            out.write("<br><img class='responsive-img' src='" + chatSrc + "' width='300px' style='border-radius: 15px'>");
                         }
                     }
                     out.write("</span>");
                     out.write("</div>");
                     out.write("</div>");
-                } else if (rs.getString(3).equals("" + uid)) {
+                } else if (chat.getUserId() == uid) {
                     out.write("<div class='message__list'>");
                     out.write("<div class='message__item message__item--user'>");
-                    out.write("<span class='message message--user " + Dcolor + " ' data-balloon='" + rs.getString(8) + "' data-balloon-pos='left' >");
+                    out.write("<span class='message message--user " + Dcolor + " ' data-balloon='" + senderName + "' data-balloon-pos='left' >");
                     out.write("<b class='right'>Me</b><br>");
-                    if (rs.getString(7) != null) {
-                        out.write(esc(rs.getString(7)));
+                    if (chatText != null) {
+                        out.write(chatText);
                     }
-                    if (rs.getString(8) != null) {
-                        if (rs.getString(7) == null) {
-                            out.write("<img class='responsive-img' src='" + esc(rs.getString(8)) + "' width='300px' style='border-radius: 15px'>");
+                    if (chatSrc != null) {
+                        if (chatText == null) {
+                            out.write("<img class='responsive-img' src='" + chatSrc + "' width='300px' style='border-radius: 15px'>");
                         } else {
-                            out.write("<br><img class='responsive-img' src='" + esc(rs.getString(8)) + "' width='300px' style='border-radius: 15px'>");
+                            out.write("<br><img class='responsive-img' src='" + chatSrc + "' width='300px' style='border-radius: 15px'>");
                         }
                     }
                     out.write("</span>");
