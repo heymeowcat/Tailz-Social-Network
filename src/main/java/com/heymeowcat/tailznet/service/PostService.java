@@ -5,6 +5,7 @@ import com.heymeowcat.tailznet.dao.PostDAO;
 import com.heymeowcat.tailznet.dao.PostRankDAO;
 import com.heymeowcat.tailznet.dao.UserBookmarkDAO;
 import com.heymeowcat.tailznet.entities.Post;
+import com.heymeowcat.tailznet.entities.PostRank;
 import com.heymeowcat.tailznet.ENCDEC;
 import com.heymeowcat.tailznet.KEY;
 import java.util.List;
@@ -57,6 +58,17 @@ public class PostService {
         postDAO.save(post);
     }
 
+    public void createVideoPost(int userId, String heading, String embedHtml, String detail, int privacy) {
+        Post post = new Post();
+        post.setHeading(ENCDEC.encrypt(heading, new KEY().secretKey));
+        post.setImage(ENCDEC.encrypt(embedHtml, new KEY().secretKey));
+        post.setDetail(ENCDEC.encrypt(detail, new KEY().secretKey));
+        post.setUserId(userId);
+        post.setPostTypeId(2);
+        post.setPostPrivacy(privacy);
+        postDAO.save(post);
+    }
+
     public void updatePost(Post post) {
         postDAO.update(post);
     }
@@ -74,5 +86,34 @@ public class PostService {
 
     public void updatePostPrivacy(int userId, int privacy) {
         postDAO.updatePostPrivacyForUser(userId, privacy);
+    }
+
+    public void toggleLike(int postId, int likedBy) {
+        PostRank existing = postRankDAO.findByPostAndLikedBy(postId, likedBy);
+        if (existing != null) {
+            postRankDAO.deleteByPostAndLikedBy(postId, likedBy);
+        } else {
+            PostRank rank = new PostRank();
+            rank.setLikes(1);
+            rank.setPostId(postId);
+            rank.setLikedBy(likedBy);
+            postRankDAO.save(rank);
+        }
+    }
+
+    public boolean hasUserLiked(int postId, int likedBy) {
+        return postRankDAO.findByPostAndLikedBy(postId, likedBy) != null;
+    }
+
+    public int getLikeCount(int postId) {
+        return postRankDAO.getLikeCount(postId);
+    }
+
+    public List<Object[]> getFeedForUser(int userId) {
+        return postDAO.getFeedForUser(userId);
+    }
+
+    public List<Object[]> getPostLikers(int postId) {
+        return postRankDAO.findLikedByPostWithUserDetails(postId);
     }
 }

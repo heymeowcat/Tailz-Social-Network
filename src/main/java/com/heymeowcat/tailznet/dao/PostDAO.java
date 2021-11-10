@@ -4,6 +4,7 @@ import com.heymeowcat.tailznet.HibernateUtil;
 import com.heymeowcat.tailznet.entities.Post;
 import java.util.List;
 import org.hibernate.Criteria;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
@@ -90,6 +91,32 @@ public class PostDAO extends BaseDAO<Post> {
         } catch (Exception e) {
             tx.rollback();
             logger.error("DAO operation failed: {}", e.getMessage());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Object[]> getFeedForUser(int userId) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            SQLQuery query = session.createSQLQuery(
+                    "SELECT p.*, u.firstname, u.lastname, upp.image, " +
+                    "DATE(p.post_time) as post_date, TIME(p.post_time) as post_time_val " +
+                    "FROM post p " +
+                    "JOIN users u ON p.users_idusers = u.idusers " +
+                    "JOIN user_profile_pic upp ON p.users_idusers = upp.users_idusers " +
+                    "WHERE p.Post_Privacy='1' and p.users_idusers = ANY " +
+                    "(SELECT receiver FROM follow WHERE sender = :uid and Post_Privacy='1') " +
+                    "OR p.users_idusers = :uid and p.Post_Privacy='1' " +
+                    "ORDER BY p.post_time DESC");
+            query.setInteger("uid", userId);
+            List<Object[]> list = query.list();
+            tx.commit();
+            return list;
+        } catch (Exception e) {
+            tx.rollback();
+            logger.error("DAO operation failed: {}", e.getMessage());
+            return null;
         }
     }
 }

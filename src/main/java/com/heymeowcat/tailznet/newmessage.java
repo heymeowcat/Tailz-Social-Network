@@ -1,8 +1,9 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.entities.Chat;
+import com.heymeowcat.tailznet.service.ChatService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -44,32 +45,37 @@ public class newmessage extends HttpServlet {
             boolean hasMsg = msg != null && !msg.isEmpty();
             boolean hasSrc = src != null && !src.equals("undefined");
 
+            ChatService chatService = new ChatService();
+
             if (!hasMsg && !hasSrc) {
                 // Nothing to send
             } else if (hasMsg && !hasSrc) {
-                PreparedStatement ps = DB.prepare(
-                        "INSERT INTO chat (chat_text, user_sender, users_receiver, chattype_idchattype, chatlinestatus) VALUES (?, ?, ?, 1, 0)");
-                ps.setString(1, ENCDEC.encrypt(esc(msg), new KEY().secretKey));
-                ps.setInt(2, uid);
-                ps.setInt(3, muid);
-                ps.executeUpdate();
+                Chat chat = new Chat();
+                chat.setChatText(ENCDEC.encrypt(esc(msg), new KEY().secretKey));
+                chat.setUserSender(uid);
+                chat.setUserReceiver(muid);
+                chat.setChatTypeId(1);
+                chat.setChatlineStatus(0);
+                chatService.saveMessage(chat);
                 pushWebSocketNotification(uid, muid);
             } else if (!hasMsg && hasSrc) {
-                PreparedStatement ps = DB.prepare(
-                        "INSERT INTO chat (src, user_sender, users_receiver, chattype_idchattype, chatlinestatus) VALUES (?, ?, ?, 1, 0)");
-                ps.setString(1, ENCDEC.encrypt(esc(src), new KEY().secretKey));
-                ps.setInt(2, uid);
-                ps.setInt(3, muid);
-                ps.executeUpdate();
+                Chat chat = new Chat();
+                chat.setSrc(ENCDEC.encrypt(esc(src), new KEY().secretKey));
+                chat.setUserSender(uid);
+                chat.setUserReceiver(muid);
+                chat.setChatTypeId(1);
+                chat.setChatlineStatus(0);
+                chatService.saveMessage(chat);
                 pushWebSocketNotification(uid, muid);
             } else {
-                PreparedStatement ps = DB.prepare(
-                        "INSERT INTO chat (chat_text, src, user_sender, users_receiver, chattype_idchattype, chatlinestatus) VALUES (?, ?, ?, ?, 1, 0)");
-                ps.setString(1, ENCDEC.encrypt(esc(msg), new KEY().secretKey));
-                ps.setString(2, ENCDEC.encrypt(esc(src), new KEY().secretKey));
-                ps.setInt(3, uid);
-                ps.setInt(4, muid);
-                ps.executeUpdate();
+                Chat chat = new Chat();
+                chat.setChatText(ENCDEC.encrypt(esc(msg), new KEY().secretKey));
+                chat.setSrc(ENCDEC.encrypt(esc(src), new KEY().secretKey));
+                chat.setUserSender(uid);
+                chat.setUserReceiver(muid);
+                chat.setChatTypeId(1);
+                chat.setChatlineStatus(0);
+                chatService.saveMessage(chat);
                 pushWebSocketNotification(uid, muid);
             }
         } catch (Exception e) {

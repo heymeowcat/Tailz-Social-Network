@@ -1,9 +1,10 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.entities.User;
+import com.heymeowcat.tailznet.service.UserProfilePicService;
+import com.heymeowcat.tailznet.service.UserService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -40,86 +41,26 @@ public class google extends HttpServlet {
             String id = DigestUtils.md5Hex(idParam);
             String[] nameparts = fullname.split("\\s+");
 
-            PreparedStatement checkEmail = DB.prepare(
-                    "SELECT email FROM users WHERE email=? AND status='1'");
-            checkEmail.setString(1, newemail);
-            ResultSet regrs = checkEmail.executeQuery();
+            UserService userService = new UserService();
+            UserProfilePicService picService = new UserProfilePicService();
 
-            if (!regrs.next()) {
-                PreparedStatement insUser = DB.prepare(
-                        "INSERT INTO users (email, status, hash, user_type_iduser_type) VALUES (?, '1', ?, '2')");
-                insUser.setString(1, newemail);
-                insUser.setString(2, id);
-                insUser.executeUpdate();
+            if (!userService.isEmailActive(newemail)) {
+                int uid = userService.createGoogleUserFull(newemail, id, esc(nameparts[0]),
+                        esc(nameparts.length > 1 ? nameparts[1] : ""), profilepic);
 
-                PreparedStatement findId = DB.prepare(
-                        "SELECT idusers FROM users WHERE email=? AND status='1'");
-                findId.setString(1, newemail);
-                ResultSet regidrs = findId.executeQuery();
-                if (regidrs.next()) {
-                    int uid = regidrs.getInt(1);
-
-                    PreparedStatement updName = DB.prepare(
-                            "UPDATE users SET firstname=?, lastname=? WHERE idusers=?");
-                    updName.setString(1, nameparts[0]);
-                    updName.setString(2, nameparts.length > 1 ? nameparts[1] : "");
-                    updName.setInt(3, uid);
-                    updName.executeUpdate();
-
-                    PreparedStatement insPic = DB.prepare(
-                            "INSERT INTO user_profile_pic (image, users_idusers) VALUES (?, ?)");
-                    insPic.setString(1, profilepic + "?sz=180");
-                    insPic.setInt(2, uid);
-                    insPic.executeUpdate();
-
-                    PreparedStatement insTheme = DB.prepare(
-                            "INSERT INTO app_theme (themename, users_idusers) VALUES ('purplelight', ?)");
-                    insTheme.setInt(1, uid);
-                    insTheme.executeUpdate();
-
-                    PreparedStatement insLayout = DB.prepare(
-                            "INSERT INTO app_layout (users_idusers, layout) VALUES (?, 1)");
-                    insLayout.setInt(1, uid);
-                    insLayout.executeUpdate();
-
-                    PreparedStatement insUap = DB.prepare(
-                            "INSERT INTO uap (Preference, users_idusers) VALUES ('1', ?)");
-                    insUap.setInt(1, uid);
-                    insUap.executeUpdate();
-
-                    PreparedStatement insPrivacy = DB.prepare(
-                            "INSERT INTO user_privacy (privacy_name, users_idusers) VALUES ('public', ?)");
-                    insPrivacy.setInt(1, uid);
-                    insPrivacy.executeUpdate();
-
-                    HttpSession ses = request.getSession();
-                    ses.setAttribute("user", uid);
-                    out.write("<div class='fixed-action-btn'>");
-                    out.write("<a class='btn-floating btn-large purple lighten-4' href='index.jsp'>");
-                    out.write("<i class='large material-icons black-text'>skip_next</i>");
-                    out.write("</a>");
-                    out.write("</div>");
-                }
+                HttpSession ses = request.getSession();
+                ses.setAttribute("user", uid);
+                out.write("<div class='fixed-action-btn'>");
+                out.write("<a class='btn-floating btn-large purple lighten-4' href='index.jsp'>");
+                out.write("<i class='large material-icons black-text'>skip_next</i>");
+                out.write("</a>");
+                out.write("</div>");
             } else {
-                PreparedStatement findId = DB.prepare(
-                        "SELECT idusers FROM users WHERE email=? AND status='1'");
-                findId.setString(1, newemail);
-                ResultSet regidrs = findId.executeQuery();
-                if (regidrs.next()) {
-                    int uid = regidrs.getInt(1);
-
-                    PreparedStatement updPic = DB.prepare(
-                            "UPDATE user_profile_pic SET image=? WHERE users_idusers=?");
-                    updPic.setString(1, profilepic + "?sz=180");
-                    updPic.setInt(2, uid);
-                    updPic.executeUpdate();
-
-                    PreparedStatement updName = DB.prepare(
-                            "UPDATE users SET firstname=?, lastname=? WHERE idusers=?");
-                    updName.setString(1, nameparts[0]);
-                    updName.setString(2, nameparts.length > 1 ? nameparts[1] : "");
-                    updName.setInt(3, uid);
-                    updName.executeUpdate();
+                User user = userService.getUserByEmail(newemail);
+                if (user != null) {
+                    int uid = user.getId();
+                    picService.updateProfilePic(uid, profilepic + "?sz=180");
+                    userService.updateUserName(uid, esc(nameparts[0]), esc(nameparts.length > 1 ? nameparts[1] : ""));
 
                     HttpSession ses = request.getSession();
                     ses.setAttribute("user", uid);

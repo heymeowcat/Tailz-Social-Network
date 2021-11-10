@@ -1,9 +1,8 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.UserLoginService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -24,11 +23,8 @@ public class newusernamecheck extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             try {
                 String x = request.getParameter("x");
-                PreparedStatement ps = DB.prepare(
-                        "SELECT username FROM user_login WHERE username=?");
-                ps.setString(1, x);
-                ResultSet rs = ps.executeQuery();
-                if (rs.next()) {
+                UserLoginService loginService = new UserLoginService();
+                if (loginService.getLoginByUsername(x) != null) {
                     out.write("exist");
                 } else {
                     out.write("fine");

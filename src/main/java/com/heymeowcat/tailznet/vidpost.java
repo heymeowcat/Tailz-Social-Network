@@ -1,9 +1,13 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.entities.Post;
+import com.heymeowcat.tailznet.service.PostService;
+import com.heymeowcat.tailznet.service.UserPrivacyService;
+import com.heymeowcat.tailznet.service.UserProfilePicService;
+import com.heymeowcat.tailznet.service.UserService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -38,146 +42,131 @@ public class vidpost extends HttpServlet {
             String Ecolor = themeColors[4];
             String Fcolor = themeColors[5];
 
-            int privacy = 1;
-            PreparedStatement privacyrsPs = DB.prepare("SELECT `privacy_name` FROM user_privacy WHERE users_idusers=?");
-            privacyrsPs.setInt(1, uid);
-            ResultSet privacyrs = privacyrsPs.executeQuery();
-            if (privacyrs.next()) {
-                if (privacyrs.getString(1).equals("private")) {
-                    privacy = 2;
-                }
-            }
+            UserPrivacyService privacyService = new UserPrivacyService();
+            PostService postService = new PostService();
+            UserService userService = new UserService();
+            UserProfilePicService profilePicService = new UserProfilePicService();
+
+            String privacyName = privacyService.getPrivacyName(uid);
+            int privacy = privacyName.equals("private") ? 2 : 1;
 
             String title = request.getParameter("title");
             String description = request.getParameter("description");
             String fp = request.getParameter("link");
-            if (!fp.equals("<iframe class=\"ifr\" src=\"//www.youtube.com/embed/error\" frameborder=\"0\" allowfullscreen></iframe>")) {
-                PreparedStatement postIns = DB.prepare("INSERT INTO `post` ( `post_heading`, `post_img_area`, `post_detial`, `post_time`, `users_idusers`, `post_type_idpost_type`,Post_Privacy) VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, '2', ?)");
-                postIns.setString(1, ENCDEC.encrypt(title, new KEY().secretKey));
-                postIns.setString(2, ENCDEC.encrypt(fp, new KEY().secretKey));
-                postIns.setString(3, ENCDEC.encrypt(description, new KEY().secretKey));
-                postIns.setInt(4, uid);
-                postIns.setInt(5, privacy);
-                postIns.executeUpdate();
+            if (fp != null && !fp.equals("<iframe class=\"ifr\" src=\"//www.youtube.com/embed/error\" frameborder=\"0\" allowfullscreen></iframe>")) {
+                Post post = new Post();
+                post.setHeading(ENCDEC.encrypt(title, new KEY().secretKey));
+                post.setImage(ENCDEC.encrypt(fp, new KEY().secretKey));
+                post.setDetail(ENCDEC.encrypt(description, new KEY().secretKey));
+                post.setUserId(uid);
+                post.setPostTypeId(2);
+                post.setPostPrivacy(privacy);
+                postService.savePost(post);
             }
 
-            String feedSql = "SELECT p.*, u.firstname, u.lastname, upp.image, " +
-                    "DATE(p.post_time) as post_date, TIME(p.post_time) as post_time_val " +
-                    "FROM `post` p " +
-                    "JOIN `users` u ON p.users_idusers = u.idusers " +
-                    "JOIN `user_profile_pic` upp ON p.users_idusers = upp.users_idusers " +
-                    "WHERE p.Post_Privacy='1' and p.users_idusers = ANY (SELECT `receiver` FROM follow WHERE sender =? and Post_Privacy='1') OR p.users_idusers = ? and p.Post_Privacy='1' " +
-                    "ORDER BY p.post_time DESC";
-            PreparedStatement rsPs = DB.prepare(feedSql);
-            rsPs.setInt(1, uid);
-            rsPs.setInt(2, uid);
-            ResultSet rs = rsPs.executeQuery();
+            List<Object[]> feed = postService.getFeedForUser(uid);
             boolean hasPosts = false;
-            while (rs.next()) {
-                hasPosts = true;
-                String postType = rs.getString(7);
-                String postId = rs.getString(1);
-                String postHeading = esc(ENCDEC.decrypt(rs.getString(2), new KEY().secretKey));
-                String postImageRaw = ENCDEC.decrypt(rs.getString(3), new KEY().secretKey);
-                String postImage = esc(postImageRaw);
-                String postDetail = esc(ENCDEC.decrypt(rs.getString(4), new KEY().secretKey));
-                String authorFirstName = esc(rs.getString("firstname"));
-                String authorLastName = esc(rs.getString("lastname"));
-                String authorImage = esc(rs.getString("image"));
-                String postDate = esc(rs.getString("post_date"));
-                String postTime = esc(rs.getString("post_time_val"));
+            if (feed != null) {
+                for (Object[] row : feed) {
+                    hasPosts = true;
+                    String postType = String.valueOf(row[6]);
+                    String postId = String.valueOf(row[0]);
+                    String postHeading = esc(ENCDEC.decrypt((String) row[1], new KEY().secretKey));
+                    String postImageRaw = ENCDEC.decrypt((String) row[2], new KEY().secretKey);
+                    String postImage = esc(postImageRaw);
+                    String postDetail = esc(ENCDEC.decrypt((String) row[3], new KEY().secretKey));
+                    String authorFirstName = esc((String) row[8]);
+                    String authorLastName = esc((String) row[9]);
+                    String authorImage = esc((String) row[10]);
+                    String postDate = esc((String) row[11]);
+                    String postTime = esc((String) row[12]);
 
-                if (postType.equals("1")) {
-                    out.write("\n");
-                    out.write("                            <div class=\"col s12 m12 l6 \">\n");
-                    out.write("                                <div class=\" ");
-                    out.print(esc(Acolor));
-                    out.write(' ');
-                    out.print(esc(Dcolor));
-                    out.write(" card small hoverable\" >\n");
-                    out.write("                                    <div class=\"card-image\">\n");
-                    out.write("                                        <img class=\"responsive-img\" src=\"");
-                    out.print(postImage);
-                    out.write("\">\n");
-                    out.write("                                    </div>\n");
-                    out.write("                                    <div class=\"card-content\" >\n");
-                    out.write("                                        <span class=\"card-title ");
-                    out.print(esc(Dcolor));
-                    out.write("\"><b class=\"truncate");
-                    out.print(esc(Dcolor));
-                    out.write('"');
-                    out.write('>');
-                    out.print(postHeading);
-                    out.write("</b><i class=\"material-icons right activator waves-effect  ");
-                    out.print(esc(Dcolor));
-                    out.write("\">more_vert</i></span>    \n");
-                    out.write("                                        <p class=\"truncate\">");
-                    out.print(postDetail);
-                    out.write("</p>\n");
-                    out.write("                                    </div>\n");
-                    out.write("                                    <div class=\" ");
-                    out.print(esc(Dcolor));
-                    out.write(' ');
-                    out.write(' ');
-                    out.print(esc(Acolor));
-                    out.write("  card-reveal\" >\n");
-                    out.write("                                        <span class=\"card-title ");
-                    out.print(esc(Dcolor));
-                    out.write(" text-darken-4 truncate \">");
-                    out.print(postHeading);
-                    out.write("<i class=\"material-icons right waves-effect\">close</i></span>\n");
-                    out.write("                                        <div class=\"card-content \">\n");
-                    out.write("                                            <a onclick=\"showprofile('");
-                    out.print(postId);
-                    out.write("', '");
-                    out.print(uid);
-                    out.write("');$('#peekprofile').modal('open');\">\n");
-                    out.write("                                                <div class=\"");
-                    out.print(esc(Bcolor));
-                    out.write(' ');
-                    out.write(' ');
-                    out.print(esc(Dcolor));
-                    out.write(" chip waves-effect waves-light \">\n");
-                    out.write("                                                    ");
+                    if (postType.equals("1")) {
+                        out.write("\n");
+                        out.write("                            <div class=\"col s12 m12 l6 \">\n");
+                        out.write("                                <div class=\" ");
+                        out.print(esc(Acolor));
+                        out.write(' ');
+                        out.print(esc(Dcolor));
+                        out.write(" card small hoverable\" >\n");
+                        out.write("                                    <div class=\"card-image\">\n");
+                        out.write("                                        <img class=\"responsive-img\" src=\"");
+                        out.print(postImage);
+                        out.write("\">\n");
+                        out.write("                                    </div>\n");
+                        out.write("                                    <div class=\"card-content\" >\n");
+                        out.write("                                        <span class=\"card-title ");
+                        out.print(esc(Dcolor));
+                        out.write("\"><b class=\"truncate");
+                        out.print(esc(Dcolor));
+                        out.write('"');
+                        out.write('>');
+                        out.print(postHeading);
+                        out.write("</b><i class=\"material-icons right activator waves-effect  ");
+                        out.print(esc(Dcolor));
+                        out.write("\">more_vert</i></span>    \n");
+                        out.write("                                        <p class=\"truncate\">");
+                        out.print(postDetail);
+                        out.write("</p>\n");
+                        out.write("                                    </div>\n");
+                        out.write("                                    <div class=\" ");
+                        out.print(esc(Dcolor));
+                        out.write(' ');
+                        out.write(' ');
+                        out.print(esc(Acolor));
+                        out.write("  card-reveal\" >\n");
+                        out.write("                                        <span class=\"card-title ");
+                        out.print(esc(Dcolor));
+                        out.write(" text-darken-4 truncate \">");
+                        out.print(postHeading);
+                        out.write("<i class=\"material-icons right waves-effect\">close</i></span>\n");
+                        out.write("                                        <div class=\"card-content \">\n");
+                        out.write("                                            <a onclick=\"showprofile('");
+                        out.print(postId);
+                        out.write("', '");
+                        out.print(uid);
+                        out.write("');$('#peekprofile').modal('open');\">\n");
+                        out.write("                                                <div class=\"");
+                        out.print(esc(Bcolor));
+                        out.write(' ');
+                        out.write(' ');
+                        out.print(esc(Dcolor));
+                        out.write(" chip waves-effect waves-light \">\n");
+                        out.write("                                                    ");
 
-                    out.write("\n");
-                    out.write("                                                    <img src=\"");
-                    out.print(authorImage);
-                    out.write("\">\n");
-                    out.write("                                                    ");
-                    out.print(authorFirstName + " " + authorLastName);
-                    out.write("\n");
-                    out.write("                                                </div></a>\n");
-                    out.write("                                            <div class=\"");
-                    out.print(esc(Bcolor));
-                    out.write(' ');
-                    out.write(' ');
-                    out.print(esc(Dcolor));
-                    out.write(" chip waves-effect waves-light \">\n");
-                    out.write("                                                Date: ");
-                    out.print(postDate);
-                    out.write("\n");
-                    out.write("                                            </div>\n");
-                    out.write("                                            <div class=\"");
-                    out.print(esc(Bcolor));
-                    out.write(' ');
-                    out.write(' ');
-                    out.print(esc(Dcolor));
-                    out.write(" chip waves-effect waves-light \">\n");
-                    out.write("                                                Time:  ");
-                    out.print(postTime);
-                    out.write("\n");
-                    out.write("                                            </div>\n");
-                    out.write("                                        </div>\n");
-                    out.write("                                        <div class=\"card-action\">\n");
-                    out.write("                                            ");
+                        out.write("\n");
+                        out.write("                                                    <img src=\"");
+                        out.print(authorImage);
+                        out.write("\">\n");
+                        out.write("                                                    ");
+                        out.print(authorFirstName + " " + authorLastName);
+                        out.write("\n");
+                        out.write("                                                </div></a>\n");
+                        out.write("                                            <div class=\"");
+                        out.print(esc(Bcolor));
+                        out.write(' ');
+                        out.write(' ');
+                        out.print(esc(Dcolor));
+                        out.write(" chip waves-effect waves-light \">\n");
+                        out.write("                                                Date: ");
+                        out.print(postDate);
+                        out.write("\n");
+                        out.write("                                            </div>\n");
+                        out.write("                                            <div class=\"");
+                        out.print(esc(Bcolor));
+                        out.write(' ');
+                        out.write(' ');
+                        out.print(esc(Dcolor));
+                        out.write(" chip waves-effect waves-light \">\n");
+                        out.write("                                                Time:  ");
+                        out.print(postTime);
+                        out.write("\n");
+                        out.write("                                            </div>\n");
+                        out.write("                                        </div>\n");
+                        out.write("                                        <div class=\"card-action\">\n");
+                        out.write("                                            ");
 
-                    try {
-                        PreparedStatement likechechPs = DB.prepare("Select likes from post_rank where likedby=? AND `post_rank`.`post_idpost` =?");
-                        likechechPs.setInt(1, uid);
-                        likechechPs.setString(2, postId);
-                        ResultSet likechech = likechechPs.executeQuery();
-                        if (!likechech.isBeforeFirst()) {
+                        if (!postService.hasUserLiked(Integer.parseInt(postId), uid)) {
 
                             out.write("\n");
                             out.write("                                            <label class=\"toggle seedling-flower\" >\n");
@@ -190,7 +179,7 @@ public class vidpost extends HttpServlet {
                             out.write("                                            </label>\n");
                             out.write("                                            ");
 
-                        } else if (likechech.next()) {
+                        } else {
                             out.write("\n");
                             out.write("                                            <label class=\"toggle seedling-flower\" >\n");
                             out.write("                                                <input type=\"checkbox\" checked=\"\" class=\"toggle-checkbox\" onchange=\"like('");
@@ -203,110 +192,101 @@ public class vidpost extends HttpServlet {
                             out.write("                                            ");
 
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
 
-                    out.write("\n");
-                    out.write("                                            <i class=\" material-icons right waves-effect waves-circle waves-light\" onclick=\"$('#opncmnts').modal('open'); showpostcmnts('");
-                    out.print(uid);
-                    out.write("', '");
-                    out.print(postId);
-                    out.write("')\">open_in_new</i>\n");
-                    out.write("                                        </div>\n");
-                    out.write("                                    </div>\n");
-                    out.write("                                </div>\n");
-                    out.write("                            </div>\n");
-                    out.write("                            ");
-                } else if (postType.equals("2")) {
-                    out.write("\n");
-                    out.write("                            <div class=\"col s12 m12 l6 \">\n");
-                    out.write("                                <div class=\" ");
-                    out.print(esc(Acolor));
-                    out.write(' ');
-                    out.print(esc(Dcolor));
-                    out.write(" card small hoverable\">\n");
-                    out.write("                                    <div class=\"card-image\">\n");
-                    out.write("                                       ");
-                    out.print(postImageRaw);
-                    out.write("\n");
-                    out.write("                                    </div>\n");
-                    out.write("                                    <div class=\"card-content\">\n");
-                    out.write("                                        <span class=\"card-title ");
-                    out.print(esc(Dcolor));
-                    out.write("\"><b class=\"truncate ");
-                    out.print(esc(Dcolor));
-                    out.write('"');
-                    out.write('>');
-                    out.print(postHeading);
-                    out.write("</b><i class=\"material-icons right activator waves-effect ");
-                    out.print(esc(Dcolor));
-                    out.write("\">more_vert</i></span>    \n");
-                    out.write("                                        <p class=\"truncate\">");
-                    out.print(postDetail);
-                    out.write("</p>\n");
-                    out.write("                                    </div>\n");
-                    out.write("                                    <div class=\"");
-                    out.print(esc(Acolor));
-                    out.write(' ');
-                    out.print(esc(Dcolor));
-                    out.write(" card-reveal\">\n");
-                    out.write("                                        <i class=\"material-icons right waves-effect card-title ");
-                    out.print(esc(Dcolor));
-                    out.write("\">close</i>\n");
-                    out.write("                                        <span class=\"card-title ");
-                    out.print(esc(Dcolor));
-                    out.write(" text-darken-4 truncate\">");
-                    out.print(postHeading);
-                    out.write("</span>\n");
-                    out.write("                                        <div class=\"card-content \">\n");
-                    out.write("                                            <div class=\"");
-                    out.print(esc(Bcolor));
-                    out.write(' ');
-                    out.write(' ');
-                    out.print(esc(Dcolor));
-                    out.write(" chip waves-effect waves-light \">\n");
-                    out.write("                                                ");
+                        out.write("\n");
+                        out.write("                                            <i class=\" material-icons right waves-effect waves-circle waves-light\" onclick=\"$('#opncmnts').modal('open'); showpostcmnds('");
+                        out.print(uid);
+                        out.write("', '");
+                        out.print(postId);
+                        out.write("')\">open_in_new</i>\n");
+                        out.write("                                        </div>\n");
+                        out.write("                                    </div>\n");
+                        out.write("                                </div>\n");
+                        out.write("                            </div>\n");
+                        out.write("                            ");
+                    } else if (postType.equals("2")) {
+                        out.write("\n");
+                        out.write("                            <div class=\"col s12 m12 l6 \">\n");
+                        out.write("                                <div class=\" ");
+                        out.print(esc(Acolor));
+                        out.write(' ');
+                        out.print(esc(Dcolor));
+                        out.write(" card small hoverable\">\n");
+                        out.write("                                    <div class=\"card-image\">\n");
+                        out.write("                                       ");
+                        out.print(postImageRaw);
+                        out.write("\n");
+                        out.write("                                    </div>\n");
+                        out.write("                                    <div class=\"card-content\">\n");
+                        out.write("                                        <span class=\"card-title ");
+                        out.print(esc(Dcolor));
+                        out.write("\"><b class=\"truncate ");
+                        out.print(esc(Dcolor));
+                        out.write('"');
+                        out.write('>');
+                        out.print(postHeading);
+                        out.write("</b><i class=\"material-icons right activator waves-effect ");
+                        out.print(esc(Dcolor));
+                        out.write("\">more_vert</i></span>    \n");
+                        out.write("                                        <p class=\"truncate\">");
+                        out.print(postDetail);
+                        out.write("</p>\n");
+                        out.write("                                    </div>\n");
+                        out.write("                                    <div class=\"");
+                        out.print(esc(Acolor));
+                        out.write(' ');
+                        out.print(esc(Dcolor));
+                        out.write(" card-reveal\">\n");
+                        out.write("                                        <i class=\"material-icons right waves-effect card-title ");
+                        out.print(esc(Dcolor));
+                        out.write("\">close</i>\n");
+                        out.write("                                        <span class=\"card-title ");
+                        out.print(esc(Dcolor));
+                        out.write(" text-darken-4 truncate\">");
+                        out.print(postHeading);
+                        out.write("</span>\n");
+                        out.write("                                        <div class=\"card-content \">\n");
+                        out.write("                                            <div class=\"");
+                        out.print(esc(Bcolor));
+                        out.write(' ');
+                        out.write(' ');
+                        out.print(esc(Dcolor));
+                        out.write(" chip waves-effect waves-light \">\n");
+                        out.write("                                                ");
 
-                    out.write("\n");
-                    out.write("                                                <img src=\"");
-                    out.print(authorImage);
-                    out.write("\">\n");
-                    out.write("                                                ");
-                    out.print(authorFirstName + " " + authorLastName);
-                    out.write("\n");
-                    out.write("                                            </div>\n");
-                    out.write("                                            <div class=\"");
-                    out.print(esc(Bcolor));
-                    out.write(' ');
-                    out.write(' ');
-                    out.print(esc(Dcolor));
-                    out.write(" chip waves-effect waves-light \">\n");
-                    out.write("                                                Date: ");
-                    out.print(postDate);
-                    out.write("\n");
-                    out.write("                                            </div>\n");
-                    out.write("                                            <div class=\"");
-                    out.print(esc(Bcolor));
-                    out.write(' ');
-                    out.write(' ');
-                    out.print(esc(Dcolor));
-                    out.write(" chip waves-effect waves-light \">\n");
-                    out.write("                                                Time:  ");
-                    out.print(postTime);
-                    out.write("\n");
-                    out.write("                                            </div>\n");
-                    out.write("                                        </div>\n");
-                    out.write("                                        <div class=\"card-action\">\n");
-                    out.write("                                            ");
+                        out.write("\n");
+                        out.write("                                                <img src=\"");
+                        out.print(authorImage);
+                        out.write("\">\n");
+                        out.write("                                                ");
+                        out.print(authorFirstName + " " + authorLastName);
+                        out.write("\n");
+                        out.write("                                            </div>\n");
+                        out.write("                                            <div class=\"");
+                        out.print(esc(Bcolor));
+                        out.write(' ');
+                        out.write(' ');
+                        out.print(esc(Dcolor));
+                        out.write(" chip waves-effect waves-light \">\n");
+                        out.write("                                                Date: ");
+                        out.print(postDate);
+                        out.write("\n");
+                        out.write("                                            </div>\n");
+                        out.write("                                            <div class=\"");
+                        out.print(esc(Bcolor));
+                        out.write(' ');
+                        out.write(' ');
+                        out.print(esc(Dcolor));
+                        out.write(" chip waves-effect waves-light \">\n");
+                        out.write("                                                Time:  ");
+                        out.print(postTime);
+                        out.write("\n");
+                        out.write("                                            </div>\n");
+                        out.write("                                        </div>\n");
+                        out.write("                                        <div class=\"card-action\">\n");
+                        out.write("                                            ");
 
-                    try {
-                        PreparedStatement likechechPs = DB.prepare("Select likes from post_rank where likedby=? AND `post_rank`.`post_idpost` =?");
-                        likechechPs.setInt(1, uid);
-                        likechechPs.setString(2, postId);
-                        ResultSet likechech = likechechPs.executeQuery();
-                        if (!likechech.isBeforeFirst()) {
-
+                        if (!postService.hasUserLiked(Integer.parseInt(postId), uid)) {
                             out.write("\n");
                             out.write("                                            <label class=\"toggle seedling-flower\" >\n");
                             out.write("                                                <input type=\"checkbox\" class=\"toggle-checkbox\" onchange=\"like('");
@@ -318,7 +298,7 @@ public class vidpost extends HttpServlet {
                             out.write("                                            </label>\n");
                             out.write("                                            ");
 
-                        } else if (likechech.next()) {
+                        } else {
                             out.write("\n");
                             out.write("                                            <label class=\"toggle seedling-flower\" >\n");
                             out.write("                                                <input type=\"checkbox\" checked=\"\" class=\"toggle-checkbox\" onchange=\"like('");
@@ -331,21 +311,19 @@ public class vidpost extends HttpServlet {
                             out.write("                                            ");
 
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
 
-                    out.write("\n");
-                    out.write("                                            <i class=\" material-icons right waves-effect waves-circle waves-light\" onclick=\"$('#opncmnts').modal('open'); showpostcmnts('");
-                    out.print(uid);
-                    out.write("', '");
-                    out.print(postId);
-                    out.write("')\">open_in_new</i>\n");
-                    out.write("                                        </div>\n");
-                    out.write("                                    </div>\n");
-                    out.write("                                </div>\n");
-                    out.write("                            </div>\n");
-                    out.write("                            ");
+                        out.write("\n");
+                        out.write("                                            <i class=\" material-icons right waves-effect waves-circle waves-light\" onclick=\"$('#opncmnts').modal('open'); showpostcmnds('");
+                        out.print(uid);
+                        out.write("', '");
+                        out.print(postId);
+                        out.write("')\">open_in_new</i>\n");
+                        out.write("                                        </div>\n");
+                        out.write("                                    </div>\n");
+                        out.write("                                </div>\n");
+                        out.write("                            </div>\n");
+                        out.write("                            ");
+                    }
                 }
             }
 

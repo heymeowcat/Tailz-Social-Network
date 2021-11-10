@@ -29,4 +29,17 @@ public class AppThemeService {
     public void updateTheme(AppTheme theme) {
         themeDAO.update(theme);
     }
+
+    public void upsertTheme(int userId, String themeName) {
+        AppTheme existing = getUserThemeObject(userId);
+        if (existing != null) {
+            existing.setThemeName(themeName);
+            themeDAO.update(existing);
+        } else {
+            AppTheme theme = new AppTheme();
+            theme.setUserId(userId);
+            theme.setThemeName(themeName);
+            themeDAO.save(theme);
+        }
+    }
 }

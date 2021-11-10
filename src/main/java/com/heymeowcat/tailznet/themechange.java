@@ -1,9 +1,8 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.AppThemeService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -29,35 +28,26 @@ public class themechange extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid user ID");
                 return;
             }
-            String x = request.getParameter("x");
+            String x = esc(request.getParameter("x"));
 
-            PreparedStatement chk = DB.prepare(
-                    "SELECT themename FROM app_theme WHERE users_idusers=?");
-            chk.setInt(1, uid);
-            ResultSet likechech = chk.executeQuery();
+            String[] validThemes = {"pinklight", "pinkdark", "bluelight", "bluedark",
+                "yellowlight", "yellowdark", "greenlight", "greendark", "purplelight", "purpledark"};
+            boolean valid = false;
+            for (String t : validThemes) {
+                if (t.equals(x)) {
+                    valid = true;
+                    break;
+                }
+            }
 
-            if (likechech.next()) {
-                String[] validThemes = {"pinklight", "pinkdark", "bluelight", "bluedark",
-                    "yellowlight", "yellowdark", "greenlight", "greendark", "purplelight", "purpledark"};
-                boolean valid = false;
-                for (String t : validThemes) {
-                    if (t.equals(x)) {
-                        valid = true;
-                        break;
-                    }
+            if (valid) {
+                AppThemeService themeService = new AppThemeService();
+                String currentTheme = themeService.getUserTheme(uid);
+                if (currentTheme != null && !currentTheme.equals("default")) {
+                    themeService.upsertTheme(uid, x);
+                } else {
+                    themeService.upsertTheme(uid, x);
                 }
-                if (valid) {
-                    PreparedStatement upd = DB.prepare(
-                            "UPDATE app_theme SET themename=? WHERE users_idusers=?");
-                    upd.setString(1, x);
-                    upd.setInt(2, uid);
-                    upd.executeUpdate();
-                }
-            } else {
-                PreparedStatement ins = DB.prepare(
-                        "INSERT INTO app_theme (themename, users_idusers) VALUES ('light', ?)");
-                ins.setInt(1, uid);
-                ins.executeUpdate();
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,9 +1,10 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.entities.Post;
+import com.heymeowcat.tailznet.service.PostService;
+import com.heymeowcat.tailznet.service.UserPrivacyService;
+import com.heymeowcat.tailznet.entities.UserPrivacy;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -20,8 +21,7 @@ public class embedpost extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
+        try {
             int uid = 0;
             try {
                 uid = Integer.parseInt(request.getSession().getAttribute("user").toString());
@@ -35,23 +35,15 @@ public class embedpost extends HttpServlet {
             String fp = request.getParameter("link");
 
             int privacy = 1;
-            PreparedStatement privacyrsPs = DB.prepare("SELECT `privacy_name` FROM user_privacy WHERE users_idusers=?");
-            privacyrsPs.setInt(1, uid);
-            ResultSet privacyrs = privacyrsPs.executeQuery();
-            if (privacyrs.next()) {
-                if (privacyrs.getString(1).equals("private")) {
-                    privacy = 2;
-                }
+            UserPrivacyService privacyService = new UserPrivacyService();
+            UserPrivacy userPrivacy = privacyService.getUserPrivacy(uid);
+            if (userPrivacy != null && "private".equals(userPrivacy.getPrivacyName())) {
+                privacy = 2;
             }
 
             if (fp != null) {
-                PreparedStatement postIns = DB.prepare("INSERT INTO `post` ( `post_heading`, `post_img_area`, `post_detial`, `post_time`, `users_idusers`, `post_type_idpost_type`,Post_Privacy) VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, '2', ?)");
-                postIns.setString(1, ENCDEC.encrypt(title, new KEY().secretKey));
-                postIns.setString(2, ENCDEC.encrypt(fp, new KEY().secretKey));
-                postIns.setString(3, ENCDEC.encrypt(description, new KEY().secretKey));
-                postIns.setInt(4, uid);
-                postIns.setInt(5, privacy);
-                postIns.executeUpdate();
+                PostService postService = new PostService();
+                postService.createVideoPost(uid, title, fp, description, privacy);
                 response.sendRedirect("index.jsp");
             } else {
                 response.sendRedirect("index.jsp");

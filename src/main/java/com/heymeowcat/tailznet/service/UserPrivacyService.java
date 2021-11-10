@@ -30,4 +30,17 @@ public class UserPrivacyService {
     public void updatePrivacy(UserPrivacy privacy) {
         privacyDAO.update(privacy);
     }
+
+    public void upsertPrivacy(int userId, String privacyName) {
+        UserPrivacy existing = getUserPrivacy(userId);
+        if (existing != null) {
+            existing.setPrivacyName(privacyName);
+            privacyDAO.update(existing);
+        } else {
+            UserPrivacy privacy = new UserPrivacy();
+            privacy.setUserId(userId);
+            privacy.setPrivacyName(privacyName);
+            privacyDAO.save(privacy);
+        }
+    }
 }

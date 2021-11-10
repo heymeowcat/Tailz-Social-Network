@@ -11,10 +11,15 @@ package com.heymeowcat.tailznet;
  * and open the template in the editor.
  */
 
+import com.heymeowcat.tailznet.entities.Post;
+import com.heymeowcat.tailznet.entities.PostComment;
+import com.heymeowcat.tailznet.service.CommentService;
+import com.heymeowcat.tailznet.service.PostService;
+import com.heymeowcat.tailznet.service.UserProfilePicService;
+import com.heymeowcat.tailznet.service.UserService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -58,64 +63,36 @@ public class peekcomments extends HttpServlet {
             String Ecolor = themeColors[4];
             String Fcolor = themeColors[5];
 
-            PreparedStatement rsPs = DB.prepare("Select * FROM `post` where idpost=?");
-            rsPs.setInt(1, pid);
-            ResultSet rs = rsPs.executeQuery();
-            if (rs.next()) {
+            PostService postService = new PostService();
+            CommentService commentService = new CommentService();
+            UserService userService = new UserService();
+            UserProfilePicService profilePicService = new UserProfilePicService();
+
+            Post post = postService.getPostById(pid);
+            if (post != null) {
                 out.write("<i class='material-icons right waves-effect modal-close " + Dcolor + " '>close</i>");
                 out.write("<div class='" + Acolor + " card-panel' >");
                 out.write("<div class='row'>");
                 out.write("<div class='col s12 m6' style='max-height:100% ;overflow: scroll' > ");
-                if (rs.getString(7).equals("1")) {
-                    out.write("<img class='responsive-img materialboxed' src='" + ENCDEC.decrypt(rs.getString(3), "default-key") + "' ");
-                } else if (rs.getString(7).equals("2")) {
-                    out.write(ENCDEC.decrypt(rs.getString(3), "default-key"));
+                if (String.valueOf(post.getPostTypeId()).equals("1")) {
+                    out.write("<img class='responsive-img materialboxed' src='" + ENCDEC.decrypt(post.getImage(), "default-key") + "' ");
+                } else if (String.valueOf(post.getPostTypeId()).equals("2")) {
+                    out.write(ENCDEC.decrypt(post.getImage(), "default-key"));
                 }
-                out.write("<span><h5>" + ENCDEC.decrypt(rs.getString(2), "default-key") + "</h5></span>");
-                out.write("<p>" + ENCDEC.decrypt(rs.getString(4), "default-key") + "</p>");
+                out.write("<span><h5>" + ENCDEC.decrypt(post.getHeading(), "default-key") + "</h5></span>");
+                out.write("<p>" + ENCDEC.decrypt(post.getDetail(), "default-key") + "</p>");
                 out.write("<br>");
-                String imgup = "";
-                String fnamepost = "";
-                String lnamepost = "";
+                String imgup = profilePicService.getProfilePicPath(post.getUserId());
+                String fnamepost = userService.getUserFirstName(post.getUserId());
+                String lnamepost = userService.getUserLastName(post.getUserId());
                 String postdate = "";
                 String posttime = "";
                 String likecount = " ";
-                PreparedStatement imgpostuserPs = DB.prepare("Select image From user_profile_pic where users_idusers=?");
-                imgpostuserPs.setInt(1, rs.getInt(6));
-                ResultSet imgpostuser = imgpostuserPs.executeQuery();
-                if (imgpostuser.next()) {
-                    imgup = imgpostuser.getString(1);
+                String postTime = post.getPostTime();
+                if (postTime != null && !postTime.isEmpty()) {
+                    postdate = postTime;
                 }
-                PreparedStatement firstimguserPs = DB.prepare("Select firstname From users where idusers=?");
-                firstimguserPs.setInt(1, rs.getInt(6));
-                ResultSet firstimguser = firstimguserPs.executeQuery();
-                if (firstimguser.next()) {
-                    fnamepost = firstimguser.getString(1);
-                }
-                PreparedStatement lastimguserPs = DB.prepare("Select lastname From users where idusers=?");
-                lastimguserPs.setInt(1, rs.getInt(6));
-                ResultSet lastimguser = lastimguserPs.executeQuery();
-                if (lastimguser.next()) {
-                    lnamepost = lastimguser.getString(1);
-                }
-                PreparedStatement imgdatePs = DB.prepare("Select cast(post_time as date) From post where idpost=?");
-                imgdatePs.setInt(1, rs.getInt(1));
-                ResultSet imgdate = imgdatePs.executeQuery();
-                if (imgdate.next()) {
-                    postdate = imgdate.getString(1);
-                }
-                PreparedStatement imgtimePs = DB.prepare("Select cast(post_time as time) From post where idpost=?");
-                imgtimePs.setInt(1, rs.getInt(1));
-                ResultSet imgtime = imgtimePs.executeQuery();
-                if (imgtime.next()) {
-                    posttime = imgtime.getString(1);
-                }
-                PreparedStatement likecountrsPs = DB.prepare("Select count(likes) From post_rank where post_idpost=?");
-                likecountrsPs.setInt(1, rs.getInt(1));
-                ResultSet likecountrs = likecountrsPs.executeQuery();
-                if (likecountrs.next()) {
-                    likecount = likecountrs.getString(1);
-                }
+                likecount = String.valueOf(postService.getLikeCount(pid));
                 out.write("<div class='" + Bcolor + "  " + Dcolor + " chip waves-effect waves-light'><img src='" + imgup + "'>" + fnamepost + " " + lnamepost + "</div>");
                 out.write("<div class='" + Bcolor + "  " + Dcolor + " chip waves-effect waves-light'>" + postdate + "</div>");
                 out.write("<div class='" + Bcolor + "  " + Dcolor + " chip waves-effect waves-light'>" + posttime + "</div>");
@@ -126,29 +103,19 @@ public class peekcomments extends HttpServlet {
                 out.write("<ul id='commentsection' class='" + Acolor + " collection' style='width: 100%;height: 55vh;overflow: scroll; border-color:"+Ccolor+"' >");
             }
 
-            PreparedStatement cmntsrsPs = DB.prepare("Select pc.idpost_comment, pc.post_idpost, pc.users_idusers, u.firstname, u.lastname, u.image, pc.datetime, pc.likes FROM post_comment pc JOIN users u ON pc.users_idusers = u.idusers WHERE pc.post_idpost=? ORDER BY pc.datetime DESC");
-            cmntsrsPs.setInt(1, pid);
-            ResultSet cmntsrs = cmntsrsPs.executeQuery();
-            boolean hasComments = cmntsrs.next();
-            if (!hasComments) {
+            List<PostComment> comments = commentService.getCommentsForPost(pid);
+            if (comments == null || comments.isEmpty()) {
                 out.write("<div class='center' style='top:40%; position:relative'><img src ='img/commentlive.png' class='animated pulse responsiveimg '></div>");
             } else {
-                while (cmntsrs.next()) {
-                    String cmpic = "";
-                    String cmfn = cmntsrs.getString(4);
-                    String cmln = cmntsrs.getString(5);
-                    java.sql.ResultSet imguserincmnt;
-                    PreparedStatement imgPs = DB.prepare("Select image From user_profile_pic where users_idusers=?");
-                    imgPs.setInt(1, cmntsrs.getInt(6));
-                    imguserincmnt = imgPs.executeQuery();
-                    if (imguserincmnt.next()) {
-                        cmpic = imguserincmnt.getString(1);
-                    }
+                for (PostComment pc : comments) {
+                    String cmpic = profilePicService.getProfilePicPath(pc.getUserId());
+                    String cmfn = userService.getUserFirstName(pc.getUserId());
+                    String cmln = userService.getUserLastName(pc.getUserId());
                     out.write("<li class='collection-item avatar  " + Acolor + " " + Dcolor + "' style='border-color:"+Ccolor+"'>");
                     out.write("<img src='" + cmpic + "'  class='circle'>");
-                    out.write("<span class='title'>" + cmfn + " " + cmln + "</span>");
-                    out.write("<p>" + commentEscape(cmntsrs.getString(1)) + "<br>");
-                    out.write("" + commentEscape(cmntsrs.getString(2)) + " ");
+                    out.write("<span class='title'>" + esc(cmfn) + " " + esc(cmln) + "</span>");
+                    out.write("<p>" + commentEscape(pc.getCommentText()) + "<br>");
+                    out.write("" + commentEscape(ENCDEC.decrypt(pc.getImage(), "default-key")) + " ");
                     out.write("</p>");
                     out.write("</li>");
                 }
@@ -172,12 +139,17 @@ public class peekcomments extends HttpServlet {
         }
     }
 
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
     private String commentEscape(String s) {
         if (s == null) return "";
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
     }
 
-    // <editor-fold defaultstate="desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
      *

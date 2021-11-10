@@ -1,9 +1,8 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.PostService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -32,25 +31,8 @@ public class likeprocess extends HttpServlet {
                 return;
             }
 
-            PreparedStatement chk = DB.prepare(
-                    "SELECT likes FROM post_rank WHERE likedby=? AND post_idpost=?");
-            chk.setInt(1, uid);
-            chk.setInt(2, x);
-            ResultSet likechech = chk.executeQuery();
-
-            if (likechech.next()) {
-                PreparedStatement del = DB.prepare(
-                        "DELETE FROM post_rank WHERE likedby=? AND post_idpost=?");
-                del.setInt(1, uid);
-                del.setInt(2, x);
-                del.executeUpdate();
-            } else {
-                PreparedStatement ins = DB.prepare(
-                        "INSERT INTO post_rank (likes, post_idpost, likedby) VALUES ('1', ?, ?)");
-                ins.setInt(1, x);
-                ins.setInt(2, uid);
-                ins.executeUpdate();
-            }
+            PostService postService = new PostService();
+            postService.toggleLike(x, uid);
         } catch (Exception e) {
             e.printStackTrace();
             try {

@@ -1,8 +1,9 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.entities.GroupChat;
+import com.heymeowcat.tailznet.service.GroupChatService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -44,32 +45,34 @@ public class newgroupmessage extends HttpServlet {
             boolean hasMsg = msg != null && !msg.isEmpty();
             boolean hasSrc = src != null && !src.equals("undefined");
 
+            GroupChatService groupChatService = new GroupChatService();
+
             if (!hasMsg && !hasSrc) {
                 // Nothing to send
             } else if (hasMsg && !hasSrc) {
-                PreparedStatement ps = DB.prepare(
-                        "INSERT INTO group_chat (Groups_group_id, chat_text, users_idusers, chatstatus) VALUES (?, ?, ?, 0)");
-                ps.setInt(1, groupId);
-                ps.setString(2, ENCDEC.encrypt(esc(msg), new KEY().secretKey));
-                ps.setInt(3, uid);
-                ps.executeUpdate();
+                GroupChat chat = new GroupChat();
+                chat.setGroupId(String.valueOf(groupId));
+                chat.setChatText(ENCDEC.encrypt(esc(msg), new KEY().secretKey));
+                chat.setUserId(uid);
+                chat.setChatStatus(0);
+                groupChatService.saveMessage(chat);
                 pushGroupWebSocketNotification(uid, groupId);
             } else if (!hasMsg && hasSrc) {
-                PreparedStatement ps = DB.prepare(
-                        "INSERT INTO group_chat (Groups_group_id, src, users_idusers, chatstatus) VALUES (?, ?, ?, 0)");
-                ps.setInt(1, groupId);
-                ps.setString(2, ENCDEC.encrypt(esc(src), new KEY().secretKey));
-                ps.setInt(3, uid);
-                ps.executeUpdate();
+                GroupChat chat = new GroupChat();
+                chat.setGroupId(String.valueOf(groupId));
+                chat.setSrc(ENCDEC.encrypt(esc(src), new KEY().secretKey));
+                chat.setUserId(uid);
+                chat.setChatStatus(0);
+                groupChatService.saveMessage(chat);
                 pushGroupWebSocketNotification(uid, groupId);
             } else {
-                PreparedStatement ps = DB.prepare(
-                        "INSERT INTO group_chat (Groups_group_id, chat_text, src, users_idusers, chatstatus) VALUES (?, ?, ?, ?, 0)");
-                ps.setInt(1, groupId);
-                ps.setString(2, ENCDEC.encrypt(esc(msg), new KEY().secretKey));
-                ps.setString(3, ENCDEC.encrypt(esc(src), new KEY().secretKey));
-                ps.setInt(4, uid);
-                ps.executeUpdate();
+                GroupChat chat = new GroupChat();
+                chat.setGroupId(String.valueOf(groupId));
+                chat.setChatText(ENCDEC.encrypt(esc(msg), new KEY().secretKey));
+                chat.setSrc(ENCDEC.encrypt(esc(src), new KEY().secretKey));
+                chat.setUserId(uid);
+                chat.setChatStatus(0);
+                groupChatService.saveMessage(chat);
                 pushGroupWebSocketNotification(uid, groupId);
             }
         } catch (Exception e) {

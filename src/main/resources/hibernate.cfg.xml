@@ -35,5 +35,6 @@
         <mapping class="com.heymeowcat.tailznet.entities.PostRank"/>
         <mapping class="com.heymeowcat.tailznet.entities.LoginSession"/>
         <mapping class="com.heymeowcat.tailznet.entities.AppLayout"/>
+        <mapping class="com.heymeowcat.tailznet.entities.PurchaseHistory"/>
     </session-factory>
 </hibernate-configuration>

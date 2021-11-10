@@ -1,9 +1,9 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.PostService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -47,35 +47,31 @@ public class viewwholiked extends HttpServlet {
             out.write("<div class='collapsible-body " + esc(Ecolor) + " " + esc(Dcolor) + "' style='border-color: " + esc(Ccolor) + "'>");
 
             out.write("<table class='highlight " + esc(Acolor) + "'>");
-            String likedSql = "SELECT DISTINCT u.firstname, u.lastname, u.idusers, upp.image " +
-                    "FROM `post_rank` pr " +
-                    "JOIN `users` u ON pr.likedby = u.idusers " +
-                    "LEFT JOIN `user_profile_pic` upp ON u.idusers = upp.users_idusers " +
-                    "WHERE pr.post_idpost = ?";
-            PreparedStatement senderidsPs = DB.prepare(likedSql);
-            senderidsPs.setInt(1, postid);
-            ResultSet senderids = senderidsPs.executeQuery();
+            PostService postService = new PostService();
+            List<Object[]> likers = postService.getPostLikers(postid);
             boolean hasLikes = false;
-            while (senderids.next()) {
-                hasLikes = true;
-                String likerId = senderids.getString("idusers");
-                String likerFirstName = esc(senderids.getString("firstname"));
-                String likerLastName = esc(senderids.getString("lastname"));
-                String likerImage = senderids.getString("image");
-                String escLikerImage = (likerImage == null) ? "img/Profile_avatar_placeholder_large.png" : esc(likerImage);
-                out.write("\n");
-                out.write("                                <tr><td  valign=\"middle\" class=\"left\"><img src=\"");
-                out.print(escLikerImage);
-                out.write("\" width=\"40px\" height=\"40px\" style=\"padding: 0; margin: 0\" class=\"circle responsive-img  animated fadeIn\"></td><td valign=\"middle\" ><h6 >");
-                out.print(likerFirstName + " " + likerLastName);
-                out.write("</h6></td><td valign=\"middle\" class=\"right valign-wrapper\"><h6><a onclick=\"showprofile('");
-                out.print(likerId);
-                out.write("', '");
-                out.print(loggeduid);
-                out.write("');$('#peekprofile').modal('open');\" class=\"");
-                out.print(esc(Dcolor));
-                out.write("\"><i class=\"material-icons waves-effect\">open_in_new</i></a></h6></td></tr>\n");
-                out.write("                                        ");
+            if (likers != null) {
+                for (Object[] row : likers) {
+                    hasLikes = true;
+                    String likerId = String.valueOf(row[2]);
+                    String likerFirstName = esc((String) row[0]);
+                    String likerLastName = esc((String) row[1]);
+                    String likerImage = (String) row[3];
+                    String escLikerImage = (likerImage == null) ? "img/Profile_avatar_placeholder_large.png" : esc(likerImage);
+                    out.write("\n");
+                    out.write("                                <tr><td  valign=\"middle\" class=\"left\"><img src=\"");
+                    out.print(escLikerImage);
+                    out.write("\" width=\"40px\" height=\"40px\" style=\"padding: 0; margin: 0\" class=\"circle responsive-img  animated fadeIn\"></td><td valign=\"middle\" ><h6 >");
+                    out.print(likerFirstName + " " + likerLastName);
+                    out.write("</h6></td><td valign=\"middle\" class=\"right valign-wrapper\"><h6><a onclick=\"showprofile('");
+                    out.print(likerId);
+                    out.write("', '");
+                    out.print(loggeduid);
+                    out.write(");$('#peekprofile').modal('open');\" class=\"");
+                    out.print(esc(Dcolor));
+                    out.write("\"><i class=\"material-icons waves-effect\">open_in_new</i></a></h6></td></tr>\n");
+                    out.write("                                        ");
+                }
             }
             out.write("</table>");
             if (!hasLikes) {

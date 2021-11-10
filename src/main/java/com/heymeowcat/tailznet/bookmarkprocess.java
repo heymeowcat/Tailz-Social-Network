@@ -1,9 +1,8 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.UserBookmarkService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -32,25 +31,13 @@ public class bookmarkprocess extends HttpServlet {
                 return;
             }
 
-            PreparedStatement chk = DB.prepare(
-                    "SELECT post_idpost FROM user_bookmarks WHERE users_idusers=? AND post_idpost=?");
-            chk.setInt(1, uid);
-            chk.setInt(2, x);
-            ResultSet likechech = chk.executeQuery();
+            UserBookmarkService bookmarkService = new UserBookmarkService();
 
-            if (likechech.next()) {
-                PreparedStatement del = DB.prepare(
-                        "DELETE FROM user_bookmarks WHERE post_idpost=? AND users_idusers=?");
-                del.setInt(1, x);
-                del.setInt(2, uid);
-                del.executeUpdate();
+            if (bookmarkService.isBookmarked(uid, x)) {
+                bookmarkService.removeBookmark(uid, x);
                 out.write("bookmark_border");
             } else {
-                PreparedStatement ins = DB.prepare(
-                        "INSERT INTO user_bookmarks (notice_time, users_idusers, post_idpost) VALUES (CURRENT_TIMESTAMP, ?, ?)");
-                ins.setInt(1, uid);
-                ins.setInt(2, x);
-                ins.executeUpdate();
+                bookmarkService.bookmarkPost(uid, x);
                 out.write("bookmark");
             }
 

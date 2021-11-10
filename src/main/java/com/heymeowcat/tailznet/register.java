@@ -1,8 +1,8 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.UserService;
 import java.io.IOException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.io.PrintWriter;
 import java.util.Random;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -26,7 +26,7 @@ public class register extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        try {
+        try (PrintWriter out = response.getWriter()) {
             String newemail = request.getParameter("newmail");
             if (newemail == null || newemail.isEmpty()) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Email parameter is required");
@@ -36,25 +36,13 @@ public class register extends HttpServlet {
             int randomNum = random.nextInt(999999);
             String myhash = DigestUtils.md5Hex("" + randomNum);
 
-            PreparedStatement checkActive = DB.prepare(
-                    "SELECT email FROM users WHERE email=? AND status='1'");
-            checkActive.setString(1, newemail);
-            ResultSet regrs = checkActive.executeQuery();
+            UserService userService = new UserService();
 
-            PreparedStatement checkAny = DB.prepare(
-                    "SELECT email FROM users WHERE email=?");
-            checkAny.setString(1, newemail);
-            ResultSet regrss = checkAny.executeQuery();
-
-            if (!regrs.next()) {
+            if (!userService.isEmailActive(newemail)) {
                 SendingEmail se = new SendingEmail();
                 se.sendMail(newemail, myhash);
-                if (!regrss.next()) {
-                    PreparedStatement ins = DB.prepare(
-                            "INSERT INTO users (email, status, hash, user_type_iduser_type) VALUES (?, '0', ?, '2')");
-                    ins.setString(1, newemail);
-                    ins.setString(2, myhash);
-                    ins.executeUpdate();
+                if (!userService.emailExists(newemail)) {
+                    userService.registerUser(newemail, myhash);
                 }
                 response.sendRedirect("verify.jsp");
             } else {

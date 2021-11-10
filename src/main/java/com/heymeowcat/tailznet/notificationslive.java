@@ -1,9 +1,9 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.NotificationService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -37,19 +37,11 @@ public class notificationslive extends HttpServlet {
             String Dcolor = themeColors[3];
             String Ecolor = themeColors[4];
             String Fcolor = themeColors[5];
-            // Optimized query with JOIN to avoid N+1
-            String sql = "SELECT n.*, u.firstname, u.lastname, upp.image " +
-                    "FROM notification n " +
-                    "JOIN users u ON n.notificationfrom = u.idusers " +
-                    "JOIN user_profile_pic upp ON u.idusers = upp.users_idusers " +
-                    "WHERE n.notificationfor = ? " +
-                    "ORDER BY n.time DESC";
 
-            PreparedStatement rsPs = DB.prepare(sql);
-            rsPs.setInt(1, uid);
-            ResultSet rs = rsPs.executeQuery();
+            NotificationService notificationService = new NotificationService();
+            List<Object[]> notifications = notificationService.getUserNotificationsWithDetails(uid);
 
-            if (!rs.isBeforeFirst()) {
+            if (notifications == null || notifications.isEmpty()) {
                 out.write("<div class='center'><img style='margin-top: 100px' src='img/notifications-silenced.png' class='responsiveimg'></div>");
                 out.write("<div class='grey-text center'>Icons made by <a href='https://www.freepik.com/' title='Freepik'>Freepik</a> from <a href='https://www.flaticon.com/' title='Flaticon'>www.flaticon.com</a> is licensed by <a href='http://creativecommons.org/licenses/by/3.0/' title='Creative Commons BY 3.0' target='_blank'>CC 3.0 BY</a>");
             } else {
@@ -58,8 +50,17 @@ public class notificationslive extends HttpServlet {
 
             out.write("<ul class='" + esc(Acolor) + " collection' style='border-color: " + esc(Ccolor) + "'>");
 
-            while (rs.next()) {
-                String notificationType = rs.getString(4);
+            for (Object[] row : notifications) {
+                Integer notificationId = (Integer) row[0];
+                String notificationType = (String) row[1];
+                String status = (String) row[2];
+                String timeStr = (String) row[3];
+                Integer target = (Integer) row[4];
+                Integer notifFrom = (Integer) row[5];
+                String firstname = (String) row[6];
+                String lastname = (String) row[7];
+                String image = (String) row[8];
+
                 String commenttext = "";
                 if (notificationType.equals("1")) {
                     commenttext = "started following you";
@@ -67,26 +68,27 @@ public class notificationslive extends HttpServlet {
                     commenttext = "commented on your post";
                 }
 
-                String imgup = esc(rs.getString("image"));
-                String fnamepost = esc(rs.getString("firstname"));
-                String lnamepost = esc(rs.getString("lastname"));
+                String imgup = esc(image);
+                String fnamepost = esc(firstname);
+                String lnamepost = esc(lastname);
                 String notificationtxt = fnamepost + " " + lnamepost + " " + commenttext;
-                String time = esc(rs.getString(5));
-                int status = rs.getInt(6);
-                int notificationId = rs.getInt(1);
-                int target = rs.getInt(7);
+                String time = esc(timeStr);
+                int intStatus = status != null ? Integer.parseInt(status) : 0;
+                int intNotificationId = notificationId != null ? notificationId : 0;
+                int intTarget = target != null ? target : 0;
+                int intNotifFrom = notifFrom != null ? notifFrom : 0;
 
-                String itemClass = (status == 0) ? (esc(Bcolor) + " " + esc(Dcolor)) : (esc(Acolor) + " " + esc(Dcolor));
+                String itemClass = (intStatus == 0) ? (esc(Bcolor) + " " + esc(Dcolor)) : (esc(Acolor) + " " + esc(Dcolor));
 
                 if (notificationType.equals("2")) {
                     out.write("<li class='" + itemClass + " collection-item avatar' style='cursor:pointer;border-color: " + esc(Ccolor) + "'>");
                     out.write("<img src='" + imgup + "' class='circle'>");
-                    out.write("<span onclick=\"clearnotification(" + notificationId + ");$('#opncmnts').modal('open'); showpostcmnts(" + uid + ", " + target + ")\" class='title'>" + notificationtxt + "</span>");
+                    out.write("<span onclick=\"clearnotification(" + intNotificationId + ");$('#opncmnts').modal('open'); showpostcmnts(" + uid + ", " + intTarget + ")\" class='title'>" + notificationtxt + "</span>");
                     out.write("<p>" + time + "</p>");
                     out.write("</li>");
                 } else {
                     out.write("<li class='" + itemClass + " collection-item avatar' style='border-color: " + esc(Ccolor) + "'>");
-                    out.write("<img onclick=\"clearnotification(" + notificationId + ");$('#opncmnts').modal('close'); showprofile(" + rs.getInt(3) + "," + uid + ");$('#peekprofile').modal('open');\" src='" + imgup + "' class='circle'>");
+                    out.write("<img onclick=\"clearnotification(" + intNotificationId + ");$('#opncmnts').modal('close'); showprofile(" + intNotifFrom + "," + uid + ");$('#peekprofile').modal('open');\" src='" + imgup + "' class='circle'>");
                     out.write("<span class='title'>" + notificationtxt + "</span>");
                     out.write("<p>" + time + "</p>");
                     out.write("</li>");

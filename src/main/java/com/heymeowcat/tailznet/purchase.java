@@ -1,9 +1,7 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.AdsService;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -20,8 +18,7 @@ public class purchase extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
+        try {
             int uid = 0;
             int spaces = 0;
             int hours = 0;
@@ -34,32 +31,8 @@ public class purchase extends HttpServlet {
                 return;
             }
 
-            double rate = 0;
-            int usersinsystem=0;
-            PreparedStatement ratersPs = DB.prepare("Select idAPPHPI from apphpi");
-            ResultSet raters = ratersPs.executeQuery();
-            if (raters.next()) {
-                rate = Double.parseDouble(raters.getString(1));
-            }
-            PreparedStatement usinsysrsPs = DB.prepare("Select count(email) from users where status='1' and user_type_iduser_type='2'");
-            ResultSet usinsysrs = usinsysrsPs.executeQuery();
-            if (usinsysrs.next()) {
-                usersinsystem = Integer.parseInt(usinsysrs.getString(1));
-            }
-            int total = (int) (rate * hours);
-            for (int i = 0; i < spaces; i++) {
-                PreparedStatement purIns = DB.prepare("INSERT INTO `purchase_history` (`users_idusers`, `rate`, `total`, `status`,`hours`) VALUES (?, ?, ?, '1', ?)");
-                purIns.setInt(1, uid);
-                purIns.setDouble(2, rate);
-                purIns.setInt(3, total);
-                purIns.setInt(4, hours);
-                purIns.executeUpdate();
-                PreparedStatement adsIns = DB.prepare("INSERT INTO `ads` (`users_idusers`, `forhowmanyusers`,`forhowmanyhours`,`status`) VALUES (?, ?, ?, '2' )");
-                adsIns.setInt(1, uid);
-                adsIns.setInt(2, usersinsystem);
-                adsIns.setInt(3, hours);
-                adsIns.executeUpdate();
-            }
+            AdsService adsService = new AdsService();
+            adsService.processPurchase(uid, spaces, hours);
             response.sendRedirect("dashboard.jsp");
         } catch (Exception e) {
             e.printStackTrace();

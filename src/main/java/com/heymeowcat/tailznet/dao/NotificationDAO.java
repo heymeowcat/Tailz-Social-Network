@@ -4,6 +4,7 @@ import com.heymeowcat.tailznet.HibernateUtil;
 import com.heymeowcat.tailznet.entities.Notification;
 import java.util.List;
 import org.hibernate.Criteria;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
@@ -29,6 +30,30 @@ public class NotificationDAO extends BaseDAO<Notification> {
             criteria.add(Restrictions.eq("notificationFor", userId));
             criteria.addOrder(Order.desc("time"));
             List<Notification> list = criteria.list();
+            tx.commit();
+            return list;
+        } catch (Exception e) {
+            tx.rollback();
+            logger.error("DAO operation failed: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Object[]> findByUserWithUserDetails(int userId) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            SQLQuery query = session.createSQLQuery(
+                    "SELECT n.idnotification, n.notificationtype, n.status, n.time, n.target, " +
+                    "n.notificationfrom, u.firstname, u.lastname, upp.image " +
+                    "FROM notification n " +
+                    "JOIN users u ON n.notificationfrom = u.idusers " +
+                    "JOIN user_profile_pic upp ON u.idusers = upp.users_idusers " +
+                    "WHERE n.notificationfor = ? " +
+                    "ORDER BY n.time DESC");
+            query.setInteger(0, userId);
+            List<Object[]> list = query.list();
             tx.commit();
             return list;
         } catch (Exception e) {

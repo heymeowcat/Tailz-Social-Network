@@ -19,6 +19,10 @@ public class NotificationService {
         return notificationDAO.findByUser(userId);
     }
 
+    public List<Object[]> getUserNotificationsWithDetails(int userId) {
+        return notificationDAO.findByUserWithUserDetails(userId);
+    }
+
     public int getUnreadCount(int userId) {
         return notificationDAO.getUnreadCount(userId);
     }
