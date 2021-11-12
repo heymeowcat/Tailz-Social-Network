@@ -1,18 +1,16 @@
 package com.heymeowcat.tailznet;
 
-import com.heymeowcat.tailznet.dao.AppLayoutDAO;
-import com.heymeowcat.tailznet.entities.AppLayout;
 import com.heymeowcat.tailznet.entities.User;
 import com.heymeowcat.tailznet.entities.UserProfilePic;
 import com.heymeowcat.tailznet.entities.UserPrivacy;
-import com.heymeowcat.tailznet.service.AppThemeService;
 import com.heymeowcat.tailznet.entities.AppTheme;
+import com.heymeowcat.tailznet.service.AppLayoutService;
+import com.heymeowcat.tailznet.service.AppThemeService;
 import com.heymeowcat.tailznet.service.UserPrivacyService;
 import com.heymeowcat.tailznet.service.UserProfilePicService;
 import com.heymeowcat.tailznet.service.UserService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -38,8 +36,8 @@ public class firstupdateprofile extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid user ID");
                 return;
             }
-            String fn = request.getParameter("fn");
-            String ln = request.getParameter("ln");
+            String fn = esc(request.getParameter("fn"));
+            String ln = esc(request.getParameter("ln"));
             if (fn == null || ln == null) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing name parameters");
                 return;
@@ -55,33 +53,16 @@ public class firstupdateprofile extends HttpServlet {
             }
 
             UserProfilePicService picService = new UserProfilePicService();
-            UserProfilePic pic = new UserProfilePic();
-            pic.setUserId(uid);
-            pic.setImage(fp);
-            picService.saveProfilePic(pic);
+            picService.updateProfilePic(uid, fp);
 
             AppThemeService themeService = new AppThemeService();
-            AppTheme theme = new AppTheme();
-            theme.setUserId(uid);
-            theme.setThemeName("purplelight");
-            themeService.saveTheme(theme);
+            themeService.upsertTheme(uid, "purplelight");
 
-            AppLayoutDAO layoutDAO = new AppLayoutDAO();
-            AppLayout layout = new AppLayout();
-            layout.setUserId(uid);
-            layout.setLayout("1");
-            layoutDAO.save(layout);
-
-            PreparedStatement insUap = DB.prepare(
-                    "INSERT INTO uap (Preference, users_idusers) VALUES ('1', ?)");
-            insUap.setInt(1, uid);
-            insUap.executeUpdate();
+            AppLayoutService layoutService = new AppLayoutService();
+            layoutService.saveLayout(uid);
 
             UserPrivacyService privacyService = new UserPrivacyService();
-            UserPrivacy userPriv = new UserPrivacy();
-            userPriv.setUserId(uid);
-            userPriv.setPrivacyName("public");
-            privacyService.savePrivacy(userPriv);
+            privacyService.upsertPrivacy(uid, "public");
 
             response.sendRedirect("login-register.jsp");
         } catch (Exception e) {
