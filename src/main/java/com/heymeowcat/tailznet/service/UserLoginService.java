@@ -32,4 +32,12 @@ public class UserLoginService {
     public void updateLogin(UserLogin login) {
         loginDAO.update(login);
     }
+
+    public void updatePassword(int userId, String password) {
+        UserLogin login = loginDAO.findByUserId(userId);
+        if (login != null) {
+            login.setPassword(password);
+            loginDAO.update(login);
+        }
+    }
 }
