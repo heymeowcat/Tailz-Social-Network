@@ -119,4 +119,28 @@ public class PostDAO extends BaseDAO<Post> {
             return null;
         }
     }
+
+    @SuppressWarnings("unchecked")
+    public List<Object[]> getPostsByUserWithDetails(int userId) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            SQLQuery query = session.createSQLQuery(
+                    "SELECT p.*, u.firstname, u.lastname, upp.image, " +
+                    "DATE(p.post_time) as post_date, TIME(p.post_time) as post_time_val " +
+                    "FROM post p " +
+                    "JOIN users u ON p.users_idusers = u.idusers " +
+                    "JOIN user_profile_pic upp ON p.users_idusers = upp.users_idusers " +
+                    "WHERE p.users_idusers = :userId " +
+                    "ORDER BY p.post_time DESC");
+            query.setInteger("userId", userId);
+            List<Object[]> list = query.list();
+            tx.commit();
+            return list;
+        } catch (Exception e) {
+            tx.rollback();
+            logger.error("DAO operation failed: {}", e.getMessage());
+            return null;
+        }
+    }
 }

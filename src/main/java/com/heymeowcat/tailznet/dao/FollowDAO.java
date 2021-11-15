@@ -4,6 +4,7 @@ import com.heymeowcat.tailznet.HibernateUtil;
 import com.heymeowcat.tailznet.entities.Follow;
 import java.util.List;
 import org.hibernate.Criteria;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Projections;
@@ -67,6 +68,50 @@ public class FollowDAO extends BaseDAO<Follow> {
             tx.rollback();
             logger.error("DAO operation failed: {}", e.getMessage());
             return false;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Object[]> getFollowersWithDetails(int userId) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            SQLQuery query = session.createSQLQuery(
+                    "SELECT DISTINCT u.firstname, u.lastname, u.idusers, upp.image " +
+                    "FROM follow f " +
+                    "JOIN users u ON f.sender = u.idusers " +
+                    "LEFT JOIN user_profile_pic upp ON u.idusers = upp.users_idusers " +
+                    "WHERE f.receiver = :userId");
+            query.setInteger("userId", userId);
+            List<Object[]> list = query.list();
+            tx.commit();
+            return list;
+        } catch (Exception e) {
+            tx.rollback();
+            logger.error("DAO operation failed: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Object[]> getFollowingWithDetails(int userId) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            SQLQuery query = session.createSQLQuery(
+                    "SELECT DISTINCT u.firstname, u.lastname, u.idusers, upp.image " +
+                    "FROM follow f " +
+                    "JOIN users u ON f.receiver = u.idusers " +
+                    "LEFT JOIN user_profile_pic upp ON u.idusers = upp.users_idusers " +
+                    "WHERE f.sender = :userId");
+            query.setInteger("userId", userId);
+            List<Object[]> list = query.list();
+            tx.commit();
+            return list;
+        } catch (Exception e) {
+            tx.rollback();
+            logger.error("DAO operation failed: {}", e.getMessage());
+            return null;
         }
     }
 }

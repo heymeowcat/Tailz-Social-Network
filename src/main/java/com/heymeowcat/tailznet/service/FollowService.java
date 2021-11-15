@@ -42,4 +42,12 @@ public class FollowService {
             }
         }
     }
+
+    public List<Object[]> getFollowersWithDetails(int userId) {
+        return followDAO.getFollowersWithDetails(userId);
+    }
+
+    public List<Object[]> getFollowingWithDetails(int userId) {
+        return followDAO.getFollowingWithDetails(userId);
+    }
 }

@@ -9,8 +9,7 @@ import com.heymeowcat.tailznet.entities.User;
 import com.heymeowcat.tailznet.entities.UserPrivacy;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -69,9 +68,7 @@ public class profilefullview extends HttpServlet {
             out.write("<h5 class='hide-on-med-and-up'>" + fn + " " + ln + "</h5>");
             out.write("<div id ='followun'>");
             try {
-                if (loggeduid == uid) {
-
-                } else {
+                if (loggeduid != uid) {
                     boolean isFollowing = followService.isFollowing(loggeduid, uid);
                     if (isFollowing) {
                         out.write("<a onclick='unfollow(" + loggeduid + "," + uid + "); refreshhhh()' class='" + esc(Dcolor) + " " + esc(Bcolor) + " btn-small' >Unfollow</a>");
@@ -98,7 +95,7 @@ public class profilefullview extends HttpServlet {
             out.write("</li>");
             out.write("<li>");
             out.write("<div class='" + esc(Acolor) + " " + esc(Dcolor) + " collapsible-header' style='border-color: " + esc(Ccolor) + "'><b>Posts</b></div>");
-            out.write("<div class='" + esc(Ecolor) + " collapsible-body' style='border-color: " + esc(Ccolor) + "' >");
+            out.write("<div class='" + esc(Ecolor) + " " + esc(Dcolor) + " collapsible-body' style='border-color: " + esc(Ccolor) + "' >");
 
             UserPrivacyService privacyService = new UserPrivacyService();
             UserPrivacy privacy = privacyService.getUserPrivacy(uid);
@@ -109,138 +106,116 @@ public class profilefullview extends HttpServlet {
                     out.write("</div>");
                 } else {
                     out.write("<div class='row'>");
-                    String postsSql = "SELECT p.*, u.firstname, u.lastname, upp.image, " +
-                            "DATE(p.post_time) as post_date, TIME(p.post_time) as post_time_val " +
-                            "FROM `post` p " +
-                            "JOIN `users` u ON p.users_idusers = u.idusers " +
-                            "JOIN `user_profile_pic` upp ON p.users_idusers = upp.users_idusers " +
-                            "WHERE p.users_idusers = ? ORDER BY p.post_time DESC";
-                    PreparedStatement rsPs = DB.prepare(postsSql);
-                    rsPs.setInt(1, uid);
-                    ResultSet rs = rsPs.executeQuery();
+                    List<Object[]> posts = postService.getPostsByUserWithDetails(uid);
                     boolean hasPosts = false;
-                    while (rs.next()) {
-                        hasPosts = true;
-                        String postType = rs.getString(7);
-                        String postId = rs.getString(1);
-                        String postHeading = esc(ENCDEC.decrypt(rs.getString(2), new KEY().secretKey));
-                        String postImageRaw = ENCDEC.decrypt(rs.getString(3), new KEY().secretKey);
-                        String postImage = esc(postImageRaw);
-                        String postDetail = esc(ENCDEC.decrypt(rs.getString(4), new KEY().secretKey));
-                        String authorFirstName = esc(rs.getString("firstname"));
-                        String authorLastName = esc(rs.getString("lastname"));
-                        String authorImage = esc(rs.getString("image"));
-                        String postDate = esc(rs.getString("post_date"));
-                        String postTime = esc(rs.getString("post_time_val"));
+                    if (posts != null) {
+                        for (Object[] row : posts) {
+                            hasPosts = true;
+                            String postType = String.valueOf(row[6]);
+                            String postId = String.valueOf(row[0]);
+                            String postHeading = esc(ENCDEC.decrypt((String) row[1], new KEY().secretKey));
+                            String postImageRaw = ENCDEC.decrypt((String) row[2], new KEY().secretKey);
+                            String postImage = esc(postImageRaw);
+                            String postDetail = esc(ENCDEC.decrypt((String) row[3], new KEY().secretKey));
+                            String authorFirstName = esc((String) row[7]);
+                            String authorLastName = esc((String) row[8]);
+                            String authorImage = esc((String) row[9]);
+                            String postDate = esc((String) row[10]);
+                            String postTime = esc((String) row[11]);
 
-                        if (postType.equals("1")) {
-                            out.write("<div class='col s12 m6 l4'>");
-                            out.write("<div class='" + esc(Acolor) + " " + esc(Dcolor) + " card small hoverable'>");
-                            out.write("<div class='card-image'>");
-                            out.write("<img class='responsive-img' src='" + postImage + "'>");
-                            out.write("</div>");
-                            out.write("<div class='card-content'>");
-                            out.write("<span class='card-title " + esc(Dcolor) + "'><b class='truncate " + esc(Dcolor) + "'>" + postHeading + "</b><i class='material-icons right activator waves-effect  " + esc(Dcolor) + "'>more_vert</i></span>");
-                            out.write("<p class='truncate'>" + postDetail + "</p>");
-                            out.write("</div>");
-                            out.write("<div class='" + esc(Acolor) + " " + esc(Dcolor) + "  card-reveal'>");
-                            out.write("<span class='card-title " + esc(Dcolor) + " text-darken-4 truncate'>" + postHeading + "<i class='material-icons right waves-effect'>close</i></span>");
-                            out.write("<div class='card-content'>");
-                            out.write("<a>");
-                            out.write("<div class='" + esc(Bcolor) + " " + esc(Dcolor) + " chip waves-effect waves-light'>");
-                            out.write("<img src='" + authorImage + "'>");
-                            out.write(" " + authorFirstName + " " + authorLastName + " ");
-                            out.write("</div></a>");
-                            out.write("<div class='" + esc(Bcolor) + " " + esc(Dcolor) + " chip waves-effect waves-light'>");
-                            out.write("Date: " + postDate + "");
-                            out.write("</div>");
-                            out.write("<div class='" + esc(Bcolor) + " " + esc(Dcolor) + " chip waves-effect waves-light'>");
-                            out.write("Time:  " + postTime + " ");
-                            out.write("</div>");
-                            out.write("</div>");
-                            out.write("<div class='card-action'>");
+                            if (postType.equals("1")) {
+                                out.write("<div class='col s12 m6 l4'>");
+                                out.write("<div class='" + esc(Acolor) + " " + esc(Dcolor) + " card small hoverable'>");
+                                out.write("<div class='card-image'>");
+                                out.write("<img class='responsive-img' src='" + postImage + "'>");
+                                out.write("</div>");
+                                out.write("<div class='card-content'>");
+                                out.write("<span class='card-title " + esc(Dcolor) + "'><b class='truncate " + esc(Dcolor) + "'>" + postHeading + "</b><i class='material-icons right activator waves-effect  " + esc(Dcolor) + "'>more_vert</i></span>");
+                                out.write("<p class='truncate'>" + postDetail + "</p>");
+                                out.write("</div>");
+                                out.write("<div class='" + esc(Acolor) + " " + esc(Dcolor) + "  card-reveal'>");
+                                out.write("<span class='card-title " + esc(Dcolor) + " text-darken-4 truncate'>" + postHeading + "<i class='material-icons right waves-effect'>close</i></span>");
+                                out.write("<div class='card-content'>");
+                                out.write("<a>");
+                                out.write("<div class='" + esc(Bcolor) + " " + esc(Dcolor) + " chip waves-effect waves-light'>");
+                                out.write("<img src='" + authorImage + "'>");
+                                out.write(" " + authorFirstName + " " + authorLastName + " ");
+                                out.write("</div></a>");
+                                out.write("<div class='" + esc(Bcolor) + " " + esc(Dcolor) + " chip waves-effect waves-light'>");
+                                out.write("Date: " + postDate + "");
+                                out.write("</div>");
+                                out.write("<div class='" + esc(Bcolor) + " " + esc(Dcolor) + " chip waves-effect waves-light'>");
+                                out.write("Time:  " + postTime + " ");
+                                out.write("</div>");
+                                out.write("</div>");
+                                out.write("<div class='card-action'>");
 
-                            try {
-                                PreparedStatement likechechPs = DB.prepare("Select likes from post_rank where likedby=? AND `post_rank`.`post_idpost` =?");
-                                likechechPs.setInt(1, uid);
-                                likechechPs.setString(2, postId);
-                                ResultSet likechech = likechechPs.executeQuery();
-                                if (!likechech.isBeforeFirst()) {
+                                if (!postService.hasUserLiked(Integer.parseInt(postId), uid)) {
                                     out.write("<label class='toggle seedling-flower'>");
                                     out.write("<input type='checkbox' class='toggle-checkbox' onchange='like('" + postId + "', '" + uid + "')'>");
                                     out.write("<div class='toggle-btn'></div>");
                                     out.write("</label>");
-                                } else if (likechech.next()) {
-                                    out.write("<label class='toggle seedling-flower'>");
-                                    out.write("<input type='checkbox' checked='' class='toggle-checkbox' onchange='like('" + postId + "', '" + uid + "')'>");
-                                    out.write("<div class='toggle-btn'></div>");
-                                    out.write("</label>");
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-
-                            out.write("<i class='material-icons right waves-effect waves-circle waves-light' onclick='$('#opncmnts').modal('open'); showpostcmnts('" + uid + "', '" + postId + "')'>open_in_new</i>");
-                            out.write("</div>");
-                            out.write("</div>");
-                            out.write("</div>");
-                            out.write("</div>");
-                        } else if (postType.equals("2")) {
-
-                            out.write("<div class='col s12 m6 l4'>");
-                            out.write("<div class='" + esc(Acolor) + " " + esc(Dcolor) + " card small hoverable'>");
-                            out.write("                                    <div class=\"card-image\">\n");
-                            out.write("                                       ");
-                            out.print(postImageRaw);
-                            out.write("\n");
-                            out.write("                                    </div>\n");
-                            out.write("<div class='card-content'>");
-                            out.write("<span class='card-title " + esc(Dcolor) + "'><b class='truncate " + esc(Dcolor) + "'>" + postHeading + "</b><i class='material-icons right activator waves-effect " + esc(Dcolor) + "'>more_vert</i></span>");
-                            out.write("<p class='truncate'>" + postDetail + "</p>");
-                            out.write("</div>");
-                            out.write("<div class='" + esc(Acolor) + " " + esc(Dcolor) + " card-reveal'>");
-                            out.write("<i class='material-icons right waves-effect card-title " + esc(Dcolor) + "'>close</i>");
-                            out.write("<span class='card-title " + esc(Dcolor) + " text-darken-4 truncate'>" + postHeading + "</span>");
-                            out.write("<div class='card-content'>");
-                            out.write("<div  class='" + esc(Bcolor) + " " + esc(Dcolor) + " chip waves-effect waves-light'>");
-
-                            out.write("<img src='" + authorImage + "'>");
-                            out.write(" " + authorFirstName + " " + authorLastName + " ");
-                            out.write("</div>");
-                            out.write("<div  class='" + esc(Bcolor) + " " + esc(Dcolor) + " chip waves-effect waves-light'>");
-                            out.write("Date: " + postDate + "");
-                            out.write("</div>");
-                            out.write("<div class='" + esc(Bcolor) + " " + esc(Dcolor) + " chip waves-effect waves-light'>");
-                            out.write("Time:  " + postTime + "");
-                            out.write("</div>");
-                            out.write("</div>");
-                            out.write("<div class='card-action'>");
-
-                            try {
-                                PreparedStatement likechechPs = DB.prepare("Select likes from post_rank where likedby=? AND `post_rank`.`post_idpost` =?");
-                                likechechPs.setInt(1, uid);
-                                likechechPs.setString(2, postId);
-                                ResultSet likechech = likechechPs.executeQuery();
-                                if (!likechech.isBeforeFirst()) {
-                                    out.write("<label class='toggle seedling-flower'>");
-                                    out.write("<input type='checkbox' class='toggle-checkbox' onchange='like('" + postId + "', '" + uid + "')'>");
-                                    out.write("<div class='toggle-btn'></div>");
-                                    out.write("</label>");
-
-                                } else if (likechech.next()) {
+                                } else {
                                     out.write("<label class='toggle seedling-flower'>");
                                     out.write("<input type='checkbox' checked='' class='toggle-checkbox' onchange='like('" + postId + "', '" + uid + "')'>");
                                     out.write("<div class='toggle-btn'></div>");
                                     out.write("</label>");
                                 }
 
-                                out.write("<i class='material-icons right waves-effect waves-circle waves-light' onclick='$('#opncmnts').modal('open'); showpostcmnts('" + uid + "', '" + postId + "')'>open_in_new</i>");
+                                out.write("<i class='material-icons right waves-effect waves-circle waves-light' onclick='$('#opncmnts').modal('open'); showpostcmnds('" + uid + "', '" + postId + "')'>open_in_new</i>");
+                                out.write("</div>");
+                                out.write("</div>");
+                                out.write("</div>");
+                                out.write("</div>");
+                            } else if (postType.equals("2")) {
+
+                                out.write("<div class='col s12 m6 l4'>");
+                                out.write("<div class='" + esc(Acolor) + " " + esc(Dcolor) + " card small hoverable'>");
+                                out.write("                                    <div class=\"card-image\">\n");
+                                out.write("                                       ");
+                                out.print(postImageRaw);
+                                out.write("\n");
+                                out.write("                                    </div>\n");
+                                out.write("<div class='card-content'>");
+                                out.write("<span class='card-title " + esc(Dcolor) + "'><b class='truncate " + esc(Dcolor) + "'>" + postHeading + "</b><i class='material-icons right activator waves-effect " + esc(Dcolor) + "'>more_vert</i></span>");
+                                out.write("<p class='truncate'>" + postDetail + "</p>");
+                                out.write("</div>");
+                                out.write("<div class='" + esc(Acolor) + " " + esc(Dcolor) + " card-reveal'>");
+                                out.write("<i class='material-icons right waves-effect card-title " + esc(Dcolor) + "'>close</i>");
+                                out.write("<span class='card-title " + esc(Dcolor) + " text-darken-4 truncate'>" + postHeading + "</span>");
+                                out.write("<div class='card-content'>");
+                                out.write("<div  class='" + esc(Bcolor) + " " + esc(Dcolor) + " chip waves-effect waves-light'>");
+
+                                out.write("<img src='" + authorImage + "'>");
+                                out.write(" " + authorFirstName + " " + authorLastName + " ");
+                                out.write("</div>");
+                                out.write("<div  class='" + esc(Bcolor) + " " + esc(Dcolor) + " chip waves-effect waves-light'>");
+                                out.write("Date: " + postDate + "");
+                                out.write("</div>");
+                                out.write("<div class='" + esc(Bcolor) + " " + esc(Dcolor) + " chip waves-effect waves-light'>");
+                                out.write("Time:  " + postTime + "");
+                                out.write("</div>");
+                                out.write("</div>");
+                                out.write("<div class='card-action'>");
+
+                                if (!postService.hasUserLiked(Integer.parseInt(postId), uid)) {
+                                    out.write("<label class='toggle seedling-flower'>");
+                                    out.write("<input type='checkbox' class='toggle-checkbox' onchange='like('" + postId + "', '" + uid + "')'>");
+                                    out.write("<div class='toggle-btn'></div>");
+                                    out.write("</label>");
+
+                                } else {
+                                    out.write("<label class='toggle seedling-flower'>");
+                                    out.write("<input type='checkbox' checked='' class='toggle-checkbox' onchange='like('" + postId + "', '" + uid + "')'>");
+                                    out.write("<div class='toggle-btn'></div>");
+                                    out.write("</label>");
+                                }
+
+                                out.write("<i class='material-icons right waves-effect waves-circle waves-light' onclick='$('#opncmnts').modal('open'); showpostcmnds('" + uid + "', '" + postId + "')'>open_in_new</i>");
                                 out.write(" </div>");
                                 out.write("</div>");
                                 out.write("</div>");
                                 out.write("</div>");
-                            } catch (Exception e) {
-                                e.printStackTrace();
                             }
                         }
                     }
@@ -263,35 +238,30 @@ public class profilefullview extends HttpServlet {
                     out.write("</div>");
                 } else {
                     out.write("<table class='highlight " + esc(Acolor) + "'>");
-                    String followersSql = "SELECT DISTINCT u.firstname, u.lastname, u.idusers, upp.image " +
-                            "FROM `follow` f " +
-                            "JOIN `users` u ON f.sender = u.idusers " +
-                            "LEFT JOIN `user_profile_pic` upp ON u.idusers = upp.users_idusers " +
-                            "WHERE f.receiver = ?";
-                    PreparedStatement senderidsPs = DB.prepare(followersSql);
-                    senderidsPs.setInt(1, uid);
-                    ResultSet senderids = senderidsPs.executeQuery();
+                    List<Object[]> followers = followService.getFollowersWithDetails(uid);
                     boolean hasFollowers = false;
-                    while (senderids.next()) {
-                        hasFollowers = true;
-                        String followerId = senderids.getString("idusers");
-                        String followerFirstName = esc(senderids.getString("firstname"));
-                        String followerLastName = esc(senderids.getString("lastname"));
-                        String followerImage = senderids.getString("image");
-                        String escFollowerImage = (followerImage == null) ? "img/Profile_avatar_placeholder_large.png" : esc(followerImage);
-                        out.write("\n");
-                        out.write("                                <tr><td  valign=\"middle\" class=\"left\"><img src=\"");
-                        out.print(escFollowerImage);
-                        out.write("\" width=\"40px\" height=\"40px\" style=\"padding: 0; margin: 0\" class=\"circle responsive-img  animated fadeIn\"></td><td valign=\"middle\" ><h6 >");
-                        out.print(followerFirstName + " " + followerLastName);
-                        out.write("</h6></td><td valign=\"middle\" class=\"right valign-wrapper\"><h6><a onclick=\"showprofile('");
-                        out.print(followerId);
-                        out.write("', '");
-                        out.print(loggeduid);
-                        out.write("');$('#peekprofile').modal('open');\" class=\"");
-                        out.print(esc(Dcolor));
-                        out.write("\"><i class=\"material-icons waves-effect\">open_in_new</i></a></h6></td></tr>\n");
-                        out.write("                                        ");
+                    if (followers != null) {
+                        for (Object[] row : followers) {
+                            hasFollowers = true;
+                            String followerFirstName = esc((String) row[0]);
+                            String followerLastName = esc((String) row[1]);
+                            String followerId = String.valueOf(row[2]);
+                            String followerImage = (String) row[3];
+                            String escFollowerImage = (followerImage == null) ? "img/Profile_avatar_placeholder_large.png" : esc(followerImage);
+                            out.write("\n");
+                            out.write("                                <tr><td  valign=\"middle\" class=\"left\"><img src=\"");
+                            out.print(escFollowerImage);
+                            out.write("\" width=\"40px\" height=\"40px\" style=\"padding: 0; margin: 0\" class=\"circle responsive-img  animated fadeIn\"></td><td valign=\"middle\" ><h6 >");
+                            out.print(followerFirstName + " " + followerLastName);
+                            out.write("</h6></td><td valign=\"middle\" class=\"right valign-wrapper\"><h6><a onclick=\"showprofile('");
+                            out.print(followerId);
+                            out.write("', '");
+                            out.print(loggeduid);
+                            out.write("');$('#peekprofile').modal('open');\" class=\"");
+                            out.print(esc(Dcolor));
+                            out.write("\"><i class=\"material-icons waves-effect\">open_in_new</i></a></h6></td></tr>\n");
+                            out.write("                                        ");
+                        }
                     }
                     out.write("</table>");
                     if (!hasFollowers) {
@@ -311,23 +281,18 @@ public class profilefullview extends HttpServlet {
                 } else {
                     out.write("<table class='highlight " + esc(Acolor) + "'>");
 
-                    String followingSql = "SELECT DISTINCT u.firstname, u.lastname, u.idusers, upp.image " +
-                            "FROM `follow` f " +
-                            "JOIN `users` u ON f.receiver = u.idusers " +
-                            "LEFT JOIN `user_profile_pic` upp ON u.idusers = upp.users_idusers " +
-                            "WHERE f.sender = ?";
-                    PreparedStatement senderidssPs = DB.prepare(followingSql);
-                    senderidssPs.setInt(1, uid);
-                    ResultSet senderidss = senderidssPs.executeQuery();
+                    List<Object[]> following = followService.getFollowingWithDetails(uid);
                     boolean hasFollowing = false;
-                    while (senderidss.next()) {
-                        hasFollowing = true;
-                        String followId = senderidss.getString("idusers");
-                        String followFirstName = esc(senderidss.getString("firstname"));
-                        String followLastName = esc(senderidss.getString("lastname"));
-                        String followImage = senderidss.getString("image");
-                        String escFollowImage = (followImage == null) ? "img/Profile_avatar_placeholder_large.png" : esc(followImage);
-                        out.write("<tr><td  valign='middle' class='left'><img src='" + escFollowImage + "' width='40px' height='40px' style='padding: 0; margin: 0' class='circle responsive-img  animated fadeIn'></td><td valign='middle' ><h6 >" + followFirstName + " " + followLastName + "</h6></td><td valign=\"middle\" class=\"right valign-wrapper\"><h6><a onclick=\"showprofile('" + followId + "', '" + loggeduid + "');$('#peekprofile').modal('open');\" class=\"" + esc(Dcolor) + "\"><i class=\"material-icons waves-effect\">open_in_new</i></a></h6></td></tr>");
+                    if (following != null) {
+                        for (Object[] row : following) {
+                            hasFollowing = true;
+                            String followFirstName = esc((String) row[0]);
+                            String followLastName = esc((String) row[1]);
+                            String followId = String.valueOf(row[2]);
+                            String followImage = (String) row[3];
+                            String escFollowImage = (followImage == null) ? "img/Profile_avatar_placeholder_large.png" : esc(followImage);
+                            out.write("<tr><td  valign='middle' class='left'><img src='" + escFollowImage + "' width='40px' height='40px' style='padding: 0; margin: 0' class='circle responsive-img  animated fadeIn'></td><td valign='middle' ><h6 >" + followFirstName + " " + followLastName + "</h6></td><td valign=\"middle\" class=\"right valign-wrapper\"><h6><a onclick=\"showprofile('" + followId + "', '" + loggeduid + "');$('#peekprofile').modal('open');\" class=\"" + esc(Dcolor) + "\"><i class=\"material-icons waves-effect\">open_in_new</i></a></h6></td></tr>");
+                        }
                     }
                     out.write("</table>");
                     if (!hasFollowing) {

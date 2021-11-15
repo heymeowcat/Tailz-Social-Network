@@ -116,4 +116,8 @@ public class PostService {
     public List<Object[]> getPostLikers(int postId) {
         return postRankDAO.findLikedByPostWithUserDetails(postId);
     }
+
+    public List<Object[]> getPostsByUserWithDetails(int userId) {
+        return postDAO.getPostsByUserWithDetails(userId);
+    }
 }
