@@ -114,4 +114,30 @@ public class FollowDAO extends BaseDAO<Follow> {
             return null;
         }
     }
+
+    @SuppressWarnings("unchecked")
+    public List<Object[]> getSuggestedUsers(int userId) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            SQLQuery query = session.createSQLQuery(
+                    "SELECT DISTINCT u.firstname, u.lastname, upp.image, u.idusers FROM users u " +
+                    "JOIN user_profile_pic upp ON u.idusers = upp.users_idusers " +
+                    "WHERE u.idusers = ANY(" +
+                    "SELECT receiver FROM follow WHERE sender = ANY(" +
+                    "SELECT receiver FROM follow WHERE sender = :userId)" +
+                    ") AND u.idusers != :userId " +
+                    "AND u.idusers NOT IN (" +
+                    "SELECT receiver FROM follow WHERE sender = :userId" +
+                    ")");
+            query.setInteger("userId", userId);
+            List<Object[]> list = query.list();
+            tx.commit();
+            return list;
+        } catch (Exception e) {
+            tx.rollback();
+            logger.error("DAO operation failed: {}", e.getMessage());
+            return null;
+        }
+    }
 }

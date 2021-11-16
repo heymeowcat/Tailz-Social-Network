@@ -50,4 +50,8 @@ public class FollowService {
     public List<Object[]> getFollowingWithDetails(int userId) {
         return followDAO.getFollowingWithDetails(userId);
     }
+
+    public List<Object[]> getSuggestedUsers(int userId) {
+        return followDAO.getSuggestedUsers(userId);
+    }
 }

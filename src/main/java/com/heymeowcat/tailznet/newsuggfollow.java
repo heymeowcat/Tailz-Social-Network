@@ -1,9 +1,9 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.FollowService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -37,33 +37,29 @@ public class newsuggfollow extends HttpServlet {
             String Bcolor = themeColors[1];
             String Dcolor = themeColors[3];
 
-            PreparedStatement followIns = DB.prepare("INSERT INTO `follow` (`sender`, `receiver`) VALUES (?, ?)");
-            followIns.setInt(1, loggeduid);
-            followIns.setInt(2, x);
-            followIns.executeUpdate();
+            FollowService followService = new FollowService();
+            followService.follow(loggeduid, x);
 
-            PreparedStatement rsPs = DB.prepare("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT `receiver`FROM follow WHERE `sender` = ANY(SELECT `receiver` FROM follow WHERE sender =?) ) AND NOT idusers=? AND NOT idusers =ANY(SELECT `receiver` FROM follow WHERE `sender` = ?)");
-            rsPs.setInt(1, loggeduid);
-            rsPs.setInt(2, loggeduid);
-            rsPs.setInt(3, loggeduid);
-            ResultSet rs = rsPs.executeQuery();
+            List<Object[]> suggestions = followService.getSuggestedUsers(loggeduid);
             boolean hasSuggestions = false;
-            while (rs.next()) {
-                hasSuggestions = true;
-                String firstname = esc(rs.getString(1));
-                String lastname = esc(rs.getString(2));
-                String image = esc(rs.getString(3));
-                String idusers = esc(rs.getString(4));
+            if (suggestions != null) {
+                for (Object[] row : suggestions) {
+                    hasSuggestions = true;
+                    String firstname = esc((String) row[0]);
+                    String lastname = esc((String) row[1]);
+                    String image = esc((String) row[2]);
+                    String idusers = esc(String.valueOf(row[3]));
 
-                out.write("<div class='col s6 m3 l2 animated fadeIn'>");
-                out.write("<div class='"+esc(Acolor)+" card-panel hoverable'>");
-                out.write("<img src=" + image + " class='circle responsive-img'>");
-                out.write("<div class='card-content center " + esc(Dcolor) + "'>");
-                out.write("<p class='truncate'>" + firstname + " " + lastname + "</p>");
-                out.write("<a class=' btn "+esc(Bcolor)+" "+esc(Dcolor)+"  waves-effect' onclick='followthissugg('"+idusers+"')'><i class='material-icons'>person_add</i></a>");
-                out.write("</div>");
-                out.write("</div>");
-                out.write("</div>");
+                    out.write("<div class='col s6 m3 l2 animated fadeIn'>");
+                    out.write("<div class='"+esc(Acolor)+" card-panel hoverable'>");
+                    out.write("<img src=" + image + " class='circle responsive-img'>");
+                    out.write("<div class='card-content center " + esc(Dcolor) + "'>");
+                    out.write("<p class='truncate'>" + firstname + " " + lastname + "</p>");
+                    out.write("<a class=' btn "+esc(Bcolor)+" "+esc(Dcolor)+"  waves-effect' onclick='followthissugg('"+idusers+"')'><i class='material-icons'>person_add</i></a>");
+                    out.write("</div>");
+                    out.write("</div>");
+                    out.write("</div>");
+                }
             }
 
             if (!hasSuggestions) {

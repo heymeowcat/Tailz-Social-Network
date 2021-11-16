@@ -1,9 +1,9 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.FollowService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -37,43 +37,40 @@ public class newsuggfollowindex extends HttpServlet {
             String Bcolor = themeColors[1];
             String Dcolor = themeColors[3];
 
-            PreparedStatement followIns = DB.prepare("INSERT INTO `follow` (`sender`, `receiver`) VALUES (?, ?)");
-            followIns.setInt(1, loggeduid);
-            followIns.setInt(2, x);
-            followIns.executeUpdate();
+            FollowService followService = new FollowService();
+            followService.follow(loggeduid, x);
 
+            List<Object[]> suggestions = followService.getSuggestedUsers(loggeduid);
             boolean m = false;
-            PreparedStatement rsPs = DB.prepare("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT `receiver`FROM follow WHERE `sender` = ANY(SELECT `receiver` FROM follow WHERE sender =?) ) AND NOT idusers=? AND NOT idusers =ANY(SELECT `receiver` FROM follow WHERE `sender` = ?) limit 5");
-            rsPs.setInt(1, loggeduid);
-            rsPs.setInt(2, loggeduid);
-            rsPs.setInt(3, loggeduid);
-            ResultSet rs = rsPs.executeQuery();
-            while (rs.next()) {
-                m = true;
-                String image = esc(rs.getString(3));
-                String firstname = esc(rs.getString(1));
-                String lastname = esc(rs.getString(2));
-                String idusers = esc(rs.getString(4));
+            if (suggestions != null && !suggestions.isEmpty()) {
+                int count = 0;
+                for (Object[] row : suggestions) {
+                    if (count >= 5) break;
+                    m = true;
+                    String image = esc((String) row[2]);
+                    String firstname = esc((String) row[0]);
+                    String lastname = esc((String) row[1]);
+                    String idusers = esc(String.valueOf(row[3]));
 
-                out.write("\n");
-                out.write("                                    <tr><td  valign=\"middle\" class=\"left\"><img src=\"");
-                out.print(image);
-                out.write("\" width=\"40px\" height=\"40px\" style=\"padding: 0; margin: 0\" class=\"circle responsive-img  animated fadeIn\"></td><td valign=\"middle \" ><div class=\"");
-                out.print(esc(Dcolor));
-                out.write('"');
-                out.write('>');
-                out.print(firstname);
-                out.write(' ');
-                out.print(lastname);
-                out.write("</div></td><td valign=\"middle\" class=\"right valign-wrapper\"><h6><a class=\" btn ");
-                out.print(esc(Bcolor));
-                out.write(' ');
-                out.print(esc(Dcolor));
-                out.write(" waves-effect\" onclick=\"followthissugg('");
-                out.print(idusers);
-                out.write("')\"><i class=\"material-icons\">person_add</i></a></h6></td></tr>\n");
-                out.write("                                            ");
-
+                    out.write("\n");
+                    out.write("                                    <tr><td  valign=\"middle\" class=\"left\"><img src=\"");
+                    out.print(image);
+                    out.write("\" width=\"40px\" height=\"40px\" style=\"padding: 0; margin: 0\" class=\"circle responsive-img  animated fadeIn\"></td><td valign=\"middle \" ><div class=\"");
+                    out.write('"');
+                    out.write('>');
+                    out.print(firstname);
+                    out.write(' ');
+                    out.print(lastname);
+                    out.write("</div></td><td valign=\"middle\" class=\"right valign-wrapper\"><h6><a class=\" btn ");
+                    out.print(esc(Bcolor));
+                    out.write(' ');
+                    out.print(esc(Dcolor));
+                    out.write(" waves-effect\" onclick=\"followthissugg('");
+                    out.print(idusers);
+                    out.write("')\"><i class=\"material-icons\">person_add</i></a></h6></td></tr>\n");
+                    out.write("                                            ");
+                    count++;
+                }
             }
             out.write("\n");
             out.write("                                    ");
