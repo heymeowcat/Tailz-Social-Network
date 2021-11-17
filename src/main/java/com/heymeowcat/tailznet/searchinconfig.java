@@ -1,9 +1,11 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.entities.User;
+import com.heymeowcat.tailznet.service.UserService;
+import com.heymeowcat.tailznet.service.UserProfilePicService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -23,7 +25,6 @@ public class searchinconfig extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             String s = request.getParameter("name");
-            s = "%"+s+"%";
             int loggeduid = 0;
             try {
                 loggeduid = Integer.parseInt(request.getParameter("loggedid"));
@@ -36,21 +37,21 @@ public class searchinconfig extends HttpServlet {
             String Ccolor = themeColors[2];
             String Dcolor = themeColors[3];
 
-            PreparedStatement rsPs = DB.prepare("Select firstname,lastname,image,idusers from users join user_profile_pic on users.idusers = user_profile_pic.users_idusers WHERE users.idusers = ANY(SELECT `idusers` FROM users WHERE firstname LIKE ? OR lastname LIKE ? OR  concat(firstname,' ',lastname) LIKE ? OR  concat(firstname,lastname) LIKE ? )");
-            rsPs.setString(1, s);
-            rsPs.setString(2, s);
-            rsPs.setString(3, s);
-            rsPs.setString(4, s);
-            ResultSet rs = rsPs.executeQuery();
+            UserService userService = new UserService();
+            UserProfilePicService picService = new UserProfilePicService();
+            List<User> results = userService.searchUsers(s);
+
             String text = "";
-            while (rs.next()) {
-                String image = esc(rs.getString(3));
-                String firstname = esc(rs.getString(1));
-                String lastname = esc(rs.getString(2));
-                String idusers = esc(rs.getString(4));
-                text += "<tr style='background-color:"+esc(Ccolor)+"' class=animated fadeIn>";
-                text += "<td valign='middle' class='left'><img src=" + image + " width='40px' height='40px' style='padding: 0; margin: 0' class='circle responsive-img '></td><td valign='middle'><h6 class='"+esc(Dcolor)+"'>" + firstname + "  " + lastname + "</h6></td><td><a onclick='fullviewprofile("+idusers+")'><i class='material-icons right "+esc(Dcolor)+" waves-effect '>open_in_new</i></a></td>";
-                text += "</tr>";
+            if (results != null) {
+                for (User user : results) {
+                    String image = esc(picService.getProfilePicPath(user.getId()));
+                    String firstname = esc(user.getFirstName());
+                    String lastname = esc(user.getLastName());
+                    String idusers = esc(String.valueOf(user.getId()));
+                    text += "<tr style='background-color:"+esc(Ccolor)+"' class=animated fadeIn>";
+                    text += "<td valign='middle' class='left'><img src=" + image + " width='40px' height='40px' style='padding: 0; margin: 0' class='circle responsive-img '></td><td valign='middle'><h6 class='"+esc(Dcolor)+"'>" + firstname + "  " + lastname + "</h6></td><td><a onclick='fullviewprofile("+idusers+")'><i class='material-icons right "+esc(Dcolor)+" waves-effect '>open_in_new</i></a></td>";
+                    text += "</tr>";
+                }
             }
             out.write(text);
         } catch (Exception e) {
