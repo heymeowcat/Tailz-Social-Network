@@ -40,6 +40,20 @@ public class AdsService {
         return adsDAO.getActiveRegularUserCount();
     }
 
+    public List<Object[]> getActiveAdsWithTiming(int userId) {
+        int adCategory = adsDAO.getUserAdCategory(userId);
+        boolean useCategory = adCategory != 1;
+        return adsDAO.getActiveAdsWithTiming(adCategory, useCategory);
+    }
+
+    public int getUserPreference(int userId) {
+        return adsDAO.getUserPreference(userId);
+    }
+
+    public void updateAdStatus(int adId, String status) {
+        adsDAO.updateAdStatus(adId, status);
+    }
+
     public void saveAd(Ads ad) {
         adsDAO.save(ad);
     }

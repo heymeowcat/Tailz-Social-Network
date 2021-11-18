@@ -1,9 +1,9 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.AdsService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -34,118 +34,76 @@ public class finaladdsforindexrefresh extends HttpServlet {
             String Acolor = themeColors[0];
             String Dcolor = themeColors[3];
 
-            double rate = 0;
-            try {
-                PreparedStatement ratersPs = DB.prepare("Select idAPPHPI from apphpi");
-                ResultSet raters = ratersPs.executeQuery();
-                if (raters.next()) {
-                    rate = Double.parseDouble(raters.getString(1));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            AdsService adsService = new AdsService();
+            double rate = adsService.getAppHpiRate();
+            int userPreference = adsService.getUserPreference(uid);
 
-            int usap = 1;
-            try {
-                PreparedStatement ssmPs = DB.prepare("Select Preference from uap where users_idusers=?");
-                ssmPs.setInt(1, uid);
-                ResultSet ssm = ssmPs.executeQuery();
-                if (ssm.next()) {
-                    if (ssm.getInt(1) == 0) {
-                        out.write("<div class='col s12 m12'>");
-                        out.write("<div class='card " + esc(Acolor) + " '>");
-                        out.write("<div class='card-content " + esc(Dcolor) + "'>");
-                        out.write("<span class='card-title'>Sponsored Content Turned Off</span>");
-                        out.write("<img src='img/seo.png' class='responsive-img center-block'>");
+            if (userPreference == 0) {
+                out.write("<div class='col s12 m12'>");
+                out.write("<div class='card " + esc(Acolor) + " '>");
+                out.write("<div class='card-content " + esc(Dcolor) + "'>");
+                out.write("<span class='card-title'>Sponsored Content Turned Off</span>");
+                out.write("<img src='img/seo.png' class='responsive-img center-block'>");
+                out.write("</div>");
+                out.write("<div class='card-action'>");
+                out.write("<a href='profile.jsp' class='" + esc(Dcolor) + "'>Manage Settings</a>");
+                out.write("</div>");
+                out.write("</div>");
+                out.write("</div>");
+            } else {
+                List<Object[]> ads = adsService.getActiveAdsWithTiming(uid);
+                boolean hasAds = false;
+
+                if (ads != null) {
+                    for (Object[] row : ads) {
+                        hasAds = true;
+
+                        String adId = String.valueOf(row[0]);
+                        String adSrc = esc((String) row[1]);
+                        String adLink = esc((String) row[2]);
+                        String adTimeDiff = (String) row[6];
+
+                        out.write("\n");
+                        out.write("                                <div class=\"col s12 m12\">\n");
+                        out.write("                                    <div class=\"card ");
+                        out.print(esc(Acolor));
+                        out.write(" \">\n");
+                        out.write("                                    <div class=\"card-content ");
+                        out.print(esc(Dcolor));
+                        out.write("\">\n");
+                        out.write("                                            <div class=\"card-image resizeimg\" style=\"overflow: hidden\">\n");
+                        out.write("                                            <a href=\"");
+                        out.print(adLink);
+                        out.write("\">\n");
+                        out.write("                                                <img src=\"");
+                        out.print(adSrc);
+                        out.write("\" >\n");
+                        out.write("                                            </a>\n");
+                        out.write("                                            </div>\n");
+                        out.write("                                        </div>\n");
                         out.write("</div>");
-                        out.write("<div class='card-action'>");
-                        out.write("<a href='profile.jsp' class='" + esc(Dcolor) + "'>Manage Settings</a>");
-                        out.write("</div>");
-                        out.write("</div>");
-                        out.write("</div>");
-                    } else {
-                        try {
-                            PreparedStatement usaprsPs = DB.prepare("Select adcategory from user_followed_ad_catergories where users_idusers=?");
-                            usaprsPs.setInt(1, uid);
-                            ResultSet usaprs = usaprsPs.executeQuery();
-                            if (usaprs.next()) {
-                                usap = usaprs.getInt(1);
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        out.write("                                        </div>");
 
-                        String adSql = "SELECT a.Adid, a.src, a.link, a.users_idusers, a.forhowmanyusers, a.forhowmanyhours, " +
-                                       "TIMEDIFF(at.adendtime, CURRENT_TIMESTAMP) AS time_diff " +
-                                       "FROM ads a LEFT JOIN adtiming at ON a.Adid = at.Ads_Adid " +
-                                       "WHERE a.status='4'";
-                        if (usap != 1) {
-                            adSql += " AND a.adcategory=?";
-                        }
-
-                        PreparedStatement adPs = DB.prepare(adSql);
-                        if (usap != 1) {
-                            adPs.setInt(1, usap);
-                        }
-                        ResultSet adsRs = adPs.executeQuery();
-
-                        boolean hasAds = false;
-                        while (adsRs.next()) {
-                            hasAds = true;
-
-                            String adId = adsRs.getString("Adid");
-                            String adSrc = esc(adsRs.getString("src"));
-                            String adLink = esc(adsRs.getString("link"));
-                            String adTimeDiff = adsRs.getString("time_diff");
-
-                            out.write("\n");
-                            out.write("                                <div class=\"col s12 m12\">\n");
-                            out.write("                                    <div class=\"card ");
-                            out.print(esc(Acolor));
-                            out.write(" \">\n");
-                            out.write("                                    <div class=\"card-content ");
-                            out.print(esc(Dcolor));
-                            out.write("\">\n");
-                            out.write("                                            <div class=\"card-image resizeimg\" style=\"overflow: hidden\">\n");
-                            out.write("                                            <a href=\"");
-                            out.print(adLink);
-                            out.write("\">\n");
-                            out.write("                                                <img src=\"");
-                            out.print(adSrc);
-                            out.write("\" >\n");
-                            out.write("                                            </a>\n");
-                            out.write("                                            </div>\n");
-                            out.write("                                        </div>\n");
-                            out.write("</div>");
-                            out.write("                                        </div>");
-
-                            if (adTimeDiff != null) {
-                                boolean isExpired = adTimeDiff.startsWith("-");
-                                PreparedStatement adsUpdPs = DB.prepare(
-                                    "UPDATE `ads` SET `status` = ? WHERE `ads`.`Adid` = ?");
-                                adsUpdPs.setString(1, isExpired ? "6" : "4");
-                                adsUpdPs.setString(2, adId);
-                                adsUpdPs.executeUpdate();
-                            }
-                        }
-
-                        if (!hasAds) {
-                            out.write("<div class='col s12 m12'>");
-                            out.write("<div class='card " + esc(Acolor) + "'>");
-                            out.write("<div class='card-content " + esc(Dcolor) + "'>");
-                            out.write("<span class='card-title'>Publish Your Advertisement for only <br>Rs." + rate + "/=</span>");
-                            out.write("<img src='img/uwu.png' class='responsive-img center-block'>");
-                            out.write("</div>");
-                            out.write("<div class='card-action'>");
-                            out.write("<a href='dashboard.jsp' class=" + esc(Dcolor) + ">Publish Now</a>");
-                            out.write("</div>");
-                            out.write("</div>");
-                            out.write("</div>");
+                        if (adTimeDiff != null) {
+                            boolean isExpired = adTimeDiff.startsWith("-");
+                            adsService.updateAdStatus(Integer.parseInt(adId), isExpired ? "6" : "4");
                         }
                     }
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+
+                if (!hasAds) {
+                    out.write("<div class='col s12 m12'>");
+                    out.write("<div class='card " + esc(Acolor) + "'>");
+                    out.write("<div class='card-content " + esc(Dcolor) + "'>");
+                    out.write("<span class='card-title'>Publish Your Advertisement for only <br>Rs." + rate + "/=</span>");
+                    out.write("<img src='img/uwu.png' class='responsive-img center-block'>");
+                    out.write("</div>");
+                    out.write("<div class='card-action'>");
+                    out.write("<a href='dashboard.jsp' class=" + esc(Dcolor) + ">Publish Now</a>");
+                    out.write("</div>");
+                    out.write("</div>");
+                    out.write("</div>");
+                }
             }
 
         } catch (Exception e) {

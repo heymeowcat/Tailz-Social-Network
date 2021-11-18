@@ -3,6 +3,7 @@ package com.heymeowcat.tailznet.dao;
 import com.heymeowcat.tailznet.HibernateUtil;
 import com.heymeowcat.tailznet.entities.Ads;
 import java.util.List;
+import org.hibernate.SQLQuery;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -81,6 +82,90 @@ public class AdsDAO extends BaseDAO<Ads> {
         } catch (Exception e) {
             tx.rollback();
             logger.error("DAO operation failed: {}", e.getMessage());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Object[]> getActiveAdsWithTiming(int adCategory, boolean useCategory) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            StringBuilder sql = new StringBuilder(
+                    "SELECT a.Adid, a.src, a.link, a.users_idusers, a.forhowmanyusers, a.forhowmanyhours, " +
+                    "TIMEDIFF(at.adendtime, CURRENT_TIMESTAMP) AS time_diff " +
+                    "FROM ads a LEFT JOIN adtiming at ON a.Adid = at.Ads_Adid " +
+                    "WHERE a.status='4'");
+            if (useCategory && adCategory != 1) {
+                sql.append(" AND a.adcategory=:adCategory");
+            }
+            SQLQuery query = session.createSQLQuery(sql.toString());
+            if (useCategory && adCategory != 1) {
+                query.setInteger("adCategory", adCategory);
+            }
+            List<Object[]> list = query.list();
+            tx.commit();
+            return list;
+        } catch (Exception e) {
+            tx.rollback();
+            logger.error("DAO operation failed: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    public void updateAdStatus(int adId, String status) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            session.createSQLQuery(
+                    "UPDATE ads SET status = :status WHERE Adid = :adId")
+                    .setString("status", status)
+                    .setInteger("adId", adId)
+                    .executeUpdate();
+            tx.commit();
+        } catch (Exception e) {
+            tx.rollback();
+            logger.error("DAO operation failed: {}", e.getMessage());
+        }
+    }
+
+    public int getUserAdCategory(int userId) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            Query query = session.createSQLQuery("SELECT adcategory FROM user_followed_ad_catergories WHERE users_idusers = :userId");
+            query.setInteger("userId", userId);
+            List<?> list = query.list();
+            tx.commit();
+            if (list.isEmpty()) {
+                return 1;
+            }
+            Object result = list.get(0);
+            if (result == null) return 1;
+            return ((Number) result).intValue();
+        } catch (Exception e) {
+            tx.rollback();
+            logger.error("DAO operation failed: {}", e.getMessage());
+            return 1;
+        }
+    }
+
+    public int getUserPreference(int userId) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            Query query = session.createSQLQuery(
+                    "SELECT Preference FROM uap WHERE users_idusers = :userId");
+            query.setInteger("userId", userId);
+            List<?> list = query.list();
+            tx.commit();
+            if (!list.isEmpty() && list.get(0) != null) {
+                return ((Number) list.get(0)).intValue();
+            }
+            return 1;
+        } catch (Exception e) {
+            tx.rollback();
+            logger.error("DAO operation failed: {}", e.getMessage());
+            return 1;
         }
     }
 }
