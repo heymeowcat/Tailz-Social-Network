@@ -1,9 +1,9 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.AdsService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -35,82 +35,75 @@ public class liveadsrefresh extends HttpServlet {
             String Bcolor = themeColors[1];
             String Dcolor = themeColors[3];
 
-            PreparedStatement ssPs = DB.prepare("SELECT a.Adid, a.src, a.link, a.users_idusers, a.forhowmanyusers, a.forhowmanyhours, " +
-                                                "TIMEDIFF(at.adendtime, CURRENT_TIMESTAMP) AS time_diff " +
-                                                "FROM ads a LEFT JOIN adtiming at ON a.Adid = at.Ads_Adid " +
-                                                "WHERE a.status='4' AND a.users_idusers=? " +
-                                                "ORDER BY at.adendtime DESC");
-            ssPs.setInt(1, uid);
-            ResultSet ss = ssPs.executeQuery();
+            AdsService adsService = new AdsService();
+            List<Object[]> ads = adsService.getUserActiveAdsWithTiming(uid);
             boolean hasAds = false;
-            while (ss.next()) {
-                hasAds = true;
-                String adId = ss.getString("Adid");
-                String adSrc = esc(ss.getString("src"));
-                String adLink = esc(ss.getString("link"));
-                String timeDiff = ss.getString("time_diff");
 
-                out.write("\n");
-                out.write("                                <div class=\"col s12 m4\">\n");
-                out.write("                                    <b class=\"letter-spacing: ; grey-text\">Ad Id:#");
-                out.print(esc(adId));
-                out.write("</b>\n");
-                out.write("                                    <div class=\"card ");
-                out.print(esc(Acolor));
-                out.write(" \">\n");
-                out.write("                                    <div class=\"card-content ");
-                out.print(esc(Dcolor));
-                out.write("\">\n");
-                out.write("                                            <div class=\"card-image resizeimg\" style=\"overflow: hidden\">\n");
-                out.write("                                            <a href=\"");
-                out.print(adLink);
-                out.write("\">\n");
-                out.write("                                                <img src=\"");
-                out.print(adSrc);
-                out.write("\" >\n");
-                out.write("                                            </a>\n");
-                out.write("                                            </div>\n");
-                out.write("                                        </div>\n");
-                out.write("                                        <div class=\"card-action\">\n");
-                out.write("                                            <div class=\"");
-                out.print(esc(Bcolor));
-                out.write(' ');
-                out.print(esc(Dcolor));
-                out.write(" btn-floating center\">\n");
-                out.write("                                                <span><i class=\"material-icons ");
-                out.print(esc(Dcolor));
-                out.write("\">live_tv</i></span>\n");
-                out.write("                                            </div>\n");
-                out.write("                                            ");
+            if (ads != null) {
+                for (Object[] row : ads) {
+                    hasAds = true;
+                    String adId = String.valueOf(row[0]);
+                    String adSrc = esc((String) row[1]);
+                    String adLink = esc((String) row[2]);
+                    String timeDiff = (String) row[6];
 
-                String timeremainingfrad = "";
-                if (timeDiff != null) {
-                    if (timeDiff.startsWith("-")) {
-                        PreparedStatement adsUpd6 = DB.prepare("UPDATE `ads` SET `status` = '6'  WHERE `ads`.`Adid` = ?");
-                        adsUpd6.setString(1, adId);
-                        adsUpd6.executeUpdate();
-                        timeremainingfrad = "Expired";
-                    } else {
-                        PreparedStatement adsUpd4 = DB.prepare("UPDATE `ads` SET `status` = '4'  WHERE `ads`.`Adid` = ?");
-                        adsUpd4.setString(1, adId);
-                        adsUpd4.executeUpdate();
-                        timeremainingfrad = timeDiff;
+                    out.write("\n");
+                    out.write("                                <div class=\"col s12 m4\">\n");
+                    out.write("                                    <b class=\"letter-spacing: ; grey-text\">Ad Id:#");
+                    out.print(esc(adId));
+                    out.write("</b>\n");
+                    out.write("                                    <div class=\"card ");
+                    out.print(esc(Acolor));
+                    out.write(" \">\n");
+                    out.write("                                    <div class=\"card-content ");
+                    out.print(esc(Dcolor));
+                    out.write("\">\n");
+                    out.write("                                            <div class=\"card-image resizeimg\" style=\"overflow: hidden\">\n");
+                    out.write("                                            <a href=\"");
+                    out.print(adLink);
+                    out.write("\">\n");
+                    out.write("                                                <img src=\"");
+                    out.print(adSrc);
+                    out.write("\" >\n");
+                    out.write("                                            </a>\n");
+                    out.write("                                            </div>\n");
+                    out.write("                                        </div>\n");
+                    out.write("                                        <div class=\"card-action\">\n");
+                    out.write("                                            <div class=\"");
+                    out.print(esc(Bcolor));
+                    out.write(' ');
+                    out.print(esc(Dcolor));
+                    out.write(" btn-floating center\">\n");
+                    out.write("                                                <span><i class=\"material-icons ");
+                    out.print(esc(Dcolor));
+                    out.write("\">live_tv</i></span>\n");
+                    out.write("                                            </div>\n");
+                    out.write("                                            ");
+
+                    String timeremainingfrad = "";
+                    if (timeDiff != null) {
+                        if (timeDiff.startsWith("-")) {
+                            adsService.updateAdStatus(Integer.parseInt(adId), "6");
+                            timeremainingfrad = "Expired";
+                        } else {
+                            adsService.updateAdStatus(Integer.parseInt(adId), "4");
+                            timeremainingfrad = timeDiff;
+                        }
                     }
+
+                    out.write("\n");
+                    out.write("                                            <button class=\" ");
+                    out.print(esc(Acolor));
+                    out.write(' ');
+                    out.print(esc(Dcolor));
+                    out.write(" right btn-flat  \">");
+                    out.print(esc(timeremainingfrad));
+                    out.write("</button>\n");
+                    out.write("                                        </div>  \n");
+                    out.write("                                    </div>  \n");
+                    out.write("                                </div>\n");
+                    out.write("                                ");
                 }
-
-                out.write("\n");
-                out.write("                                            <button class=\" ");
-                out.print(esc(Acolor));
-                out.write(' ');
-                out.print(esc(Dcolor));
-                out.write(" right btn-flat  \">");
-                out.print(esc(timeremainingfrad));
-                out.write("</button>\n");
-                out.write("                                        </div>  \n");
-                out.write("                                    </div>  \n");
-                out.write("                                </div>\n");
-                out.write("                                ");
-
             }
 
             if (!hasAds) {

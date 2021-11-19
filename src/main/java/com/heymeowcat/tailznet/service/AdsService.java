@@ -46,6 +46,10 @@ public class AdsService {
         return adsDAO.getActiveAdsWithTiming(adCategory, useCategory);
     }
 
+    public List<Object[]> getUserActiveAdsWithTiming(int userId) {
+        return adsDAO.getUserActiveAdsWithTiming(userId);
+    }
+
     public int getUserPreference(int userId) {
         return adsDAO.getUserPreference(userId);
     }
