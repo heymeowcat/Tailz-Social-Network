@@ -113,6 +113,28 @@ public class AdsDAO extends BaseDAO<Ads> {
     }
 
     @SuppressWarnings("unchecked")
+    public List<Object[]> getUserExpiredAdsWithTiming(int userId) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            String sql = "SELECT a.Adid, a.src, a.link, a.users_idusers, a.forhowmanyusers, a.forhowmanyhours, " +
+                    "TIMEDIFF(at.adendtime, CURRENT_TIMESTAMP) AS time_diff " +
+                    "FROM ads a LEFT JOIN adtiming at ON a.Adid = at.Ads_Adid " +
+                    "WHERE a.status='6' AND a.users_idusers=? " +
+                    "ORDER BY at.adendtime DESC";
+            Query query = session.createSQLQuery(sql);
+            query.setInteger(0, userId);
+            List<Object[]> list = query.list();
+            tx.commit();
+            return list;
+        } catch (Exception e) {
+            tx.rollback();
+            logger.error("DAO operation failed: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
     public List<Object[]> getUserActiveAdsWithTiming(int userId) {
         Session session = HibernateUtil.getSessionFactory().getCurrentSession();
         Transaction tx = session.beginTransaction();
