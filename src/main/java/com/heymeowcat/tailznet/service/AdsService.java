@@ -62,6 +62,15 @@ public class AdsService {
         adsDAO.updateAdStatus(adId, status);
     }
 
+    public void setAdTiming(int adId) {
+        adsDAO.updateAdStatus(adId, "4");
+        adsDAO.setAdTiming(adId);
+    }
+
+    public void updateUserAdCategory(int userId, int adCategory) {
+        adsDAO.updateUserAdCategory(userId, adCategory);
+    }
+
     public void saveAd(Ads ad) {
         adsDAO.save(ad);
     }

@@ -1,9 +1,7 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.AdsService;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -20,9 +18,8 @@ public class adtiming extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            int adid;
+        try {
+            int adid = 0;
             try {
                 adid = Integer.parseInt(request.getParameter("adid"));
             } catch (NumberFormatException | NullPointerException e) {
@@ -30,25 +27,8 @@ public class adtiming extends HttpServlet {
                 return;
             }
 
-            PreparedStatement upd = DB.prepare(
-                    "UPDATE ads SET status='4' WHERE Adid=?");
-            upd.setInt(1, adid);
-            upd.executeUpdate();
-
-            int forhowmanyhours = 0;
-            PreparedStatement gethoursPs = DB.prepare(
-                    "SELECT forhowmanyhours FROM ads WHERE Adid=?");
-            gethoursPs.setInt(1, adid);
-            ResultSet gethoursrs = gethoursPs.executeQuery();
-            if (gethoursrs.next()) {
-                forhowmanyhours = gethoursrs.getInt(1);
-            }
-            String interval = forhowmanyhours + ":0:0";
-            PreparedStatement ins = DB.prepare(
-                    "INSERT INTO adtiming (Ads_Adid, adstartedtime, adendtime) VALUES (?, CURRENT_TIMESTAMP, ADDTIME(CURRENT_TIMESTAMP, ?))");
-            ins.setInt(1, adid);
-            ins.setString(2, interval);
-            ins.executeUpdate();
+            AdsService adsService = new AdsService();
+            adsService.setAdTiming(adid);
             response.sendRedirect("dashboard.jsp");
         } catch (Exception e) {
             e.printStackTrace();

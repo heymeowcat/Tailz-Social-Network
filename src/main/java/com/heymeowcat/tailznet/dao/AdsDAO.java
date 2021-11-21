@@ -156,6 +156,59 @@ public class AdsDAO extends BaseDAO<Ads> {
         }
     }
 
+    public int getAdHours(int adId) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            Query query = session.createSQLQuery("SELECT forhowmanyhours FROM ads WHERE Adid = :adId");
+            query.setInteger("adId", adId);
+            List<?> list = query.list();
+            tx.commit();
+            if (!list.isEmpty() && list.get(0) != null) {
+                return ((Number) list.get(0)).intValue();
+            }
+            return 0;
+        } catch (Exception e) {
+            tx.rollback();
+            logger.error("DAO operation failed: {}", e.getMessage());
+            return 0;
+        }
+    }
+
+    public void setAdTiming(int adId) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            int forhowmanyhours = getAdHours(adId);
+            String interval = forhowmanyhours + ":0:0";
+            session.createSQLQuery(
+                    "INSERT INTO adtiming (Ads_Adid, adstartedtime, adendtime) VALUES (:adId, CURRENT_TIMESTAMP, ADDTIME(CURRENT_TIMESTAMP, :interval))")
+                    .setInteger("adId", adId)
+                    .setString("interval", interval)
+                    .executeUpdate();
+            tx.commit();
+        } catch (Exception e) {
+            tx.rollback();
+            logger.error("DAO operation failed: {}", e.getMessage());
+        }
+    }
+
+    public void updateUserAdCategory(int userId, int adCategory) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            session.createSQLQuery(
+                    "UPDATE user_followed_ad_catergories SET adcategory = :adCategory WHERE users_idusers = :userId")
+                    .setInteger("adCategory", adCategory)
+                    .setInteger("userId", userId)
+                    .executeUpdate();
+            tx.commit();
+        } catch (Exception e) {
+            tx.rollback();
+            logger.error("DAO operation failed: {}", e.getMessage());
+        }
+    }
+
     public void updateAdStatus(int adId, String status) {
         Session session = HibernateUtil.getSessionFactory().getCurrentSession();
         Transaction tx = session.beginTransaction();
