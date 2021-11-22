@@ -1,8 +1,7 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.UserService;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -20,7 +19,7 @@ public class fbupdate extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
+        try {
             int uid = 0;
             try {
                 uid = Integer.parseInt(request.getParameter("uid"));
@@ -36,18 +35,9 @@ public class fbupdate extends HttpServlet {
                 return;
             }
 
-            PreparedStatement psName = DB.prepare(
-                    "UPDATE users SET firstname=?, lastname=? WHERE idusers=?");
-            psName.setString(1, fin);
-            psName.setString(2, ln);
-            psName.setInt(3, uid);
-            psName.executeUpdate();
-
-            PreparedStatement psPic = DB.prepare(
-                    "UPDATE user_profile_pic SET image=? WHERE users_idusers=?");
-            psPic.setString(1, esc(fp) + "&height=250&width=250&ext=1553340328&hash=AeRR9S1XJWl9XeMx");
-            psPic.setInt(2, uid);
-            psPic.executeUpdate();
+            UserService userService = new UserService();
+            String picPath = esc(fp) + "&height=250&width=250&ext=1553340328&hash=AeRR9S1XJWl9XeMx";
+            userService.updateUserNameAndImage(uid, fin, ln, picPath);
 
             response.sendRedirect("profile.jsp");
         } catch (Exception e) {

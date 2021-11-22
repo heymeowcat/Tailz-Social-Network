@@ -71,6 +71,10 @@ public class AdsService {
         adsDAO.updateUserAdCategory(userId, adCategory);
     }
 
+    public void setUserPreference(int userId, int preference) {
+        adsDAO.setUserPreference(userId, preference);
+    }
+
     public void saveAd(Ads ad) {
         adsDAO.save(ad);
     }

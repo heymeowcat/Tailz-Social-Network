@@ -1,8 +1,7 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.service.AdsService;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -20,7 +19,7 @@ public class uapchange extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
+        try {
             int uid = 0;
             int x = 0;
             int y = 0;
@@ -33,17 +32,9 @@ public class uapchange extends HttpServlet {
                 return;
             }
 
-            PreparedStatement psUap = DB.prepare(
-                    "UPDATE uap SET Preference=? WHERE users_idusers=?");
-            psUap.setInt(1, x);
-            psUap.setInt(2, uid);
-            psUap.executeUpdate();
-
-            PreparedStatement psCat = DB.prepare(
-                    "UPDATE user_followed_ad_catergories SET adcategory=? WHERE users_idusers=?");
-            psCat.setInt(1, y);
-            psCat.setInt(2, uid);
-            psCat.executeUpdate();
+            AdsService adsService = new AdsService();
+            adsService.setUserPreference(uid, x);
+            adsService.updateUserAdCategory(uid, y);
         } catch (Exception e) {
             e.printStackTrace();
             try {

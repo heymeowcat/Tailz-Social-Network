@@ -40,4 +40,17 @@ public class UserLoginService {
             loginDAO.update(login);
         }
     }
+
+    public UserLogin createLogin(int userId, String username, String password) {
+        UserLogin login = new UserLogin();
+        login.setUserId(userId);
+        login.setUsername(username);
+        login.setPassword(password);
+        loginDAO.save(login);
+        return login;
+    }
+
+    public int getLoginIdByUserId(int userId) {
+        return loginDAO.getLoginIdByUserId(userId);
+    }
 }

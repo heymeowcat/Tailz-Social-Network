@@ -34,6 +34,24 @@ public class UserService {
         return user != null && "1".equals(user.getStatus());
     }
 
+    public Integer getUserIdByEmailAndHash(String email, String hash) {
+        User user = userDAO.findByEmail(email);
+        if (user != null && hash.equals(user.getHash())) {
+            return user.getId();
+        }
+        return null;
+    }
+
+    public boolean activateAccount(String email, String hash) {
+        return userDAO.activateAccount(email, hash);
+    }
+
+    public void updateUserNameAndImage(int userId, String firstName, String lastName, String image) {
+        userDAO.updateUserName(userId, firstName, lastName);
+        UserProfilePicService picService = new UserProfilePicService();
+        picService.updateProfilePic(userId, image);
+    }
+
     public boolean emailExists(String email) {
         User user = userDAO.findByEmail(email);
         return user != null;

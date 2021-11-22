@@ -20,4 +20,11 @@ public class LoginSessionService {
         session.setUserLoginId(loginId);
         sessionDAO.save(session);
     }
+
+    public void markLogout(int userId) {
+        LoginSession session = sessionDAO.findLatestByUserId(userId);
+        if (session != null) {
+            sessionDAO.markLogout(session.getId());
+        }
+    }
 }

@@ -209,6 +209,22 @@ public class AdsDAO extends BaseDAO<Ads> {
         }
     }
 
+    public void setUserPreference(int userId, int preference) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            session.createSQLQuery(
+                    "UPDATE uap SET Preference = :preference WHERE users_idusers = :userId")
+                    .setInteger("preference", preference)
+                    .setInteger("userId", userId)
+                    .executeUpdate();
+            tx.commit();
+        } catch (Exception e) {
+            tx.rollback();
+            logger.error("DAO operation failed: {}", e.getMessage());
+        }
+    }
+
     public void updateAdStatus(int adId, String status) {
         Session session = HibernateUtil.getSessionFactory().getCurrentSession();
         Transaction tx = session.beginTransaction();

@@ -25,13 +25,17 @@ public class LoginSession {
     @Column(name = "user_login_iduser_login")
     private int userLoginId;
 
+    @Column(name = "out_time")
+    private String outTime;
+
     public LoginSession() {}
 
-    public LoginSession(int id, String ipAddress, String inTime, int userLoginId) {
+    public LoginSession(int id, String ipAddress, String inTime, int userLoginId, String outTime) {
         this.id = id;
         this.ipAddress = ipAddress;
         this.inTime = inTime;
         this.userLoginId = userLoginId;
+        this.outTime = outTime;
     }
 
     public int getId() { return id; }
@@ -45,4 +49,7 @@ public class LoginSession {
 
     public int getUserLoginId() { return userLoginId; }
     public void setUserLoginId(int userLoginId) { this.userLoginId = userLoginId; }
+
+    public String getOutTime() { return outTime; }
+    public void setOutTime(String outTime) { this.outTime = outTime; }
 }
