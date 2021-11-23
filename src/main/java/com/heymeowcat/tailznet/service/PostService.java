@@ -120,4 +120,8 @@ public class PostService {
     public List<Object[]> getPostsByUserWithDetails(int userId) {
         return postDAO.getPostsByUserWithDetails(userId);
     }
+
+    public List<Object[]> searchPostsWithDetails(String encryptedKeyword, String wildcardKeyword) {
+        return postDAO.searchPostsWithDetails(encryptedKeyword, wildcardKeyword);
+    }
 }

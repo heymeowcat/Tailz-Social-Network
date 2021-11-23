@@ -121,6 +121,37 @@ public class PostDAO extends BaseDAO<Post> {
     }
 
     @SuppressWarnings("unchecked")
+    public List<Object[]> searchPostsWithDetails(String encryptedKeyword, String wildcardKeyword) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            String sql = "SELECT p.idpost, p.post_type, p.post_heading, p.post_detial, p.post_image, " +
+                    "p.post_privacy, p.post_time, p.users_idusers, u.firstname, u.lastname, upp.image " +
+                    "FROM post p " +
+                    "JOIN users u ON p.users_idusers = u.idusers " +
+                    "JOIN user_profile_pic upp ON u.idusers = upp.users_idusers " +
+                    "WHERE p.post_privacy = 1 " +
+                    "AND p.idpost IN (SELECT DISTINCT idpost FROM post WHERE post_heading = ? OR post_detial = ? " +
+                    "OR users_idusers IN (SELECT idusers FROM users WHERE firstname LIKE ? OR lastname LIKE ? " +
+                    "OR concat(firstname,' ',lastname) LIKE ? OR concat(firstname,lastname) LIKE ?))";
+            SQLQuery query = session.createSQLQuery(sql);
+            query.setString(1, encryptedKeyword);
+            query.setString(2, encryptedKeyword);
+            query.setString(3, wildcardKeyword);
+            query.setString(4, wildcardKeyword);
+            query.setString(5, wildcardKeyword);
+            query.setString(6, wildcardKeyword);
+            List<Object[]> list = query.list();
+            tx.commit();
+            return list;
+        } catch (Exception e) {
+            tx.rollback();
+            logger.error("DAO operation failed: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
     public List<Object[]> getPostsByUserWithDetails(int userId) {
         Session session = HibernateUtil.getSessionFactory().getCurrentSession();
         Transaction tx = session.beginTransaction();
