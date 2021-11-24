@@ -42,4 +42,8 @@ public class ChatService {
             }
         }
     }
+
+    public List<Object[]> getMessageOverview(int userId) {
+        return chatDAO.getMessageOverview(userId);
+    }
 }

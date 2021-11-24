@@ -4,6 +4,7 @@ import com.heymeowcat.tailznet.HibernateUtil;
 import com.heymeowcat.tailznet.entities.Chat;
 import java.util.List;
 import org.hibernate.Criteria;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
@@ -56,6 +57,31 @@ public class ChatDAO extends BaseDAO<Chat> {
             tx.rollback();
             logger.error("DAO operation failed: {}", e.getMessage());
             return 0;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Object[]> getMessageOverview(int userId) {
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            String sql = "SELECT u.firstname, u.lastname, u.image, u.idusers, " +
+                    "(SELECT COUNT(*) FROM chat WHERE chatlinestatus='0' AND user_sender=u.idusers AND users_receiver=:uid) AS unseen_sent, " +
+                    "(SELECT COUNT(*) FROM chat WHERE chatlinestatus='0' AND users_receiver=u.idusers AND user_sender=:uid) AS unseen_recv, " +
+                    "(SELECT COUNT(*) FROM chat WHERE chatlinestatus='1' AND users_receiver=u.idusers AND user_sender=:uid) AS seen_recv " +
+                    "FROM users u JOIN user_profile_pic upp ON u.idusers = upp.users_idusers " +
+                    "WHERE u.idusers IN (SELECT receiver FROM follow WHERE sender=:uid) " +
+                    "AND u.idusers IN (SELECT sender FROM follow WHERE receiver=:uid) " +
+                    "ORDER BY unseen_sent DESC, unseen_recv DESC, seen_recv DESC";
+            SQLQuery query = session.createSQLQuery(sql);
+            query.setInteger("uid", userId);
+            List<Object[]> list = query.list();
+            tx.commit();
+            return list;
+        } catch (Exception e) {
+            tx.rollback();
+            logger.error("DAO operation failed: {}", e.getMessage());
+            return null;
         }
     }
 

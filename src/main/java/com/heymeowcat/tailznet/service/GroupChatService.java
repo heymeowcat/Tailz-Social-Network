@@ -22,4 +22,8 @@ public class GroupChatService {
     public void saveMessage(GroupChat chat) {
         groupChatDAO.save(chat);
     }
+
+    public List<Object[]> getGroupMessageOverview(int userId) {
+        return groupChatDAO.getGroupMessageOverview(userId);
+    }
 }
