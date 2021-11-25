@@ -845,10 +845,10 @@
                                 }, 1000);
                             }
                             function adsrefresh() {
-                                setTimeout(function () {
-                                    $('#adshow').load("finaladdsforindexrefresh");
-                                    adsrefresh();
-                                }, 1000);
+                                var source = new EventSource("sse/ads?uid=" + userid);
+                                source.onmessage = function(event) {
+                                    $('#adshow').html(event.data);
+                                };
                             }
 
                             function followthissugg(x) {

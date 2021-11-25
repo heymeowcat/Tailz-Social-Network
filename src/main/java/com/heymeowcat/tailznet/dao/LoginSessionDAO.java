@@ -4,6 +4,7 @@ import com.heymeowcat.tailznet.HibernateUtil;
 import com.heymeowcat.tailznet.entities.LoginSession;
 import java.util.List;
 import org.hibernate.Query;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.slf4j.Logger;
@@ -46,13 +47,17 @@ public class LoginSessionDAO extends BaseDAO<LoginSession> {
             String sql = "SELECT ls.idlogin_sessions FROM login_sessions ls " +
                     "JOIN user_login ul ON ls.user_login_iduser_login = ul.iduser_login " +
                     "WHERE ul.users_idusers = :userId ORDER BY ls.idlogin_sessions DESC LIMIT 1";
-            Query query = session.createSQLQuery(sql);
+            SQLQuery query = session.createSQLQuery(sql);
             query.setInteger("userId", userId);
             List<?> list = query.list();
-            tx.commit();
-            if (list.isEmpty()) return null;
+            if (list.isEmpty()) {
+                tx.commit();
+                return null;
+            }
             Integer id = ((Number) list.get(0)).intValue();
-            return findById(id);
+            LoginSession result = (LoginSession) session.get(LoginSession.class, id);
+            tx.commit();
+            return result;
         } catch (Exception e) {
             tx.rollback();
             logger.error("DAO operation failed: {}", e.getMessage());

@@ -1123,17 +1123,17 @@
                                                 instance.open(4)
                                             }
                                             function liveadsrefresh() {
-                                                setTimeout(function () {
-                                                    $('#liveads').load("liveadsrefresh");
-                                                    liveadsrefresh();
-                                                }, 1000);
+                                                var source = new EventSource("sse/liveads?uid=" + userid);
+                                                source.onmessage = function(event) {
+                                                    $('#liveads').html(event.data);
+                                                };
                                             }
                                             function expiredrefresh() {
-                                                setTimeout(function () {
-                                                    $('#expiredads').load("expiredadsrefresh");
+                                                var source = new EventSource("sse/expiredads?uid=" + userid);
+                                                source.onmessage = function(event) {
+                                                    $('#expiredads').html(event.data);
                                                     $('.tooltipped').tooltip();
-                                                    expiredrefresh();
-                                                }, 1000);
+                                                };
                                             }
                                             function numberrefresh() {
                                                 setTimeout(function () {

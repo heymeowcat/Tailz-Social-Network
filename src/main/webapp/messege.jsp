@@ -420,11 +420,10 @@
                     });
                 });
                 function refreshfrontmsg() {
-                    setTimeout(function () {
-                        $('#frontmsgui').load("refreshmsgoverview?uid=" + userid);
-                        chatnumberrefresh();
-                        refreshfrontmsg();
-                    }, 2000);
+                    var source = new EventSource("sse/msgoverview?uid=" + userid);
+                    source.onmessage = function(event) {
+                        $('#frontmsgui').html(event.data);
+                    };
                 }
                 function setuser(x) {
                     var xhttp = new XMLHttpRequest();
