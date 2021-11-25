@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.AsyncContext;
@@ -21,7 +19,6 @@ import com.heymeowcat.tailznet.service.AdsService;
 
 @WebServlet(urlPatterns = {"/sse/ads"}, asyncSupported = true)
 public class SseAdsServlet extends HttpServlet {
-    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -44,7 +41,7 @@ public class SseAdsServlet extends HttpServlet {
         resp.setHeader("Connection", "keep-alive");
 
         final AsyncContext async = req.startAsync();
-        async.setTimeout(0);
+        async.setTimeout(120000);
         final PrintWriter writer = resp.getWriter();
 
         final AdsService adsService = new AdsService();
@@ -143,7 +140,7 @@ public class SseAdsServlet extends HttpServlet {
             }
         };
 
-        ScheduledFuture<?> future = scheduler.scheduleAtFixedRate(task, 0, 5, TimeUnit.SECONDS);
+        ScheduledFuture<?> future = SseSchedulerShutdown.SCHEDULER.scheduleAtFixedRate(task, 0, 5, TimeUnit.SECONDS);
 
         async.addListener(new AsyncListener() {
             @Override

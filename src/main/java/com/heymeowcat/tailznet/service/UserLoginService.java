@@ -2,6 +2,7 @@ package com.heymeowcat.tailznet.service;
 
 import com.heymeowcat.tailznet.dao.UserLoginDAO;
 import com.heymeowcat.tailznet.entities.UserLogin;
+import com.heymeowcat.tailznet.PasswordUtil;
 
 public class UserLoginService {
 
@@ -22,10 +23,11 @@ public class UserLoginService {
     public boolean authenticate(String username, String password) {
         UserLogin login = getLoginByUsername(username);
         if (login == null) return false;
-        return login.getPassword().equals(password);
+        return PasswordUtil.checkPassword(password, login.getPassword());
     }
 
     public void saveLogin(UserLogin login) {
+        login.setPassword(PasswordUtil.hashPassword(login.getPassword()));
         loginDAO.save(login);
     }
 
@@ -36,7 +38,7 @@ public class UserLoginService {
     public void updatePassword(int userId, String password) {
         UserLogin login = loginDAO.findByUserId(userId);
         if (login != null) {
-            login.setPassword(password);
+            login.setPassword(PasswordUtil.hashPassword(password));
             loginDAO.update(login);
         }
     }
@@ -45,7 +47,7 @@ public class UserLoginService {
         UserLogin login = new UserLogin();
         login.setUserId(userId);
         login.setUsername(username);
-        login.setPassword(password);
+        login.setPassword(PasswordUtil.hashPassword(password));
         loginDAO.save(login);
         return login;
     }

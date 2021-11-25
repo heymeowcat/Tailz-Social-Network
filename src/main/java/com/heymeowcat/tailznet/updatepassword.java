@@ -8,7 +8,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.codec.digest.DigestUtils;
 
 @WebServlet(name = "updatepassword", urlPatterns = {"/updatepassword"})
 public class updatepassword extends HttpServlet {
@@ -36,9 +35,8 @@ public class updatepassword extends HttpServlet {
                 return;
             }
             if (newps.equals(conps)) {
-                String hashpass = DigestUtils.md5Hex(conps);
                 UserLoginService loginService = new UserLoginService();
-                loginService.updatePassword(uid, hashpass);
+                loginService.updatePassword(uid, conps);
                 response.sendRedirect("profile.jsp");
             } else {
                 response.sendRedirect("profile.jsp?err=err");

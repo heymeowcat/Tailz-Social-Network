@@ -7,7 +7,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.codec.digest.DigestUtils;
 
 @WebServlet(name = "laststep", urlPatterns = {"/laststep"})
 public class laststep extends HttpServlet {
@@ -24,19 +23,21 @@ public class laststep extends HttpServlet {
             String email = request.getParameter("email");
             String hash = request.getParameter("hash");
             String usn = request.getParameter("usn");
-            String pass = DigestUtils.md5Hex(request.getParameter("psn"));
-            String conpass = DigestUtils.md5Hex(request.getParameter("conpsn"));
+            String pass = request.getParameter("psn");
+            String conpass = request.getParameter("conpsn");
+            int uid;
+            boolean exist = false;
 
             UserLoginService loginService = new UserLoginService();
 
-            boolean usnExists = loginService.getLoginByUsername(usn) != null;
+            exist = loginService.getLoginByUsername(usn) == null;
 
-            if (pass.equals(conpass) && !usnExists) {
+            if (pass != null && pass.equals(conpass) && exist) {
                 UserService userService = new UserService();
-                Integer uid = userService.getUserIdByEmailAndHash(email, hash);
-                if (uid != null) {
-                    loginService.createLogin(uid, usn, conpass);
-                    response.sendRedirect("firstupdateprofile.jsp?uid=" + uid);
+                Integer userId = userService.getUserIdByEmailAndHash(email, hash);
+                if (userId != null) {
+                    loginService.createLogin(userId, usn, pass);
+                    response.sendRedirect("firstupdateprofile.jsp?uid=" + userId);
                 } else {
                     response.sendRedirect("registerdetails.jsp?mail=" + email + "&hash=" + hash);
                 }

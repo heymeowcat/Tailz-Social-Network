@@ -9,10 +9,15 @@
         <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/tailz?useSSL=false</property>
         <property name="hibernate.connection.username">root</property>
         <property name="hibernate.connection.password"></property>
+        <property name="hibernate.connection.provider_class">org.hibernate.hikaricp.internal.HikariCPConnectionProvider</property>
+        <property name="hibernate.hikari.maximumPoolSize">20</property>
+        <property name="hibernate.hikari.minimumIdle">5</property>
+        <property name="hibernate.hikari.connectionTimeout">30000</property>
+        <property name="hibernate.hikari.idleTimeout">600000</property>
+        <property name="hibernate.hikari.maxLifetime">1800000</property>
         <property name="hibernate.hbm2ddl.auto">update</property>
         <property name="hibernate.show_sql">true</property>
         <property name="hibernate.format_sql">true</property>
-        <property name="hibernate.connection.pool_size">10</property>
         <property name="hibernate.current_session_context_class">thread</property>
         <property name="hibernate.jdbc.batch_size">20</property>
 
