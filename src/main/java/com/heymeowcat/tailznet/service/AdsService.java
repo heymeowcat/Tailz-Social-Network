@@ -1,7 +1,9 @@
 package com.heymeowcat.tailznet.service;
 
 import com.heymeowcat.tailznet.dao.AdsDAO;
+import com.heymeowcat.tailznet.dao.AdsDAO.AdStatusUpdate;
 import com.heymeowcat.tailznet.entities.Ads;
+import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +62,10 @@ public class AdsService {
 
     public void updateAdStatus(int adId, String status) {
         adsDAO.updateAdStatus(adId, status);
+    }
+
+    public void batchUpdateAdStatus(List<AdStatusUpdate> updates) {
+        adsDAO.batchUpdateAdStatus(updates);
     }
 
     public void setAdTiming(int adId) {

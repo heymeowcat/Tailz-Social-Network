@@ -1,8 +1,10 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.dao.AdsDAO.AdStatusUpdate;
 import com.heymeowcat.tailznet.service.AdsService;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -53,6 +55,7 @@ public class finaladdsforindexrefresh extends HttpServlet {
             } else {
                 List<Object[]> ads = adsService.getActiveAdsWithTiming(uid);
                 boolean hasAds = false;
+                List<AdStatusUpdate> statusUpdates = new ArrayList<>();
 
                 if (ads != null) {
                     for (Object[] row : ads) {
@@ -86,9 +89,13 @@ public class finaladdsforindexrefresh extends HttpServlet {
 
                         if (adTimeDiff != null) {
                             boolean isExpired = adTimeDiff.startsWith("-");
-                            adsService.updateAdStatus(Integer.parseInt(adId), isExpired ? "6" : "4");
+                            statusUpdates.add(new AdStatusUpdate(Integer.parseInt(adId), isExpired ? "6" : "4"));
                         }
                     }
+                }
+
+                if (!statusUpdates.isEmpty()) {
+                    adsService.batchUpdateAdStatus(statusUpdates);
                 }
 
                 if (!hasAds) {

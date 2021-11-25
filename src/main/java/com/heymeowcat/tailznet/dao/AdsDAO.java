@@ -14,6 +14,15 @@ public class AdsDAO extends BaseDAO<Ads> {
 
     private static final Logger logger = LoggerFactory.getLogger(AdsDAO.class);
 
+    public static class AdStatusUpdate {
+        public int adId;
+        public String status;
+        public AdStatusUpdate(int adId, String status) {
+            this.adId = adId;
+            this.status = status;
+        }
+    }
+
     public AdsDAO() {
         super(Ads.class);
     }
@@ -179,7 +188,13 @@ public class AdsDAO extends BaseDAO<Ads> {
         Session session = HibernateUtil.getSessionFactory().getCurrentSession();
         Transaction tx = session.beginTransaction();
         try {
-            int forhowmanyhours = getAdHours(adId);
+            Query hoursQuery = session.createSQLQuery("SELECT forhowmanyhours FROM ads WHERE Adid = :adId");
+            hoursQuery.setInteger("adId", adId);
+            List<?> hoursList = hoursQuery.list();
+            int forhowmanyhours = 0;
+            if (!hoursList.isEmpty() && hoursList.get(0) != null) {
+                forhowmanyhours = ((Number) hoursList.get(0)).intValue();
+            }
             String interval = forhowmanyhours + ":0:0";
             session.createSQLQuery(
                     "INSERT INTO adtiming (Ads_Adid, adstartedtime, adendtime) VALUES (:adId, CURRENT_TIMESTAMP, ADDTIME(CURRENT_TIMESTAMP, :interval))")
@@ -234,6 +249,25 @@ public class AdsDAO extends BaseDAO<Ads> {
                     .setString("status", status)
                     .setInteger("adId", adId)
                     .executeUpdate();
+            tx.commit();
+        } catch (Exception e) {
+            tx.rollback();
+            logger.error("DAO operation failed: {}", e.getMessage());
+        }
+    }
+
+    public void batchUpdateAdStatus(List<AdStatusUpdate> updates) {
+        if (updates == null || updates.isEmpty()) return;
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+        Transaction tx = session.beginTransaction();
+        try {
+            for (AdStatusUpdate update : updates) {
+                session.createSQLQuery(
+                        "UPDATE ads SET status = :status WHERE Adid = :adId")
+                        .setString("status", update.status)
+                        .setInteger("adId", update.adId)
+                        .executeUpdate();
+            }
             tx.commit();
         } catch (Exception e) {
             tx.rollback();
