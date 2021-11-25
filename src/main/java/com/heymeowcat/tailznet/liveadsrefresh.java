@@ -1,8 +1,10 @@
 package com.heymeowcat.tailznet;
 
+import com.heymeowcat.tailznet.dao.AdsDAO.AdStatusUpdate;
 import com.heymeowcat.tailznet.service.AdsService;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -38,6 +40,7 @@ public class liveadsrefresh extends HttpServlet {
             AdsService adsService = new AdsService();
             List<Object[]> ads = adsService.getUserActiveAdsWithTiming(uid);
             boolean hasAds = false;
+            List<AdStatusUpdate> statusUpdates = new ArrayList<>();
 
             if (ads != null) {
                 for (Object[] row : ads) {
@@ -83,10 +86,10 @@ public class liveadsrefresh extends HttpServlet {
                     String timeremainingfrad = "";
                     if (timeDiff != null) {
                         if (timeDiff.startsWith("-")) {
-                            adsService.updateAdStatus(Integer.parseInt(adId), "6");
+                            statusUpdates.add(new AdStatusUpdate(Integer.parseInt(adId), "6"));
                             timeremainingfrad = "Expired";
                         } else {
-                            adsService.updateAdStatus(Integer.parseInt(adId), "4");
+                            statusUpdates.add(new AdStatusUpdate(Integer.parseInt(adId), "4"));
                             timeremainingfrad = timeDiff;
                         }
                     }
@@ -104,6 +107,10 @@ public class liveadsrefresh extends HttpServlet {
                     out.write("                                </div>\n");
                     out.write("                                ");
                 }
+            }
+
+            if (!statusUpdates.isEmpty()) {
+                adsService.batchUpdateAdStatus(statusUpdates);
             }
 
             if (!hasAds) {
